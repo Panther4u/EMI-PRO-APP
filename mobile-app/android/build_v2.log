@@ -1,0 +1,35 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. See https://docs.gradle.org/8.0.2/userguide/gradle_daemon.html#sec:disabling_the_daemon.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preUserReleaseBuild UP-TO-DATE
+> Task :app:compileUserReleaseAidl NO-SOURCE
+> Task :app:compileUserReleaseRenderscript NO-SOURCE
+> Task :app:generateUserReleaseBuildConfig UP-TO-DATE
+> Task :app:javaPreCompileUserRelease UP-TO-DATE
+> Task :app:checkUserReleaseAarMetadata FAILED
+> Task :app:writeUserReleaseApplicationId UP-TO-DATE
+> Task :app:analyticsRecordingUserRelease
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:checkUserReleaseAarMetadata'.
+> Could not resolve all files for configuration ':app:userReleaseRuntimeClasspath'.
+   > Could not find com.facebook.react:react-native:0.72.6.
+     Searched in the following locations:
+       - https://dl.google.com/dl/android/maven2/com/facebook/react/react-native/0.72.6/react-native-0.72.6.pom
+       - https://repo.maven.apache.org/maven2/com/facebook/react/react-native/0.72.6/react-native-0.72.6.pom
+       - file:/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native/ReactAndroid/com/facebook/react/react-native/0.72.6/react-native-0.72.6.pom
+       - file:/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/jsc-android/dist/com/facebook/react/react-native/0.72.6/react-native-0.72.6.pom
+     Required by:
+         project :app
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 21s
+5 actionable tasks: 2 executed, 3 up-to-date

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useDevice } from '@/context/DeviceContext';
 import { toast } from 'sonner';
+import { getApiUrl } from '@/config/api';
 import {
   Shield,
   Bell,
@@ -52,7 +53,7 @@ const Settings = () => {
 
     try {
       // Clear backend database
-      const response = await fetch('/api/customers/danger/delete-all', {
+      const response = await fetch(getApiUrl('/api/customers/danger/delete-all'), {
         method: 'DELETE',
       });
 

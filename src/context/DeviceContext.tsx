@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Customer } from '../types/customer';
 import { toast } from 'sonner';
+import { getApiUrl } from '../config/api';
 
 interface DeviceContextType {
     customers: Customer[];
@@ -28,7 +29,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const refreshCustomers = async () => {
         try {
-            const response = await fetch('/api/customers');
+            const response = await fetch(getApiUrl('/api/customers'));
             if (!response.ok) throw new Error('Failed to fetch customers');
             const data = await response.json();
             setCustomers(data);
@@ -47,7 +48,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setCustomers(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
 
         try {
-            const response = await fetch(`/api/customers/${id}`, {
+            const response = await fetch(getApiUrl(`/api/customers/${id}`), {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates),
@@ -77,7 +78,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toast.success('Customer registered successfully');
 
         try {
-            const response = await fetch('/api/customers', {
+            const response = await fetch(getApiUrl('/api/customers'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newCustomer),
@@ -116,7 +117,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toast.success('Customer deleted successfully');
 
         try {
-            const response = await fetch(`/api/customers/${id}`, {
+            const response = await fetch(getApiUrl(`/api/customers/${id}`), {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error('Failed to delete customer');
