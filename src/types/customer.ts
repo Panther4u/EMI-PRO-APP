@@ -1,0 +1,58 @@
+export interface Customer {
+  id: string;
+  name: string;
+  phoneNo: string;
+  aadharNo: string;
+  address: string;
+  imei1: string;
+  imei2: string;
+  mobileModel: string;
+  financeName: string;
+  totalAmount: number;
+  emiAmount: number;
+  emiDate: number; // Day of month
+  totalEmis: number;
+  paidEmis: number;
+  isLocked: boolean;
+  location: {
+    lat: number;
+    lng: number;
+    lastUpdated: string;
+    address?: string;
+  };
+  createdAt: string;
+  lockHistory: {
+    id: string;
+    action: 'locked' | 'unlocked';
+    timestamp: string;
+    reason: string;
+  }[];
+  photoUrl?: string;
+  documents?: string[];
+  isEnrolled?: boolean;
+  enrollmentToken?: string;
+  // Advanced Controls
+  networkRestricted?: boolean;
+  wifiRestricted?: boolean;
+  cameraRestricted?: boolean;
+  callsRestricted?: boolean;
+  notificationsRestricted?: boolean;
+  powerOffRestricted?: boolean;
+  resetRestricted?: boolean;
+}
+
+export interface LockEvent {
+  id: string;
+  action: 'locked' | 'unlocked';
+  timestamp: string;
+  reason: string;
+}
+
+export interface AdminStats {
+  totalCustomers: number;
+  lockedDevices: number;
+  unlockedDevices: number;
+  pendingEmis: number;
+  totalEmiValue: number;
+  collectedAmount: number;
+}
