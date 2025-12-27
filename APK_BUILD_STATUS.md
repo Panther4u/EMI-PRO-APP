@@ -1,27 +1,19 @@
-# 🔨 Re-Building User APK
+# 🔨 Clean Build In Progress
 
-## ✅ Status: In Progress
+## ✅ Status: Running
 
 **Started:** Just now
-**Current Task:** Gradle execution
-
-### Build Command
-```bash
-./gradlew assembleUserRelease --no-daemon
-```
+**Command:** `./gradlew clean assembleRelease --no-daemon`
 
 ### What's Happening
-1. Gradle daemon starting
-2. Project configuration
-3. Validating dependencies
-4. Running React Native bundle task
-5. Compiling Android resources
-6. Packaging APK
+1. **Clean**: Removing previous build artifacts
+2. **AssembleRelease**: Building release APKs for ALL flavors (User & Admin)
 
-### Output Location
-`mobile-app/android/app/build/outputs/apk/user/release/app-user-release.apk`
+### Expected Outputs
+1. `mobile-app/android/app/build/outputs/apk/user/release/app-user-release.apk`
+2. `mobile-app/android/app/build/outputs/apk/admin/release/app-admin-release.apk`
 
 ---
 
 ## 🔍 Monitoring
-Check the terminal output for real-time progress.
+Check terminal output or `mobile-app/android/build_v6_clean.log`

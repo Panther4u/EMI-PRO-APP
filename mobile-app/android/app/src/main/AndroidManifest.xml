@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <!-- Device Admin Permission -->
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
@@ -55,8 +57,22 @@
             </intent-filter>
         </receiver>
 
+        <!-- Boot Receiver for persistence -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Lock Screen Service -->
-        <service android:name=".LockScreenService" android:exported="false" />
+        <service 
+            android:name=".LockScreenService" 
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="systemExempted" />
 
     </application>
 </manifest>
