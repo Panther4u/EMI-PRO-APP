@@ -242,16 +242,26 @@ export const CustomerDetailsModal = ({
           <div className="flex flex-col items-center bg-white rounded-xl p-4 border border-border transition-all hover:shadow-md">
             <QRCodeSVG
               value={JSON.stringify({
-                name: customer.name,
-                phone: customer.phoneNo,
-                imei1: customer.imei1,
-                imei2: customer.imei2,
-                brand: customer.mobileModel,
-                model: customer.mobileModel,
-                total: customer.totalAmount,
-                emi: customer.emiAmount,
-                tenure: customer.totalEmis,
-                serverUrl: window.location.origin
+                "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
+                "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM": "9MBtfICaLx0RVCoQ4oNB1DNh-FCGkLPc3dRNCLnVHJc",
+                "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": `${window.location.origin}/downloads/app-user-release.apk`,
+                "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
+                "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
+                "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
+                  "serverUrl": window.location.origin,
+                  "customerId": customer.id,
+                  "customerName": customer.name,
+                  "phoneNo": customer.phoneNo,
+                  "deviceBrand": customer.mobileModel, // Using model as brand for simplicity if field missing
+                  "deviceModel": customer.mobileModel,
+                  "imei1": customer.imei1,
+                  "imei2": customer.imei2,
+                  "financeName": customer.financeName,
+                  "totalAmount": String(customer.totalAmount),
+                  "emiAmount": String(customer.emiAmount),
+                  "totalEmis": String(customer.totalEmis),
+                  "enrollmentDate": customer.createdAt
+                }
               })}
               size={120}
               level="H"
