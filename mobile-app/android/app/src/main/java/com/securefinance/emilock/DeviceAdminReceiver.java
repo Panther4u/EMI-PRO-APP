@@ -1,6 +1,5 @@
 package com.securefinance.emilock;
 
-import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,7 +7,8 @@ import android.os.PersistableBundle;
 import android.util.Log;
 import android.widget.Toast;
 
-public class DeviceAdminReceiver extends DeviceAdminReceiver {
+// Fix: Use fully qualified name to avoid shadowing/cyclic inheritance error
+public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
 
     private static final String TAG = "DeviceAdminReceiver";
 
