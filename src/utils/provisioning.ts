@@ -54,7 +54,7 @@ export const getDeviceOwnerProvisioningQR = (
         // Required: APK SHA-256 Checksum (URL-Safe Base64 encoded)
         // CRITICAL: Must use URL-safe alphabet (-_) and NO padding
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM":
-            "qi30-5INyXnWafQjD4bXl9qZjGD_isyDGWgfBdLN6og",
+            "X6ukzI6QCFQe5sN8gBFhx1kVJ2uwK54mkN27lJ4UzE8",
 
         // Optional but recommended: Skip encryption for faster setup
         "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
