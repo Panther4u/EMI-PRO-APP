@@ -1,0 +1,37 @@
+<variant
+    name="userRelease"
+    package="com.securefinance.emilock"
+    minSdkVersion="21"
+    targetSdkVersion="34"
+    mergedManifest="build/intermediates/merged_manifest/userRelease/AndroidManifest.xml"
+    proguardFiles="build/intermediates/default_proguard_files/global/proguard-android.txt-8.2.1:proguard-rules.pro"
+    partialResultsDir="build/intermediates/lint_vital_partial_results/userRelease/out"
+    desugaredMethodsFiles="/Users/kavi/.gradle/caches/8.10/transforms/c540ae5e8f1f0cde3a03e351251683b2/transformed/D8BackportedDesugaredMethods.txt">
+  <buildFeatures
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src/main/AndroidManifest.xml"
+        javaDirectories="src/main/java:build/generated/rncli/src/main/java:src/user/java:src/release/java:src/userRelease/java:src/main/kotlin:src/user/kotlin:src/release/kotlin:src/userRelease/kotlin"
+        resDirectories="src/main/res:src/user/res:src/release/res:src/userRelease/res"
+        assetsDirectories="src/main/assets:src/user/assets:src/release/assets:src/userRelease/assets"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <resValues>
+    <resValue
+        type="string"
+        name="app_name"
+        value="EMI Lock" />
+  </resValues>
+  <artifact
+      classOutputs="build/intermediates/javac/userRelease/classes:build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/userRelease/R.jar"
+      type="MAIN"
+      applicationId="com.securefinance.emilock.user"
+      generatedSourceFolders="build/generated/ap_generated_sources/userRelease/out:build/generated/source/buildConfig/user/release"
+      generatedResourceFolders="build/generated/res/resValues/user/release"
+      desugaredMethodsFiles="/Users/kavi/.gradle/caches/8.10/transforms/c540ae5e8f1f0cde3a03e351251683b2/transformed/D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

@@ -35,11 +35,18 @@ export default function SetupScreen({ navigation }) {
 
     if (step === 'welcome') {
         return (
-            <TouchableOpacity activeOpacity={1} style={styles.container} onPress={handleTap}>
+            <View style={styles.container}>
                 <Text style={styles.title}>Welcome</Text>
-                <Text style={styles.subtitle}>Tap anywhere to start</Text>
-                {tapCount > 0 && <Text style={styles.hint}>{tapCount}/3 taps</Text>}
-            </TouchableOpacity>
+                <Text style={styles.subtitle}>SecureFinance EMI Lock</Text>
+
+                <TouchableOpacity style={[styles.button, { marginTop: 50, backgroundColor: '#007AFF' }]} onPress={() => setStep('scanning')}>
+                    <Text style={[styles.buttonText, { color: '#fff' }]}>Scan to Access Device</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={handleTap}>
+                    <Text style={{ color: '#ccc' }}>Version 1.0.0</Text>
+                </TouchableOpacity>
+            </View>
         );
     }
 

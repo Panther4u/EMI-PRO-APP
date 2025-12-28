@@ -1,0 +1,42 @@
+com.securefinance.emilock.app-jetified-viewpager2-1.0.0-0 /Users/kavi/.gradle/caches/8.10/transforms/020412958f664b09d12e107f8181a755/transformed/jetified-viewpager2-1.0.0/res
+com.securefinance.emilock.app-jetified-savedstate-1.2.0-1 /Users/kavi/.gradle/caches/8.10/transforms/1a4bac37e5d1c219f5d2c6bc2ee939cd/transformed/jetified-savedstate-1.2.0/res
+com.securefinance.emilock.app-jetified-emoji2-views-helper-1.2.0-2 /Users/kavi/.gradle/caches/8.10/transforms/21839eb485d5374671fd6ba997b18b3e/transformed/jetified-emoji2-views-helper-1.2.0/res
+com.securefinance.emilock.app-lifecycle-runtime-2.5.0-3 /Users/kavi/.gradle/caches/8.10/transforms/27a33420d6ca44630e514aab277c218b/transformed/lifecycle-runtime-2.5.0/res
+com.securefinance.emilock.app-transition-1.2.0-4 /Users/kavi/.gradle/caches/8.10/transforms/29d027f9c12509d30a81b10607a62dc1/transformed/transition-1.2.0/res
+com.securefinance.emilock.app-jetified-startup-runtime-1.1.1-5 /Users/kavi/.gradle/caches/8.10/transforms/2adc914e4fd78c9e8ccae31efd0f3d3d/transformed/jetified-startup-runtime-1.1.1/res
+com.securefinance.emilock.app-fragment-1.3.6-6 /Users/kavi/.gradle/caches/8.10/transforms/300397db0bc1b3ddbc4f5577e2f982a2/transformed/fragment-1.3.6/res
+com.securefinance.emilock.app-swiperefreshlayout-1.1.0-7 /Users/kavi/.gradle/caches/8.10/transforms/31a43c6f864a50d08be499a4e9ef706a/transformed/swiperefreshlayout-1.1.0/res
+com.securefinance.emilock.app-coordinatorlayout-1.2.0-8 /Users/kavi/.gradle/caches/8.10/transforms/33de00f820939eae5401f9e29d905a74/transformed/coordinatorlayout-1.2.0/res
+com.securefinance.emilock.app-jetified-annotation-experimental-1.3.0-9 /Users/kavi/.gradle/caches/8.10/transforms/350411a3c590aea9051a24100934b2ff/transformed/jetified-annotation-experimental-1.3.0/res
+com.securefinance.emilock.app-core-1.12.0-10 /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/res
+com.securefinance.emilock.app-lifecycle-livedata-core-2.5.0-11 /Users/kavi/.gradle/caches/8.10/transforms/41c3cf73a763c1f3bc4654f8b4b603f8/transformed/lifecycle-livedata-core-2.5.0/res
+com.securefinance.emilock.app-jetified-react-android-0.72.6-release-12 /Users/kavi/.gradle/caches/8.10/transforms/627b98b265e103bb3da47233087ad6b7/transformed/jetified-react-android-0.72.6-release/res
+com.securefinance.emilock.app-lifecycle-viewmodel-2.5.0-13 /Users/kavi/.gradle/caches/8.10/transforms/7232f602f4f8533599ce58e4ae4ec71a/transformed/lifecycle-viewmodel-2.5.0/res
+com.securefinance.emilock.app-drawerlayout-1.1.1-14 /Users/kavi/.gradle/caches/8.10/transforms/8aa56ab82f300759a9e936bb5a076417/transformed/drawerlayout-1.1.1/res
+com.securefinance.emilock.app-jetified-activity-1.5.0-15 /Users/kavi/.gradle/caches/8.10/transforms/8d5c7031420b605f64d85fea68e35023/transformed/jetified-activity-1.5.0/res
+com.securefinance.emilock.app-recyclerview-1.1.0-16 /Users/kavi/.gradle/caches/8.10/transforms/99deec9cf7988108d5d5ec99f16609f2/transformed/recyclerview-1.1.0/res
+com.securefinance.emilock.app-appcompat-1.5.0-17 /Users/kavi/.gradle/caches/8.10/transforms/a428e0c473db40d061337f94f17b75e2/transformed/appcompat-1.5.0/res
+com.securefinance.emilock.app-jetified-emoji2-1.2.0-18 /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/res
+com.securefinance.emilock.app-jetified-tracing-1.1.0-19 /Users/kavi/.gradle/caches/8.10/transforms/a672e478db456f401a9c41f9aa58b79d/transformed/jetified-tracing-1.1.0/res
+com.securefinance.emilock.app-jetified-appcompat-resources-1.5.0-20 /Users/kavi/.gradle/caches/8.10/transforms/aac1998c724a8af5550fe1437b95bf90/transformed/jetified-appcompat-resources-1.5.0/res
+com.securefinance.emilock.app-jetified-lifecycle-process-2.4.1-21 /Users/kavi/.gradle/caches/8.10/transforms/ad90925825eb2e9a4c0629793148457f/transformed/jetified-lifecycle-process-2.4.1/res
+com.securefinance.emilock.app-jetified-lifecycle-viewmodel-savedstate-2.5.0-22 /Users/kavi/.gradle/caches/8.10/transforms/b3c8c8b1e6446021aa61c9c90f15e3cb/transformed/jetified-lifecycle-viewmodel-savedstate-2.5.0/res
+com.securefinance.emilock.app-jetified-drawee-2.5.0-23 /Users/kavi/.gradle/caches/8.10/transforms/b7284db578006ced64a58fa76e74e8f9/transformed/jetified-drawee-2.5.0/res
+com.securefinance.emilock.app-cardview-1.0.0-24 /Users/kavi/.gradle/caches/8.10/transforms/b8e7b98ebf08f2dbdb6aea1ac971bf03/transformed/cardview-1.0.0/res
+com.securefinance.emilock.app-jetified-autofill-1.1.0-25 /Users/kavi/.gradle/caches/8.10/transforms/be6d5fa818c2752796ca1c6add8dc42f/transformed/jetified-autofill-1.1.0/res
+com.securefinance.emilock.app-material-1.9.0-26 /Users/kavi/.gradle/caches/8.10/transforms/d53bf0a6ee779c1e79776a4dbd53afb7/transformed/material-1.9.0/res
+com.securefinance.emilock.app-jetified-core-ktx-1.12.0-27 /Users/kavi/.gradle/caches/8.10/transforms/d7112cbaca832a20bb62c788a0e77134/transformed/jetified-core-ktx-1.12.0/res
+com.securefinance.emilock.app-constraintlayout-2.0.1-28 /Users/kavi/.gradle/caches/8.10/transforms/f7fcb52a0b9664f2bf296d32531cf97c/transformed/constraintlayout-2.0.1/res
+com.securefinance.emilock.app-admin-29 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/generated/res/pngs/admin/release
+com.securefinance.emilock.app-admin-30 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/generated/res/resValues/admin/release
+com.securefinance.emilock.app-packageAdminReleaseResources-31 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/incremental/adminRelease/packageAdminReleaseResources/merged.dir
+com.securefinance.emilock.app-packageAdminReleaseResources-32 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/incremental/adminRelease/packageAdminReleaseResources/stripped.dir
+com.securefinance.emilock.app-merged_res-33 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/merged_res/adminRelease
+com.securefinance.emilock.app-admin-34 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/admin/res
+com.securefinance.emilock.app-adminRelease-35 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/adminRelease/res
+com.securefinance.emilock.app-main-36 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/res
+com.securefinance.emilock.app-release-37 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/release/res
+com.securefinance.emilock.app-packaged_res-38 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/@react-native-async-storage/async-storage/android/build/intermediates/packaged_res/release
+com.securefinance.emilock.app-packaged_res-39 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-gesture-handler/android/build/intermediates/packaged_res/release
+com.securefinance.emilock.app-packaged_res-40 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-safe-area-context/android/build/intermediates/packaged_res/release
+com.securefinance.emilock.app-packaged_res-41 /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-screens/android/build/intermediates/packaged_res/release
