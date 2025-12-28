@@ -18,6 +18,13 @@ android {
         }
     }
 
+    project.ext.react = [
+        enableHermes: true,
+        bundleInDebug: false,
+        bundleInRelease: true,
+        bundleAssetName: "index.android.bundle",
+        entryFile: "index.js"
+    ]
 
     flavorDimensions "mode"
 
