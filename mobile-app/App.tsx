@@ -102,7 +102,7 @@ export default function App() {
     };
 
     const syncStatus = async (cid: string, url: string) => {
-        if (!cid || !url) return;
+        if (!cid || !url || isAdmin) return;
         try {
             const response = await fetch(`${url}/api/customers/${cid}/status`, {
                 method: 'POST',
@@ -115,7 +115,7 @@ export default function App() {
                     setIsLocked(data.isLocked);
                     await AsyncStorage.setItem('lock_status', data.isLocked ? 'locked' : 'unlocked');
 
-                    if (data.isLocked && DeviceLockModule) {
+                    if (data.isLocked && DeviceLockModule && !isAdmin) {
                         DeviceLockModule.lockDevice().catch(console.error);
                     }
                 }

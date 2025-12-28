@@ -30,9 +30,22 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         return "DeviceLockModule";
     }
 
+    private boolean isDeviceOwner() {
+        return devicePolicyManager != null && devicePolicyManager.isDeviceOwnerApp(reactContext.getPackageName());
+    }
+
+    @ReactMethod
+    public void isDeviceOwner(Promise promise) {
+        promise.resolve(isDeviceOwner());
+    }
+
     @ReactMethod
     public void requestAdminPermission(Promise promise) {
         try {
+            if (isDeviceOwner()) {
+                promise.resolve(true); // Already owner
+                return;
+            }
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent);
             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
@@ -54,11 +67,11 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void lockDevice(Promise promise) {
         try {
-            if (devicePolicyManager.isAdminActive(adminComponent)) {
+            if (isDeviceOwner() && devicePolicyManager.isAdminActive(adminComponent)) {
                 devicePolicyManager.lockNow();
                 promise.resolve(true);
             } else {
-                promise.reject("ERROR", "Device admin not active");
+                promise.reject("ERROR", "Not device owner or admin inactive");
             }
         } catch (Exception e) {
             promise.reject("ERROR", e.getMessage());
@@ -68,11 +81,11 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void disableCamera(boolean disable, Promise promise) {
         try {
-            if (devicePolicyManager.isAdminActive(adminComponent)) {
+            if (isDeviceOwner() && devicePolicyManager.isAdminActive(adminComponent)) {
                 devicePolicyManager.setCameraDisabled(adminComponent, disable);
                 promise.resolve(true);
             } else {
-                promise.reject("ERROR", "Device admin not active");
+                promise.reject("ERROR", "Not device owner or admin inactive");
             }
         } catch (Exception e) {
             promise.reject("ERROR", e.getMessage());
@@ -139,10 +152,13 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void stopKioskMode(Promise promise) {
         try {
-            getCurrentActivity().stopLockTask();
+            if (isDeviceOwner() && getCurrentActivity() != null) {
+                getCurrentActivity().stopLockTask();
+            }
             promise.resolve(true);
         } catch (Exception e) {
-            promise.reject("ERROR", e.getMessage());
+            // Silently resolve if it fails on non-owner or inactive lock task
+            promise.resolve(true);
         }
     }
 
