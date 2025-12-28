@@ -47,25 +47,16 @@ export const getDeviceOwnerProvisioningQR = (
         "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
 
         // Custom data passed to the Device Admin Receiver
+        // Keep this minimal to reduce QR code complexity
         "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
             serverUrl: serverUrl,
-            customerId: customer.id,
-            customerName: customer.name || "",
-            phoneNo: customer.phoneNo || "",
-            deviceBrand: customer.mobileModel || "",
-            deviceModel: customer.mobileModel || "",
-            imei1: customer.imei1 || "",
-            imei2: customer.imei2 || "",
-            financeName: customer.financeName || "",
-            totalAmount: String(customer.totalAmount || "0"),
-            emiAmount: String(customer.emiAmount || "0"),
-            totalEmis: String(customer.totalEmis || "0"),
-            enrollmentDate: customer.createdAt || new Date().toISOString()
+            customerId: customer.id
         }
     };
 
     return JSON.stringify(provisioningPayload);
 };
+
 
 /**
  * Generate App Linking QR Code
