@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NativeModules, Alert } from 'react-native';
+import { NativeModules, Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_VERSION } from './src/config';
 
 import SetupScreen from './src/screens/SetupScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -21,6 +22,30 @@ export default function App() {
     useEffect(() => {
         checkStatus();
     }, []);
+
+    const checkForUpdates = async (serverUrl: string) => {
+        try {
+            const response = await fetch(`${serverUrl}/downloads/version.json`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.version !== APP_VERSION) {
+                    Alert.alert(
+                        "Update Available",
+                        `A new version (${data.version}) is available. Would you like to update?`,
+                        [
+                            { text: "Later", style: "cancel" },
+                            {
+                                text: "Update Now",
+                                onPress: () => Linking.openURL(data.admin_apk)
+                            }
+                        ]
+                    );
+                }
+            }
+        } catch (e) {
+            console.log("Update check failed", e);
+        }
+    };
 
     const checkStatus = async () => {
         try {
@@ -45,6 +70,8 @@ export default function App() {
                 const enrollmentData = JSON.parse(enrollmentDataStr);
                 // Initial sync
                 await syncStatus(enrollmentData.customerId, enrollmentData.serverUrl);
+                // Check for updates
+                checkForUpdates(enrollmentData.serverUrl);
             }
 
             setIsLocked(lockStatus === 'locked');
