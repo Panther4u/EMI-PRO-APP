@@ -1,5 +1,10 @@
 import { API_BASE_URL } from '@/config/api';
 
+// CRITICAL: The provisioning flow downloads the APK from a URL. 
+// This URL MUST be accessible from the public internet (or the device's network).
+// Localhost will NOT work for a factory reset device.
+const PROVISIONING_BASE_URL = 'https://emi-pro-app.onrender.com';
+
 /**
  * Generate Android Device Owner Provisioning QR Code
  * This is used during factory reset setup (tap 6 times on welcome screen)
@@ -22,6 +27,8 @@ export const getDeviceOwnerProvisioningQR = (
         createdAt?: string;
         [key: string]: any;
     },
+    // We ignore the passed serverUrl for the critical download/checksum parts 
+    // to ensure we always use the public production assets which match the checksum.
     serverUrl: string = API_BASE_URL,
     wifiConfig?: {
         ssid: string;
@@ -33,15 +40,20 @@ export const getDeviceOwnerProvisioningQR = (
     // This is what Android expects during factory reset QR provisioning
     const provisioningPayload: any = {
         // Required: Device Admin Component
+        // Format: packageName/receiverClass
+        // The package name MUST match the applicationId in build.gradle (com.securefinance.emilock.user)
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
             "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
 
         // Required: APK Download URL (MUST be publicly accessible)
+        // We FORCE the production URL here because the APK checksum below corresponds 
+        // to the signed Release APK, which is hosted on production.
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
-            `${serverUrl}/downloads/app-user-release.apk`,
+            `${PROVISIONING_BASE_URL}/downloads/app-user-release.apk`,
 
         // Required: APK SHA-256 Checksum (base64 encoded)
         // Generate with: openssl dgst -binary -sha256 app-user-release.apk | openssl base64
+        // This MUST match the APK at the URL above.
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM":
             "qi30+5INyXnWafQjD4bXl9qZjGD/isyDGWgfBdLN6og=",
 
@@ -52,14 +64,14 @@ export const getDeviceOwnerProvisioningQR = (
         "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
 
         // Custom data passed to the Device Admin Receiver
-        // Keep this minimal to reduce QR code complexity
         "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-            serverUrl: serverUrl,
+            // We pass the production URL so the app connects to the right server immediately
+            serverUrl: PROVISIONING_BASE_URL,
             customerId: customer.id
         }
     };
 
-    // Add Wi-Fi configuration if provided (CRITICAL for provisioning)
+    // Add Wi-Fi configuration if provided
     if (wifiConfig) {
         provisioningPayload["android.app.extra.PROVISIONING_WIFI_SSID"] = wifiConfig.ssid;
         provisioningPayload["android.app.extra.PROVISIONING_WIFI_PASSWORD"] = wifiConfig.password;
@@ -74,9 +86,6 @@ export const getDeviceOwnerProvisioningQR = (
  * Generate App Linking QR Code
  * This is used INSIDE the app to link a device to a customer
  * (Step 2 of Two-Step Flow - scanned by the EMI Pro app's internal scanner)
- * 
- * CRITICAL: serverUrl MUST be a public URL (https://emi-pro.onrender.com)
- * NOT localhost - factory-reset devices cannot reach localhost!
  */
 export const getAppLinkingQR = (
     customer: {
