@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.securefinance.emilock.app-mergeUserReleaseResources-31:/values-en-rAU/values-en-rAU.xml",
+            "outputFile": "com.securefinance.emilock.app-mergeUserReleaseResources-37:/values-en-rAU/values-en-rAU.xml",
             "map": [
                 {
                     "source": "/Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/res/values-en-rAU/values-en-rAU.xml",

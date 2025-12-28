@@ -19,6 +19,8 @@ import com.swmansion.gesturehandler.RNGestureHandlerPackage;
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 // react-native-screens
 import com.swmansion.rnscreens.RNScreensPackage;
+// react-native-camera-kit
+import com.rncamerakit.RNCameraKitPackage;
 
 public class PackageList {
   private Application application;
@@ -67,7 +69,8 @@ public class PackageList {
       new AsyncStoragePackage(),
       new RNGestureHandlerPackage(),
       new SafeAreaContextPackage(),
-      new RNScreensPackage()
+      new RNScreensPackage(),
+      new RNCameraKitPackage()
     ));
   }
 }

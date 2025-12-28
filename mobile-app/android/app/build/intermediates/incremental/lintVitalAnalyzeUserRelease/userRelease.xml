@@ -1,7 +1,7 @@
 <variant
     name="userRelease"
     package="com.securefinance.emilock"
-    minSdkVersion="21"
+    minSdkVersion="23"
     targetSdkVersion="34"
     mergedManifest="build/intermediates/merged_manifest/userRelease/AndroidManifest.xml"
     proguardFiles="build/intermediates/default_proguard_files/global/proguard-android.txt-8.2.1:proguard-rules.pro"

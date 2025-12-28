@@ -209,9 +209,9 @@
       proguardRules="proguard.txt"/>
   <library
       name=":@@:react-native-async-storage_async-storage::release"
-      jars="/Users/kavi/.gradle/caches/8.10/transforms/0b677bd5c4e33a44a62c8adc018ca86c/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/0b677bd5c4e33a44a62c8adc018ca86c/transformed/out/jars/libs/R.jar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/7f9db065734f7707dec441ff1666717b/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/7f9db065734f7707dec441ff1666717b/transformed/out/jars/libs/R.jar"
       resolved="EMILockApp:react-native-async-storage_async-storage:unspecified"
-      folder="/Users/kavi/.gradle/caches/8.10/transforms/0b677bd5c4e33a44a62c8adc018ca86c/transformed/out"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/7f9db065734f7707dec441ff1666717b/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -222,9 +222,9 @@
       proguardRules="proguard.txt"/>
   <library
       name=":@@:react-native-gesture-handler::release"
-      jars="/Users/kavi/.gradle/caches/8.10/transforms/3cb33c2a197953c45dea5a3409e4fe58/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/3cb33c2a197953c45dea5a3409e4fe58/transformed/out/jars/libs/R.jar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/36ff371074db0e247e02d056e83a83fd/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/36ff371074db0e247e02d056e83a83fd/transformed/out/jars/libs/R.jar"
       resolved="EMILockApp:react-native-gesture-handler:unspecified"
-      folder="/Users/kavi/.gradle/caches/8.10/transforms/3cb33c2a197953c45dea5a3409e4fe58/transformed/out"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/36ff371074db0e247e02d056e83a83fd/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -235,9 +235,9 @@
       proguardRules="proguard.txt"/>
   <library
       name=":@@:react-native-safe-area-context::release"
-      jars="/Users/kavi/.gradle/caches/8.10/transforms/60217a6d7cc28425853405d9b4d1fab6/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/60217a6d7cc28425853405d9b4d1fab6/transformed/out/jars/libs/R.jar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/5b7390464e5c1916637e1feb514868e0/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/5b7390464e5c1916637e1feb514868e0/transformed/out/jars/libs/R.jar"
       resolved="EMILockApp:react-native-safe-area-context:unspecified"
-      folder="/Users/kavi/.gradle/caches/8.10/transforms/60217a6d7cc28425853405d9b4d1fab6/transformed/out"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/5b7390464e5c1916637e1feb514868e0/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -248,9 +248,22 @@
       proguardRules="proguard.txt"/>
   <library
       name=":@@:react-native-screens::release"
-      jars="/Users/kavi/.gradle/caches/8.10/transforms/38f2e4db89a4f3fb0da8b7655dd24849/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/38f2e4db89a4f3fb0da8b7655dd24849/transformed/out/jars/libs/R.jar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/4e9ae70a9b5a419564a3514cfa189bc0/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/4e9ae70a9b5a419564a3514cfa189bc0/transformed/out/jars/libs/R.jar"
       resolved="EMILockApp:react-native-screens:unspecified"
-      folder="/Users/kavi/.gradle/caches/8.10/transforms/38f2e4db89a4f3fb0da8b7655dd24849/transformed/out"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/4e9ae70a9b5a419564a3514cfa189bc0/transformed/out"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name=":@@:react-native-camera-kit::release"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/4f04f010a238e171af9c7fa85e7a9e94/transformed/out/jars/classes.jar:/Users/kavi/.gradle/caches/8.10/transforms/4f04f010a238e171af9c7fa85e7a9e94/transformed/out/jars/libs/R.jar"
+      resolved="EMILockApp:react-native-camera-kit:unspecified"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/4f04f010a238e171af9c7fa85e7a9e94/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -325,10 +338,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="androidx.lifecycle:lifecycle-livedata:2.0.0@aar"
-      jars="/Users/kavi/.gradle/caches/8.10/transforms/2630f46e0686cd34883d2669ed23c4bd/transformed/lifecycle-livedata-2.0.0/jars/classes.jar"
-      resolved="androidx.lifecycle:lifecycle-livedata:2.0.0"
-      folder="/Users/kavi/.gradle/caches/8.10/transforms/2630f46e0686cd34883d2669ed23c4bd/transformed/lifecycle-livedata-2.0.0"
+      name="androidx.lifecycle:lifecycle-livedata:2.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/70b8206b88acbae1e3d90a1596a48860/transformed/lifecycle-livedata-2.1.0/jars/classes.jar"
+      resolved="androidx.lifecycle:lifecycle-livedata:2.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/70b8206b88acbae1e3d90a1596a48860/transformed/lifecycle-livedata-2.1.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -443,9 +456,9 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0@jar"
-      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.8.0/3c91271347f678c239607abb676d4032a7898427/kotlin-stdlib-jdk7-1.8.0.jar"
-      resolved="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0"/>
+      name="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.22@jar"
+      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.9.22/c4b17283ad7939e778989663f8301d871987fa5e/kotlin-stdlib-jdk7-1.9.22.jar"
+      resolved="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.22"/>
   <library
       name="org.jetbrains.kotlin:kotlin-stdlib:1.9.22@jar"
       jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.9.22/d6c44cd08d8f3f9bece8101216dbe6553365c6e3/kotlin-stdlib-1.9.22.jar"
@@ -704,6 +717,19 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="androidx.camera:camera-view:1.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/80fcc433046dcdd99e1c024fa7bbdf26/transformed/jetified-camera-view-1.1.0/jars/classes.jar"
+      resolved="androidx.camera:camera-view:1.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/80fcc433046dcdd99e1c024fa7bbdf26/transformed/jetified-camera-view-1.1.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.constraintlayout:constraintlayout:2.0.1@aar"
       jars="/Users/kavi/.gradle/caches/8.10/transforms/f7fcb52a0b9664f2bf296d32531cf97c/transformed/constraintlayout-2.0.1/jars/classes.jar"
       resolved="androidx.constraintlayout:constraintlayout:2.0.1"
@@ -730,10 +756,166 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="com.google.mlkit:barcode-scanning:17.0.2@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/76525a199e0588d19f98adf094ce0c4e/transformed/jetified-barcode-scanning-17.0.2/jars/classes.jar"
+      resolved="com.google.mlkit:barcode-scanning:17.0.2"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/76525a199e0588d19f98adf094ce0c4e/transformed/jetified-barcode-scanning-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/jars/classes.jar"
+      resolved="com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.mlkit:barcode-scanning-common:17.0.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/7e5cfc8b5d4bcb6ba8b0e4e335cc063d/transformed/jetified-barcode-scanning-common-17.0.0/jars/classes.jar"
+      resolved="com.google.mlkit:barcode-scanning-common:17.0.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/7e5cfc8b5d4bcb6ba8b0e4e335cc063d/transformed/jetified-barcode-scanning-common-17.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.mlkit:vision-common:17.0.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/cef00f88af9805e6f1dc61c6d0b06695/transformed/jetified-vision-common-17.0.0/jars/classes.jar"
+      resolved="com.google.mlkit:vision-common:17.0.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/cef00f88af9805e6f1dc61c6d0b06695/transformed/jetified-vision-common-17.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.mlkit:common:18.0.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/jars/classes.jar"
+      resolved="com.google.mlkit:common:18.0.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.gms:play-services-base:18.0.1@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/5c780fcd6ceb068403654075f2ce2cd9/transformed/jetified-play-services-base-18.0.1/jars/classes.jar"
+      resolved="com.google.android.gms:play-services-base:18.0.1"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/5c780fcd6ceb068403654075f2ce2cd9/transformed/jetified-play-services-base-18.0.1"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.mlkit:vision-interfaces:16.0.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/e67b6b7a9f6cfbe765549b94628fc15c/transformed/jetified-vision-interfaces-16.0.0/jars/classes.jar"
+      resolved="com.google.mlkit:vision-interfaces:16.0.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/e67b6b7a9f6cfbe765549b94628fc15c/transformed/jetified-vision-interfaces-16.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.gms:play-services-tasks:18.0.1@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/cfcd6ba815a9a744634444c6d3799aa8/transformed/jetified-play-services-tasks-18.0.1/jars/classes.jar"
+      resolved="com.google.android.gms:play-services-tasks:18.0.1"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/cfcd6ba815a9a744634444c6d3799aa8/transformed/jetified-play-services-tasks-18.0.1"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.gms:play-services-basement:18.0.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/5c25f5ad6cb5f9f9ad44f3e8f8208aab/transformed/jetified-play-services-basement-18.0.0/jars/classes.jar"
+      resolved="com.google.android.gms:play-services-basement:18.0.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/5c25f5ad6cb5f9f9ad44f3e8f8208aab/transformed/jetified-play-services-basement-18.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.coordinatorlayout:coordinatorlayout:1.2.0@aar"
       jars="/Users/kavi/.gradle/caches/8.10/transforms/33de00f820939eae5401f9e29d905a74/transformed/coordinatorlayout-1.2.0/jars/classes.jar"
       resolved="androidx.coordinatorlayout:coordinatorlayout:1.2.0"
       folder="/Users/kavi/.gradle/caches/8.10/transforms/33de00f820939eae5401f9e29d905a74/transformed/coordinatorlayout-1.2.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.camera:camera-camera2:1.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/jars/classes.jar"
+      resolved="androidx.camera:camera-camera2:1.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.camera:camera-lifecycle:1.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/026469c387e9d22ac31e3b99c33fdeef/transformed/jetified-camera-lifecycle-1.1.0/jars/classes.jar"
+      resolved="androidx.camera:camera-lifecycle:1.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/026469c387e9d22ac31e3b99c33fdeef/transformed/jetified-camera-lifecycle-1.1.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.camera:camera-core:1.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/dd2f5d1690d134290b50c313d3889ed1/transformed/jetified-camera-core-1.1.0/jars/classes.jar"
+      resolved="androidx.camera:camera-core:1.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/dd2f5d1690d134290b50c313d3889ed1/transformed/jetified-camera-core-1.1.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -873,6 +1055,32 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="com.google.android.datatransport:transport-backend-cct:2.3.3@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/jars/classes.jar"
+      resolved="com.google.android.datatransport:transport-backend-cct:2.3.3"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.datatransport:transport-runtime:2.2.6@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/jars/classes.jar"
+      resolved="com.google.android.datatransport:transport-runtime:2.2.6"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.concurrent:concurrent-futures:1.0.0@jar"
       jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/androidx.concurrent/concurrent-futures/1.0.0/c1e77e3ee6f4643b77496a1ddf7a2eef1aefdaa1/concurrent-futures-1.0.0.jar"
       resolved="androidx.concurrent:concurrent-futures:1.0.0"/>
@@ -893,6 +1101,62 @@
       symbolFile="R.txt"
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
+  <library
+      name="androidx.exifinterface:exifinterface:1.3.2@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/8b3d71118ae19f9a1bd795e46bdc4693/transformed/exifinterface-1.3.2/jars/classes.jar"
+      resolved="androidx.exifinterface:exifinterface:1.3.2"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/8b3d71118ae19f9a1bd795e46bdc4693/transformed/exifinterface-1.3.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.datatransport:transport-api:2.2.1@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/a8070d5f1cb8fbe06c75dac9efed5887/transformed/jetified-transport-api-2.2.1/jars/classes.jar"
+      resolved="com.google.android.datatransport:transport-api:2.2.1"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/a8070d5f1cb8fbe06c75dac9efed5887/transformed/jetified-transport-api-2.2.1"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.firebase:firebase-components:16.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/8977aecc18da6a35f92a7b966711f340/transformed/jetified-firebase-components-16.1.0/jars/classes.jar"
+      resolved="com.google.firebase:firebase-components:16.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/8977aecc18da6a35f92a7b966711f340/transformed/jetified-firebase-components-16.1.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.firebase:firebase-encoders-json:17.1.0@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/503d1194b313b741e1d26ec1ae1e1878/transformed/jetified-firebase-encoders-json-17.1.0/jars/classes.jar"
+      resolved="com.google.firebase:firebase-encoders-json:17.1.0"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/503d1194b313b741e1d26ec1ae1e1878/transformed/jetified-firebase-encoders-json-17.1.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.firebase:firebase-encoders:16.1.0@jar"
+      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.google.firebase/firebase-encoders/16.1.0/267565db8531da1483692e27eb58f93ec894c78/firebase-encoders-16.1.0.jar"
+      resolved="com.google.firebase:firebase-encoders:16.1.0"/>
   <library
       name="androidx.documentfile:documentfile:1.0.0@aar"
       jars="/Users/kavi/.gradle/caches/8.10/transforms/0d77d3df12e0f2ac990ecf22ee189cd4/transformed/documentfile-1.0.0/jars/classes.jar"
@@ -933,6 +1197,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="com.drewnoakes:metadata-extractor:2.12.0@jar"
+      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.drewnoakes/metadata-extractor/2.12.0/30dce2429145a41770e0d2bd0a8e8ba63f2137c8/metadata-extractor-2.12.0.jar"
+      resolved="com.drewnoakes:metadata-extractor:2.12.0"/>
+  <library
       name="com.google.guava:listenablefuture:1.0@jar"
       jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.google.guava/listenablefuture/1.0/c949a840a6acbc5268d088e47b04177bf90b3cad/listenablefuture-1.0.jar"
       resolved="com.google.guava:listenablefuture:1.0"/>
@@ -941,6 +1209,14 @@
       jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.15.0/38c8485a652f808c8c149150da4e5c2b0bd17f9a/error_prone_annotations-2.15.0.jar"
       resolved="com.google.errorprone:error_prone_annotations:2.15.0"/>
   <library
+      name="com.adobe.xmp:xmpcore:6.0.6@jar"
+      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.adobe.xmp/xmpcore/6.0.6/fb29d75ac313aed79013505b965d2378a87a9405/xmpcore-6.0.6.jar"
+      resolved="com.adobe.xmp:xmpcore:6.0.6"/>
+  <library
+      name="com.google.auto.value:auto-value-annotations:1.6.3@jar"
+      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.google.auto.value/auto-value-annotations/1.6.3/b88c1bb7f149f6d2cc03898359283e57b08f39cc/auto-value-annotations-1.6.3.jar"
+      resolved="com.google.auto.value:auto-value-annotations:1.6.3"/>
+  <library
       name="com.parse.bolts:bolts-tasks:1.4.0@jar"
       jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.parse.bolts/bolts-tasks/1.4.0/d85884acf6810a3bbbecb587f239005cbc846dc4/bolts-tasks-1.4.0.jar"
       resolved="com.parse.bolts:bolts-tasks:1.4.0"/>
@@ -948,4 +1224,21 @@
       name="androidx.constraintlayout:constraintlayout-solver:2.0.1@jar"
       jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/androidx.constraintlayout/constraintlayout-solver/2.0.1/30988fe2d77f3fe3bf7551bb8a8b795fad7e7226/constraintlayout-solver-2.0.1.jar"
       resolved="androidx.constraintlayout:constraintlayout-solver:2.0.1"/>
+  <library
+      name="com.google.android.odml:image:1.0.0-beta1@aar"
+      jars="/Users/kavi/.gradle/caches/8.10/transforms/a533be69a37b440b52ff11eac800f1ae/transformed/jetified-image-1.0.0-beta1/jars/classes.jar"
+      resolved="com.google.android.odml:image:1.0.0-beta1"
+      folder="/Users/kavi/.gradle/caches/8.10/transforms/a533be69a37b440b52ff11eac800f1ae/transformed/jetified-image-1.0.0-beta1"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.firebase:firebase-annotations:16.0.0@jar"
+      jars="/Users/kavi/.gradle/caches/modules-2/files-2.1/com.google.firebase/firebase-annotations/16.0.0/dbeae20d6c97b747b59ef47b6dcf770ba1a60fa6/firebase-annotations-16.0.0.jar"
+      resolved="com.google.firebase:firebase-annotations:16.0.0"/>
 </libraries>

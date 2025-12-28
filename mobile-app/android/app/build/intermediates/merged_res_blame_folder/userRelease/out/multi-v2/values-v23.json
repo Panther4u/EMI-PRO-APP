@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.securefinance.emilock.app-mergeUserReleaseResources-31:/values-v23/values-v23.xml",
+            "outputFile": "com.securefinance.emilock.app-mergeUserReleaseResources-37:/values-v23/values-v23.xml",
             "map": [
                 {
                     "source": "/Users/kavi/.gradle/caches/8.10/transforms/b8e7b98ebf08f2dbdb6aea1ac971bf03/transformed/cardview-1.0.0/res/values-v23/values-v23.xml",

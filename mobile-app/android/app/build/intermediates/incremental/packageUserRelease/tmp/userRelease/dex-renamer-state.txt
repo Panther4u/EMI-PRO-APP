@@ -1,7 +1,10 @@
-#Sun Dec 28 17:11:48 IST 2025
-base.1=/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/dex/userRelease/mergeDexUserRelease/classes2.dex
-path.1=classes2.dex
+#Sun Dec 28 20:10:41 IST 2025
+base.2=/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/dex/userRelease/mergeDexUserRelease/classes2.dex
+path.2=classes2.dex
+base.1=/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/global_synthetics_dex/userRelease/classes.dex
+path.1=classes.dex
 base.0=/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/dex/userRelease/mergeDexUserRelease/classes.dex
+renamed.2=classes3.dex
 renamed.1=classes2.dex
 renamed.0=classes.dex
 path.0=classes.dex

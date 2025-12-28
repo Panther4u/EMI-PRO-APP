@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.securefinance.emilock.app-mergeUserReleaseResources-31:/values-hdpi-v4/values-hdpi-v4.xml",
+            "outputFile": "com.securefinance.emilock.app-mergeUserReleaseResources-37:/values-hdpi-v4/values-hdpi-v4.xml",
             "map": [
                 {
                     "source": "/Users/kavi/.gradle/caches/8.10/transforms/a428e0c473db40d061337f94f17b75e2/transformed/appcompat-1.5.0/res/values-hdpi-v4/values-hdpi-v4.xml",

@@ -1,7 +1,7 @@
 <variant
     name="userRelease"
     package="com.securefinance.emilock"
-    minSdkVersion="21"
+    minSdkVersion="23"
     targetSdkVersion="34"
     mergedManifest="build/intermediates/merged_manifest/userRelease/AndroidManifest.xml"
     manifestMergeReport="build/outputs/logs/manifest-merger-user-release-report.txt"
