@@ -259,32 +259,32 @@ export const QRCodeGenerator = () => {
   };
 
   const getQRData = () => {
-    // Create enrollment data object
-    const enrollmentData = {
-      type: 'DEVICE_ENROLLMENT',
-      serverUrl: window.location.origin,
-      apkUrl: `${window.location.origin}/SecureFinance_EMI_App.apk`,
-      customerId: `CUST${Date.now().toString().slice(-6)}`,
-      customerName: formData.customerName,
-      phoneNo: formData.phoneNo,
-      deviceBrand: formData.deviceName,
-      deviceModel: formData.mobileModel,
-      imei1: formData.imei1,
-      imei2: formData.imei2,
-      financeName: formData.financeName || 'SecureFinance EMI',
-      totalAmount: formData.totalAmount,
-      emiAmount: formData.emiAmount,
-      totalEmis: formData.totalEmis,
-      enrollmentDate: new Date().toISOString(),
+    // Android Enterprise QR Code Provisioning Format
+    // This is scanned during factory reset setup (tap screen 6 times)
+    const provisioningData = {
+      "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
+      "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM": "SKIP_VERIFICATION",
+      "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": `${window.location.origin}/downloads/app-user-release.apk`,
+      "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
+      "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
+      "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
+        "serverUrl": window.location.origin,
+        "customerId": `CUST${Date.now().toString().slice(-6)}`,
+        "customerName": formData.customerName,
+        "phoneNo": formData.phoneNo,
+        "deviceBrand": formData.deviceName,
+        "deviceModel": formData.mobileModel,
+        "imei1": formData.imei1,
+        "imei2": formData.imei2,
+        "financeName": formData.financeName || 'SecureFinance EMI',
+        "totalAmount": formData.totalAmount,
+        "emiAmount": formData.emiAmount,
+        "totalEmis": formData.totalEmis,
+        "enrollmentDate": new Date().toISOString()
+      }
     };
 
-    // Encode the enrollment data
-    const encodedData = btoa(JSON.stringify(enrollmentData));
-
-    // Create the enrollment URL that mobile simulator will use
-    const enrollmentUrl = `${window.location.origin}/mobile-simulator/${formData.imei1}?enrollment=${encodedData}`;
-
-    return enrollmentUrl;
+    return JSON.stringify(provisioningData);
   };
 
   const qrData = getQRData();
