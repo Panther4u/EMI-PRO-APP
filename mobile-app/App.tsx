@@ -28,7 +28,6 @@ export default function App() {
             if (DeviceLockModule && DeviceLockModule.getProvisioningData) {
                 const provisioningData = await DeviceLockModule.getProvisioningData();
                 if (provisioningData && provisioningData.customerId) {
-                    console.log('Found Native Provisioning!', provisioningData);
                     // Automatically enroll
                     await AsyncStorage.setItem('enrollment_data', JSON.stringify({
                         customerId: provisioningData.customerId,
@@ -38,10 +37,16 @@ export default function App() {
                 }
             }
 
-            const enrollmentData = await AsyncStorage.getItem('enrollment_data');
+            const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
             const lockStatus = await AsyncStorage.getItem('lock_status');
 
-            setIsEnrolled(!!enrollmentData);
+            if (enrollmentDataStr) {
+                setIsEnrolled(true);
+                const enrollmentData = JSON.parse(enrollmentDataStr);
+                // Initial sync
+                await syncStatus(enrollmentData.customerId, enrollmentData.serverUrl);
+            }
+
             setIsLocked(lockStatus === 'locked');
         } catch (e) {
             console.error(e);
@@ -49,6 +54,48 @@ export default function App() {
             setLoading(false);
         }
     };
+
+    const syncStatus = async (cid: string, url: string) => {
+        if (!cid || !url) return;
+        try {
+            const response = await fetch(`${url}/api/customers/${cid}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'online' })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.isLocked !== undefined) {
+                    setIsLocked(data.isLocked);
+                    await AsyncStorage.setItem('lock_status', data.isLocked ? 'locked' : 'unlocked');
+
+                    if (data.isLocked && DeviceLockModule) {
+                        DeviceLockModule.lockDevice().catch(console.error);
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn('Sync failed:', err);
+        }
+    };
+
+    // Global Heartbeat
+    useEffect(() => {
+        let interval: any;
+        const startHeartbeat = async () => {
+            const data = await AsyncStorage.getItem('enrollment_data');
+            if (data) {
+                const { customerId, serverUrl } = JSON.parse(data);
+                interval = setInterval(() => syncStatus(customerId, serverUrl), 30000);
+            }
+        };
+
+        if (isEnrolled && !loading) {
+            startHeartbeat();
+        }
+
+        return () => clearInterval(interval);
+    }, [isEnrolled, loading]);
 
     if (loading) return null;
 
