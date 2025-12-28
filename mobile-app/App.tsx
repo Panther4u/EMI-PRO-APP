@@ -50,20 +50,23 @@ export default function App() {
     };
 
     const checkStatus = async () => {
+        let currentServerUrl = 'https://emi-pro-app.onrender.com';
+
         try {
-            // Check Package Name to determine if Admin app
-            if (DeviceLockModule && DeviceLockModule.getAppInfo) {
-                const appInfo = await DeviceLockModule.getAppInfo();
-                if (appInfo && appInfo.packageName && appInfo.packageName.endsWith('.admin')) {
+            console.log("Starting checkStatus...");
+
+            // 1. Identify if it's the Admin APK
+            if (NativeModules.DeviceLockModule && NativeModules.DeviceLockModule.getAppInfo) {
+                const appInfo = await NativeModules.DeviceLockModule.getAppInfo();
+                if (appInfo?.packageName?.endsWith('.admin')) {
                     setIsAdmin(true);
                 }
             }
 
-            // Check Native Provisioning Data first (from Factory Reset QR)
-            if (DeviceLockModule && DeviceLockModule.getProvisioningData) {
-                const provisioningData = await DeviceLockModule.getProvisioningData();
-                if (provisioningData && provisioningData.customerId) {
-                    // Automatically enroll
+            // 2. Try to get provisioning data (only for User APK)
+            if (NativeModules.DeviceLockModule && NativeModules.DeviceLockModule.getProvisioningData) {
+                const provisioningData = await NativeModules.DeviceLockModule.getProvisioningData();
+                if (provisioningData?.customerId) {
                     await AsyncStorage.setItem('enrollment_data', JSON.stringify({
                         customerId: provisioningData.customerId,
                         serverUrl: provisioningData.serverUrl,
@@ -78,16 +81,21 @@ export default function App() {
             if (enrollmentDataStr) {
                 setIsEnrolled(true);
                 const enrollmentData = JSON.parse(enrollmentDataStr);
-                // Initial sync
-                await syncStatus(enrollmentData.customerId, enrollmentData.serverUrl);
-                // Check for updates
-                checkForUpdates(enrollmentData.serverUrl);
+                currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
+
+                // Initial sync for user devices
+                await syncStatus(enrollmentData.customerId, currentServerUrl);
             }
 
             setIsLocked(lockStatus === 'locked');
+
+            // 3. Always check for updates (both Admin and User)
+            checkForUpdates(currentServerUrl);
+
         } catch (e) {
-            console.error(e);
+            console.error("Initialization Error:", e);
         } finally {
+            console.log("Initialization complete. Loading=false");
             setLoading(false);
         }
     };
