@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/popover";
 import { useDevice } from '@/context/DeviceContext';
 import { useAuth } from '@/context/AuthContext';
-// import { Customer } from '@/types/customer'; // Not strictly needed unless used
 import { useNavigate } from 'react-router-dom';
+import { getProvisioningQRData } from '@/utils/provisioning';
 
 const brandModelMap: Record<string, string[]> = {
   "Samsung": [
@@ -108,9 +108,9 @@ interface QRFormData {
   financeName: string;
   imei1: string;
   imei2: string;
-  totalAmount: string; // Changed to string for input handling
-  emiAmount: string;   // Changed to string for input handling
-  totalEmis: string;   // Changed to string for input handling
+  totalAmount: string;
+  emiAmount: string;
+  totalEmis: string;
 }
 
 interface InputFieldProps {
@@ -127,7 +127,7 @@ interface InputFieldProps {
   step?: string;
 }
 
-// Memoized Input Component to prevent re-renders
+// Memoized Input Component
 const InputField = React.memo(({
   label,
   field,
@@ -186,7 +186,6 @@ export const QRCodeGenerator = () => {
   const [modelOpen, setModelOpen] = useState(false);
   const [createdCustomerId, setCreatedCustomerId] = useState<string | null>(null);
 
-  // Memoized handler
   const handleInputChange = useCallback((field: keyof QRFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -206,7 +205,6 @@ export const QRCodeGenerator = () => {
       return;
     }
 
-    // Phone Number Validation (10 digits)
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(formData.phoneNo)) {
       toast({
@@ -218,8 +216,7 @@ export const QRCodeGenerator = () => {
     }
 
     try {
-      // Construct Customer Object
-      const newId = `CUST${Date.now().toString().slice(-6)}`; // Simple ID generation
+      const newId = `CUST${Date.now().toString().slice(-6)}`;
       const customerData: any = {
         id: newId,
         name: formData.customerName,
@@ -250,44 +247,29 @@ export const QRCodeGenerator = () => {
         description: 'Customer registered. Please scan the QR code.',
       });
 
-      // Removed auto-redirect to allow scanning
-
     } catch (error) {
       console.error(error);
-      // Toast is already handled in context for error
     }
   };
 
-  const getQRData = () => {
-    // Android Enterprise QR Code Provisioning Format
-    // MUST be a valid JSON string
-    const provisioningData = {
-      "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
-      "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM": "9MBtfICaLx0RVCoQ4oNB1DNh-FCGkLPc3dRNCLnVHJc",
-      "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": `${window.location.origin}/downloads/app-user-release.apk`,
-      "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
-      "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
-      "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-        "serverUrl": window.location.origin,
-        "customerId": createdCustomerId || `CUST${Date.now().toString().slice(-6)}`,
-        "customerName": formData.customerName,
-        "phoneNo": formData.phoneNo,
-        "deviceBrand": formData.deviceName,
-        "deviceModel": formData.mobileModel,
-        "imei1": formData.imei1,
-        "imei2": formData.imei2,
-        "financeName": formData.financeName || 'SecureFinance EMI',
-        "totalAmount": formData.totalAmount,
-        "emiAmount": formData.emiAmount,
-        "totalEmis": formData.totalEmis,
-        "enrollmentDate": new Date().toISOString()
-      }
-    };
-
-    return JSON.stringify(provisioningData);
-  };
-
-  const qrData = getQRData();
+  // Generate QR Data using the centralized utility
+  const qrData = useMemo(() => {
+    return getProvisioningQRData(
+      {
+        id: createdCustomerId || `CUST${Date.now().toString().slice(-6)}`,
+        name: formData.customerName,
+        phoneNo: formData.phoneNo,
+        mobileModel: formData.mobileModel,
+        imei1: formData.imei1,
+        imei2: formData.imei2,
+        financeName: formData.financeName || 'SecureFinance EMI',
+        totalAmount: formData.totalAmount,
+        emiAmount: formData.emiAmount,
+        totalEmis: formData.totalEmis,
+      },
+      window.location.origin
+    );
+  }, [formData, createdCustomerId]);
 
   const copyQRData = () => {
     navigator.clipboard.writeText(qrData);
@@ -301,7 +283,7 @@ export const QRCodeGenerator = () => {
 
   return (
     <div className="flex flex-col gap-6 pb-20">
-      {/* Section 1: Customer & Device Info */}
+      {/* Customer & Device Info */}
       <div className="glass-card p-6">
         <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
           <QrCode className="w-5 h-5 text-primary" />
@@ -384,7 +366,7 @@ export const QRCodeGenerator = () => {
                               value={brand}
                               onSelect={() => {
                                 handleInputChange('deviceName', brand);
-                                handleInputChange('mobileModel', ''); // Reset model when brand changes
+                                handleInputChange('mobileModel', '');
                                 setBrandOpen(false);
                               }}
                             >
@@ -437,7 +419,6 @@ export const QRCodeGenerator = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => {
-                                // Keep the typed value as custom model
                                 setModelOpen(false);
                               }}
                               className="w-full"
@@ -504,7 +485,7 @@ export const QRCodeGenerator = () => {
         </div>
       </div>
 
-      {/* Section 2: EMI Details */}
+      {/* EMI Details */}
       <div className="glass-card p-6">
         <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
           <CreditCard className="w-5 h-5 text-primary" />
@@ -571,7 +552,6 @@ export const QRCodeGenerator = () => {
         <div className="flex flex-col items-center justify-center min-h-[350px] py-6 bg-secondary/30 rounded-xl border border-border/50">
           {qrGenerated ? (
             <div className="text-center space-y-4">
-              {/* Real QR Code */}
               <div className="w-56 h-56 bg-white rounded-xl flex items-center justify-center mx-auto p-3 shadow-lg">
                 <QRCodeSVG
                   value={qrData}
@@ -633,10 +613,7 @@ export const QRCodeGenerator = () => {
 
         {qrGenerated && (
           <div className="mt-4 p-4 bg-secondary/30 rounded-lg">
-            <p className="text-xs text-muted-foreground mb-2">Encoded Data:</p>
-            <code className="text-xs text-foreground font-mono break-all">
-              {qrData}
-            </code>
+            {/* Debugging Text */}
           </div>
         )}
       </div>

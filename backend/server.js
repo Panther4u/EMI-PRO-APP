@@ -15,6 +15,33 @@ app.use(express.json());
 // Serve APK downloads from public folder
 app.use('/downloads', express.static(path.join(__dirname, 'public')));
 
+// DEBUG ROUTE - Remove in production
+app.get('/debug-files', (req, res) => {
+    try {
+        const fs = require('fs');
+        const publicPath = path.join(__dirname, 'public');
+        if (!fs.existsSync(publicPath)) {
+            return res.status(404).json({ error: 'Public folder not found' });
+        }
+        const files = fs.readdirSync(publicPath);
+        const fileStats = files.map(file => {
+            const stat = fs.statSync(path.join(publicPath, file));
+            return {
+                name: file,
+                size: stat.size,
+                created: stat.birthtime
+            };
+        });
+        res.json({
+            path: publicPath,
+            files: fileStats,
+            dirname: __dirname
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // API Routes
 app.use('/api/customers', customerRoutes);
 

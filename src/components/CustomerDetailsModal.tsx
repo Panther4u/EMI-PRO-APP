@@ -1,3 +1,5 @@
+import React from 'react';
+import { getProvisioningQRData } from '@/utils/provisioning';
 import { Link } from 'react-router-dom';
 import { Customer } from '@/types/customer';
 import {
@@ -241,32 +243,10 @@ export const CustomerDetailsModal = ({
           </h3>
           <div className="flex flex-col items-center bg-white rounded-xl p-4 border border-border transition-all hover:shadow-md">
             <QRCodeSVG
-              value={JSON.stringify({
-                "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
-                "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM": "9MBtfICaLx0RVCoQ4oNB1DNh-FCGkLPc3dRNCLnVHJc",
-                "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": `${window.location.origin}/downloads/app-user-release.apk`,
-                "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
-                "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
-                "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-                  "serverUrl": window.location.origin,
-                  "customerId": customer.id,
-                  "customerName": customer.name,
-                  "phoneNo": customer.phoneNo,
-                  "deviceBrand": customer.mobileModel, // Using model as brand for simplicity if field missing
-                  "deviceModel": customer.mobileModel,
-                  "imei1": customer.imei1,
-                  "imei2": customer.imei2,
-                  "financeName": customer.financeName,
-                  "totalAmount": String(customer.totalAmount),
-                  "emiAmount": String(customer.emiAmount),
-                  "totalEmis": String(customer.totalEmis),
-                  "enrollmentDate": customer.createdAt
-                }
-              })}
-              size={120}
+              value={getProvisioningQRData(customer, window.location.origin)}
+              size={180}
               level="H"
               includeMargin={true}
-              className="rounded-lg"
             />
             <div className="mt-3 text-center">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Scan to Onboard Device</p>
