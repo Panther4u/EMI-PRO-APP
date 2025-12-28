@@ -108,4 +108,15 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", e.getMessage());
         }
     }
+
+    @ReactMethod
+    public void getAppInfo(Promise promise) {
+        try {
+            com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
+            map.putString("packageName", reactContext.getPackageName());
+            promise.resolve(map);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 }

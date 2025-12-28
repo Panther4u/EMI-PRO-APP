@@ -10,6 +10,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import LockedScreen from './src/screens/LockedScreen';
 import PermissionsScreen from './src/screens/PermissionsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import AdminScreen from './src/screens/AdminScreen';
 
 const Stack = createStackNavigator();
 const { DeviceLockModule } = NativeModules;
@@ -18,6 +19,7 @@ export default function App() {
     const [loading, setLoading] = useState(true);
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         checkStatus();
@@ -49,6 +51,14 @@ export default function App() {
 
     const checkStatus = async () => {
         try {
+            // Check Package Name to determine if Admin app
+            if (DeviceLockModule && DeviceLockModule.getAppInfo) {
+                const appInfo = await DeviceLockModule.getAppInfo();
+                if (appInfo && appInfo.packageName && appInfo.packageName.endsWith('.admin')) {
+                    setIsAdmin(true);
+                }
+            }
+
             // Check Native Provisioning Data first (from Factory Reset QR)
             if (DeviceLockModule && DeviceLockModule.getProvisioningData) {
                 const provisioningData = await DeviceLockModule.getProvisioningData();
@@ -129,7 +139,9 @@ export default function App() {
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-                {!isEnrolled ? (
+                {isAdmin ? (
+                    <Stack.Screen name="AdminDashboard" component={AdminScreen} />
+                ) : !isEnrolled ? (
                     <>
                         <Stack.Screen name="Setup" component={SetupScreen} />
                         <Stack.Screen name="Permissions" component={PermissionsScreen} />
