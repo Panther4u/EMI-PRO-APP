@@ -78,4 +78,36 @@ router.post('/bulk', async (req, res) => {
     }
 });
 
+// Update device status (called by mobile device during provisioning)
+router.post('/:id/status', async (req, res) => {
+    try {
+        const { status, installProgress, errorMessage } = req.body;
+
+        const updateData = {
+            'deviceStatus.status': status,
+            'deviceStatus.lastStatusUpdate': new Date(),
+            'deviceStatus.lastSeen': new Date()
+        };
+
+        if (installProgress !== undefined) {
+            updateData['deviceStatus.installProgress'] = installProgress;
+        }
+
+        if (errorMessage) {
+            updateData['deviceStatus.errorMessage'] = errorMessage;
+        }
+
+        const customer = await Customer.findOneAndUpdate(
+            { id: req.params.id },
+            updateData,
+            { new: true }
+        );
+
+        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+        res.json(customer);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

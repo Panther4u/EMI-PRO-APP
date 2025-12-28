@@ -31,6 +31,13 @@ export interface Customer {
   documents?: string[];
   isEnrolled?: boolean;
   enrollmentToken?: string;
+  deviceStatus?: {
+    status: 'pending' | 'installing' | 'connected' | 'online' | 'offline' | 'error';
+    lastSeen?: Date;
+    lastStatusUpdate?: Date;
+    installProgress?: number; // 0-100
+    errorMessage?: string;
+  };
   // Advanced Controls
   networkRestricted?: boolean;
   wifiRestricted?: boolean;

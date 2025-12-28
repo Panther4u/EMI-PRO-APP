@@ -33,7 +33,18 @@ const CustomerSchema = new mongoose.Schema({
     photoUrl: { type: String },
     documents: [String],
     isEnrolled: { type: Boolean, default: false },
-    enrollmentToken: { type: String }
+    enrollmentToken: { type: String },
+    deviceStatus: {
+        status: {
+            type: String,
+            enum: ['pending', 'installing', 'connected', 'online', 'offline', 'error'],
+            default: 'pending'
+        },
+        lastSeen: { type: Date },
+        lastStatusUpdate: { type: Date },
+        installProgress: { type: Number, default: 0 }, // 0-100
+        errorMessage: { type: String }
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Customer', CustomerSchema);
