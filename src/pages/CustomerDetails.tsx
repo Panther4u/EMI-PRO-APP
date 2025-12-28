@@ -127,7 +127,7 @@ const CustomerDetails = () => {
                 </h3>
                 <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
                     <QRCodeSVG
-                        value={getProvisioningQRData(customer, window.location.origin)}
+                        value={getProvisioningQRData(customer)}
                         size={180}
                         level="H"
                         includeMargin={true}

@@ -243,7 +243,7 @@ export const CustomerDetailsModal = ({
           </h3>
           <div className="flex flex-col items-center bg-white rounded-xl p-4 border border-border transition-all hover:shadow-md">
             <QRCodeSVG
-              value={getProvisioningQRData(customer, window.location.origin)}
+              value={getProvisioningQRData(customer)}
               size={180}
               level="H"
               includeMargin={true}

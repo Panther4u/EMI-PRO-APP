@@ -25,7 +25,7 @@ import {
 import { useDevice } from '@/context/DeviceContext';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getProvisioningQRData } from '@/utils/provisioning';
+import { getDeviceOwnerProvisioningQR } from '@/utils/provisioning';
 
 const brandModelMap: Record<string, string[]> = {
   "Samsung": [
@@ -254,7 +254,7 @@ export const QRCodeGenerator = () => {
 
   // Generate QR Data using the centralized utility
   const qrData = useMemo(() => {
-    return getProvisioningQRData(
+    return getDeviceOwnerProvisioningQR(
       {
         id: createdCustomerId || `CUST${Date.now().toString().slice(-6)}`,
         name: formData.customerName,
@@ -266,8 +266,7 @@ export const QRCodeGenerator = () => {
         totalAmount: formData.totalAmount,
         emiAmount: formData.emiAmount,
         totalEmis: formData.totalEmis,
-      },
-      window.location.origin
+      }
     );
   }, [formData, createdCustomerId]);
 
