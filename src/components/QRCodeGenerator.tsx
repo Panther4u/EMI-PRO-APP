@@ -184,6 +184,7 @@ export const QRCodeGenerator = () => {
   const [copied, setCopied] = useState(false);
   const [brandOpen, setBrandOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
+  const [createdCustomerId, setCreatedCustomerId] = useState<string | null>(null);
 
   // Memoized handler
   const handleInputChange = useCallback((field: keyof QRFormData, value: string) => {
@@ -192,6 +193,7 @@ export const QRCodeGenerator = () => {
       [field]: value
     }));
     setQrGenerated(false);
+    setCreatedCustomerId(null);
   }, []);
 
   const generateQR = async () => {
@@ -242,15 +244,13 @@ export const QRCodeGenerator = () => {
       await addCustomer(customerData);
 
       setQrGenerated(true);
+      setCreatedCustomerId(newId);
       toast({
         title: 'Success',
-        description: 'Customer registered. Redirecting to details...',
+        description: 'Customer registered. Please scan the QR code.',
       });
 
-      // Redirect to customer details page
-      setTimeout(() => {
-        navigate(`/customers/${newId}`);
-      }, 1000);
+      // Removed auto-redirect to allow scanning
 
     } catch (error) {
       console.error(error);
@@ -269,7 +269,7 @@ export const QRCodeGenerator = () => {
       "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
       "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
         "serverUrl": window.location.origin,
-        "customerId": `CUST${Date.now().toString().slice(-6)}`,
+        "customerId": createdCustomerId || `CUST${Date.now().toString().slice(-6)}`,
         "customerName": formData.customerName,
         "phoneNo": formData.phoneNo,
         "deviceBrand": formData.deviceName,
@@ -591,19 +591,31 @@ export const QRCodeGenerator = () => {
                 </p>
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={copyQRData}>
-                  {copied ? (
-                    <CheckCircle className="w-4 h-4 mr-2 text-success" />
-                  ) : (
-                    <Copy className="w-4 h-4 mr-2" />
-                  )}
-                  {copied ? 'Copied!' : 'Copy Data'}
-                </Button>
-                <Button variant="default">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download QR
-                </Button>
+              <div className="flex flex-col gap-3 pt-4 w-full max-w-xs mx-auto">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={copyQRData} className="flex-1">
+                    {copied ? (
+                      <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                    ) : (
+                      <Copy className="w-4 h-4 mr-2" />
+                    )}
+                    {copied ? 'Copied' : 'Copy'}
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+
+                {createdCustomerId && (
+                  <Button
+                    variant="default"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => navigate(`/customers/${createdCustomerId}`)}
+                  >
+                    Go to Customer Details
+                  </Button>
+                )}
               </div>
             </div>
           ) : (
@@ -631,4 +643,3 @@ export const QRCodeGenerator = () => {
     </div>
   );
 };
-
