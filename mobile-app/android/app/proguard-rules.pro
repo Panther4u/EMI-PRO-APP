@@ -12,6 +12,20 @@
 # Keep React Native
 -keep class com.facebook.react.** { *; }
 -keep class com.facebook.hermes.** { *; }
+-keep class com.facebook.jni.** { *; }
 
 # Keep native modules
 -keep class com.securefinance.emilock.** { *; }
+
+# Keep camera kit
+-keep class com.rncamerakit.** { *; }
+-keep class androidx.camera.** { *; }
+
+# Keep AsyncStorage
+-keep class com.reactnativecommunity.asyncstorage.** { *; }
+
+# Optimize
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-verbose

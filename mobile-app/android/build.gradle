@@ -3,11 +3,12 @@
 buildscript {
     ext {
         buildToolsVersion = "34.0.0"
-        minSdkVersion = 21
+        minSdkVersion = 23
         compileSdkVersion = 34
         targetSdkVersion = 34
         ndkVersion = "25.2.9519653"
         kotlinVersion = "1.9.22"
+        kotlin_version = kotlinVersion
     }
     repositories {
         google()
@@ -46,11 +47,7 @@ allprojects {
             force("androidx.core:core:1.12.0")
         }
     }
-    
-    // Force property for all modules to avoid ARMEABI errors
-    ext {
-        reactNativeArchitectures = "armeabi-v7a,arm64-v8a,x86,x86_64"
-    }
+
 
     // Workaround for NDK 23+ lacking ARMEABI support mechanism in older libs
     afterEvaluate { project ->
@@ -59,11 +56,7 @@ allprojects {
                 if (namespace == null) {
                     namespace project.group
                 }
-                defaultConfig {
-                    ndk {
-                        abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-                    }
-                }
+
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
