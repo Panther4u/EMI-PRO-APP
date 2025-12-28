@@ -73,6 +73,7 @@ const Customers = () => {
   };
 
   const handleDeleteClick = (id: string) => {
+    console.log('Deleting customer:', id);
     setDeleteId(id);
   };
 
