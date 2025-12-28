@@ -119,4 +119,30 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", e.getMessage());
         }
     }
+
+    @ReactMethod
+    public void startKioskMode(Promise promise) {
+        try {
+            if (devicePolicyManager.isDeviceOwnerApp(reactContext.getPackageName())) {
+                String[] packages = { reactContext.getPackageName() };
+                devicePolicyManager.setLockTaskPackages(adminComponent, packages);
+                getCurrentActivity().startLockTask();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void stopKioskMode(Promise promise) {
+        try {
+            getCurrentActivity().stopLockTask();
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 }

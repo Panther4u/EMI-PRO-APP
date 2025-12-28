@@ -49,8 +49,16 @@ export default function AdminScreen() {
 
     const renderItem = ({ item }) => (
         <View style={styles.customerCard}>
-            <View>
-                <Text style={styles.customerName}>{item.customerName || 'No Name'}</Text>
+            <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={styles.customerName}>{item.name || item.customerName || 'No Name'}</Text>
+                    <View
+                        style={[
+                            styles.statusDot,
+                            { backgroundColor: item.deviceStatus?.status === 'online' ? '#5cb85c' : '#ccc' }
+                        ]}
+                    />
+                </View>
                 <Text style={styles.customerId}>ID: {item.id}</Text>
                 <Text style={styles.customerModel}>{item.mobileModel || 'Unknown Device'}</Text>
             </View>
@@ -96,6 +104,7 @@ const styles = StyleSheet.create({
         shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3
     },
     customerName: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+    statusDot: { width: 10, height: 10, borderRadius: 5, marginLeft: 10 },
     customerId: { fontSize: 12, color: '#777', marginTop: 2 },
     customerModel: { fontSize: 14, color: '#555', marginTop: 4 },
     lockBtn: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, minWidth: 100, alignItems: 'center' },

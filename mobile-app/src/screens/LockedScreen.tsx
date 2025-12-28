@@ -1,13 +1,25 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, BackHandler, NativeModules } from 'react-native';
+
+const { DeviceLockModule } = NativeModules;
 
 export default function LockedScreen() {
 
-    // Disable back button
+    // Disable back button and Start Kiosk Mode
     useEffect(() => {
         const onBackPress = () => true;
         BackHandler.addEventListener('hardwareBackPress', onBackPress);
-        return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+
+        if (DeviceLockModule && DeviceLockModule.startKioskMode) {
+            DeviceLockModule.startKioskMode().catch(console.error);
+        }
+
+        return () => {
+            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+            if (DeviceLockModule && DeviceLockModule.stopKioskMode) {
+                DeviceLockModule.stopKioskMode().catch(console.error);
+            }
+        };
     }, []);
 
     return (

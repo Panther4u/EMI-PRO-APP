@@ -35,7 +35,15 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
               {customer.name.charAt(0)}
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold text-sm text-foreground truncate">{customer.name}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-foreground truncate">{customer.name}</h3>
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    customer.deviceStatus?.status === 'online' ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-muted"
+                  )}
+                />
+              </div>
               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                 <Smartphone className="w-3 h-3" />
                 {customer.mobileModel}
