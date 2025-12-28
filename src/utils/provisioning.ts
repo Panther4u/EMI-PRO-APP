@@ -51,11 +51,10 @@ export const getDeviceOwnerProvisioningQR = (
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
             `${PROVISIONING_BASE_URL}/downloads/app-user-release.apk`,
 
-        // Required: APK SHA-256 Checksum (base64 encoded)
-        // Generate with: openssl dgst -binary -sha256 app-user-release.apk | openssl base64
-        // This MUST match the APK at the URL above.
+        // Required: APK SHA-256 Checksum (URL-Safe Base64 encoded)
+        // CRITICAL: Must use URL-safe alphabet (-_) and NO padding
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM":
-            "qi30+5INyXnWafQjD4bXl9qZjGD/isyDGWgfBdLN6og=",
+            "qi30-5INyXnWafQjD4bXl9qZjGD_isyDGWgfBdLN6og",
 
         // Optional but recommended: Skip encryption for faster setup
         "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
