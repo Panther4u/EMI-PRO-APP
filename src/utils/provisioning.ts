@@ -22,11 +22,16 @@ export const getDeviceOwnerProvisioningQR = (
         createdAt?: string;
         [key: string]: any;
     },
-    serverUrl: string = API_BASE_URL
+    serverUrl: string = API_BASE_URL,
+    wifiConfig?: {
+        ssid: string;
+        password: string;
+        securityType?: 'WPA' | 'WEP' | 'NONE';
+    }
 ): string => {
     // Android Device Owner Provisioning Payload
     // This is what Android expects during factory reset QR provisioning
-    const provisioningPayload = {
+    const provisioningPayload: any = {
         // Required: Device Admin Component
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
             "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
@@ -53,6 +58,13 @@ export const getDeviceOwnerProvisioningQR = (
             customerId: customer.id
         }
     };
+
+    // Add Wi-Fi configuration if provided (CRITICAL for provisioning)
+    if (wifiConfig) {
+        provisioningPayload["android.app.extra.PROVISIONING_WIFI_SSID"] = wifiConfig.ssid;
+        provisioningPayload["android.app.extra.PROVISIONING_WIFI_PASSWORD"] = wifiConfig.password;
+        provisioningPayload["android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE"] = wifiConfig.securityType || "WPA";
+    }
 
     return JSON.stringify(provisioningPayload);
 };
