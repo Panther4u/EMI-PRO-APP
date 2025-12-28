@@ -1,4 +1,4 @@
-#Sun Dec 28 23:15:29 IST 2025
+#Sun Dec 28 23:21:21 IST 2025
 base.2=/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/dex/adminRelease/mergeDexAdminRelease/classes2.dex
 path.2=classes2.dex
 base.1=/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/build/intermediates/global_synthetics_dex/adminRelease/classes.dex
