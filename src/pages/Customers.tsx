@@ -7,6 +7,16 @@ import { CustomerDetailsModal } from '@/components/CustomerDetailsModal';
 import { Customer } from '@/types/customer';
 import { useDevice } from '@/context/DeviceContext';
 import { useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Customers = () => {
   const { customers, updateCustomer, deleteCustomer } = useDevice();
@@ -15,6 +25,7 @@ const Customers = () => {
   const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked'>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -61,8 +72,15 @@ const Customers = () => {
     });
   };
 
-  const handleDelete = async (id: string) => {
-    await deleteCustomer(id);
+  const handleDeleteClick = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteId) {
+      await deleteCustomer(deleteId);
+      setDeleteId(null);
+    }
   };
 
   const handleViewDetails = (customer: Customer) => {
@@ -135,7 +153,7 @@ const Customers = () => {
             onViewDetails={handleViewDetails}
             onEdit={handleEdit}
             onCollectEmi={handleCollectEmi}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
           />
         ))}
       </div>
@@ -156,6 +174,24 @@ const Customers = () => {
         onLockToggle={handleLockToggle}
         onCollectEmi={handleCollectEmi}
       />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the customer
+              and remove their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

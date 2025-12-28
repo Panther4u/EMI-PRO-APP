@@ -120,11 +120,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             variant="outline"
             size="sm"
             className="w-full border-destructive/20 text-destructive hover:bg-destructive hover:text-white"
-            onClick={() => {
-              if (window.confirm('Delete this customer?')) {
-                onDelete(customer.id);
-              }
-            }}
+            onClick={() => onDelete(customer.id)}
           >
             Delete
           </Button>
