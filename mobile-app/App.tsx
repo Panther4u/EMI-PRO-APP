@@ -24,6 +24,20 @@ export default function App() {
 
     const checkStatus = async () => {
         try {
+            // Check Native Provisioning Data first (from Factory Reset QR)
+            if (DeviceLockModule && DeviceLockModule.getProvisioningData) {
+                const provisioningData = await DeviceLockModule.getProvisioningData();
+                if (provisioningData && provisioningData.customerId) {
+                    console.log('Found Native Provisioning!', provisioningData);
+                    // Automatically enroll
+                    await AsyncStorage.setItem('enrollment_data', JSON.stringify({
+                        customerId: provisioningData.customerId,
+                        serverUrl: provisioningData.serverUrl,
+                        enrolledAt: new Date().toISOString()
+                    }));
+                }
+            }
+
             const enrollmentData = await AsyncStorage.getItem('enrollment_data');
             const lockStatus = await AsyncStorage.getItem('lock_status');
 

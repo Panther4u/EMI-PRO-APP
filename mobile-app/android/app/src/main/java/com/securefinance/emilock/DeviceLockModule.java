@@ -13,7 +13,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 
 public class DeviceLockModule extends ReactContextBaseJavaModule {
-    
+
     private DevicePolicyManager devicePolicyManager;
     private ComponentName adminComponent;
     private ReactApplicationContext reactContext;
@@ -35,8 +35,8 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         try {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent);
-            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, 
-                "SecureFinance requires device admin permission to secure your device.");
+            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                    "SecureFinance requires device admin permission to secure your device.");
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             reactContext.startActivity(intent);
             promise.resolve(true);
@@ -85,5 +85,27 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         // On Android 10+, getting IMEI is restricted. unique ID is preferred.
         String androidId = Settings.Secure.getString(reactContext.getContentResolver(), Settings.Secure.ANDROID_ID);
         promise.resolve(androidId);
+    }
+
+    @ReactMethod
+    public void getProvisioningData(Promise promise) {
+        try {
+            android.content.SharedPreferences prefs = reactContext.getSharedPreferences("PhoneLockPrefs",
+                    Context.MODE_PRIVATE);
+            String serverUrl = prefs.getString("SERVER_URL", null);
+            String customerId = prefs.getString("CUSTOMER_ID", null);
+            boolean isProvisioned = prefs.getBoolean("IS_PROVISIONED", false);
+
+            if (isProvisioned && customerId != null) {
+                com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
+                map.putString("serverUrl", serverUrl);
+                map.putString("customerId", customerId);
+                promise.resolve(map);
+            } else {
+                promise.resolve(null);
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
     }
 }
