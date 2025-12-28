@@ -417,15 +417,35 @@ export const QRCodeGenerator = () => {
                       className="w-full justify-between bg-secondary/50 border-border/50 hover:bg-secondary/70 h-10 font-normal"
                       disabled={!formData.deviceName}
                     >
-                      {formData.mobileModel || "Select Model"}
+                      {formData.mobileModel || "Select or type model"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                     <Command className="bg-popover border border-border">
-                      <CommandInput placeholder="Search model..." className="h-9" />
+                      <CommandInput
+                        placeholder="Search or type custom model..."
+                        className="h-9"
+                        value={formData.mobileModel}
+                        onValueChange={(value) => handleInputChange('mobileModel', value)}
+                      />
                       <CommandList>
-                        <CommandEmpty>No model found.</CommandEmpty>
+                        <CommandEmpty>
+                          <div className="p-2 text-center">
+                            <p className="text-sm text-muted-foreground mb-2">Model not found</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                // Keep the typed value as custom model
+                                setModelOpen(false);
+                              }}
+                              className="w-full"
+                            >
+                              Use "{formData.mobileModel}" as custom model
+                            </Button>
+                          </div>
+                        </CommandEmpty>
                         <CommandGroup>
                           {(brandModelMap[formData.deviceName] || []).map((model) => (
                             <CommandItem
@@ -450,6 +470,12 @@ export const QRCodeGenerator = () => {
                     </Command>
                   </PopoverContent>
                 </Popover>
+                {formData.mobileModel && !brandModelMap[formData.deviceName]?.includes(formData.mobileModel) && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Using custom model: {formData.mobileModel}
+                  </p>
+                )}
               </div>
 
               <InputField
