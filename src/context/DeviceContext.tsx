@@ -112,17 +112,28 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     const deleteCustomer = async (id: string) => {
+        // Store original state for rollback
+        const originalCustomers = customers;
+
         // Optimistic Update
         setCustomers(prev => prev.filter(c => c.id !== id));
-        toast.success('Customer deleted successfully');
 
         try {
             const response = await fetch(getApiUrl(`/api/customers/${id}`), {
                 method: 'DELETE',
             });
-            if (!response.ok) throw new Error('Failed to delete customer');
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Failed to delete customer' }));
+                throw new Error(errorData.message || 'Failed to delete customer');
+            }
+
+            toast.success('Customer deleted successfully');
         } catch (error) {
-            console.warn('API delete failed, using local state only');
+            // Rollback on error
+            setCustomers(originalCustomers);
+            console.error('Delete failed:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to delete customer. Please try again.');
         }
     };
 
