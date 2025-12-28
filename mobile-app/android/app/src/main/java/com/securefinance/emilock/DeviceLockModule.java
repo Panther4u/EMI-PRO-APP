@@ -21,8 +21,18 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     public DeviceLockModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
-        this.devicePolicyManager = (DevicePolicyManager) reactContext.getSystemService(Context.DEVICE_POLICY_SERVICE);
-        this.adminComponent = new ComponentName(reactContext, DeviceAdminReceiver.class);
+
+        try {
+            this.devicePolicyManager = (DevicePolicyManager) reactContext
+                    .getSystemService(Context.DEVICE_POLICY_SERVICE);
+            this.adminComponent = new ComponentName(reactContext, DeviceAdminReceiver.class);
+        } catch (Exception e) {
+            // Safely handle cases where Device Admin is not available
+            // This allows Admin APK to work as remote control without local privileges
+            android.util.Log.w("DeviceLockModule", "Device Admin not available: " + e.getMessage());
+            this.devicePolicyManager = null;
+            this.adminComponent = null;
+        }
     }
 
     @Override
