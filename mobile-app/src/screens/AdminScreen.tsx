@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndi
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AdminScreen() {
-    const [customers, setCustomers] = useState([]);
+    const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [serverUrl, setServerUrl] = useState('https://emi-pro-app.onrender.com');
 
@@ -29,7 +29,7 @@ export default function AdminScreen() {
         }
     };
 
-    const toggleDeviceLock = async (customerId, currentStatus) => {
+    const toggleDeviceLock = async (customerId: string, currentStatus: boolean) => {
         try {
             const nextStatus = !currentStatus;
             const response = await fetch(`${serverUrl}/api/customers/${customerId}`, {
@@ -47,7 +47,7 @@ export default function AdminScreen() {
         }
     };
 
-    const renderItem = ({ item }) => (
+    const renderItem = ({ item }: { item: any }) => (
         <View style={styles.customerCard}>
             <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>

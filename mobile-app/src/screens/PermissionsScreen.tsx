@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { DeviceLockModule } = NativeModules;
 
-export default function PermissionsScreen({ route, navigation }) {
+export default function PermissionsScreen({ route, navigation }: any) {
     const { enrollmentData } = route.params;
 
     const requestAdmin = async () => {
@@ -13,6 +13,11 @@ export default function PermissionsScreen({ route, navigation }) {
             // For this sample code, assuming DeviceLockModule exists
             if (DeviceLockModule) {
                 await DeviceLockModule.requestAdminPermission();
+
+                // Proactively harden the device (v0.0.5 feature)
+                if (DeviceLockModule.setSecurityHardening) {
+                    await DeviceLockModule.setSecurityHardening(true).catch((e: any) => console.log("Hardening skip", e));
+                }
             }
 
             // Save enrollment
@@ -32,8 +37,8 @@ export default function PermissionsScreen({ route, navigation }) {
                     }
                 }
             ]);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to enable admin: ' + error.message);
+        } catch (error: any) {
+            Alert.alert('Error', 'Failed to enable admin: ' + (error?.message || 'Unknown error'));
         }
     };
 

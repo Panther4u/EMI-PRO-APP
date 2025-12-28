@@ -1,5 +1,5 @@
 {
-    "version": "0.0.4",
+    "version": "0.0.5",
     "user_apk": "https://emi-pro-app.onrender.com/downloads/app-user-release.apk",
     "admin_apk": "https://emi-pro-app.onrender.com/downloads/app-admin-release.apk",
     "releaseNotes": "Auto-update feature and connectivity fixes."

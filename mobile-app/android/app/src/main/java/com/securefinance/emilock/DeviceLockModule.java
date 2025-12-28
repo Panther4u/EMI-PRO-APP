@@ -145,4 +145,33 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", e.getMessage());
         }
     }
+
+    @ReactMethod
+    public void setSecurityHardening(boolean enabled, Promise promise) {
+        try {
+            if (devicePolicyManager.isDeviceOwnerApp(reactContext.getPackageName())) {
+                // Block Factory Reset
+                devicePolicyManager.addUserRestriction(adminComponent,
+                        android.os.UserManager.DISALLOW_FACTORY_RESET);
+
+                // Block Safe Mode entry (on supported devices)
+                devicePolicyManager.addUserRestriction(adminComponent,
+                        android.os.UserManager.DISALLOW_SAFE_BOOT);
+
+                // Block USB Debugging (Developer Options)
+                devicePolicyManager.setGlobalSetting(adminComponent,
+                        android.provider.Settings.Global.ADB_ENABLED, "0");
+
+                // Block USB File Transfer
+                devicePolicyManager.addUserRestriction(adminComponent,
+                        android.os.UserManager.DISALLOW_USB_FILE_TRANSFER);
+
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 }
