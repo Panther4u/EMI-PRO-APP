@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Define MIME types
-express.static.mime.define({ 'application/vnd.android.package-archive': ['apk'] });
+// Define MIME types (handled in setHeaders below)
+// express.static.mime.define({ 'application/vnd.android.package-archive': ['apk'] });
 
 // Serve APK downloads from public folder
 app.use('/downloads', (req, res, next) => {
