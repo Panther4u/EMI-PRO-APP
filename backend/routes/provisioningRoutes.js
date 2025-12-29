@@ -36,9 +36,8 @@ router.get('/payload/:customerId', (req, res) => {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME":
                 "com.securefinance.emilock.user",
 
-            "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": false,
-
-            "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
+            // "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": false, // Removed for compatibility
+            // "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true, // Removed for compatibility
 
             "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
                 "customerId": customerId,
