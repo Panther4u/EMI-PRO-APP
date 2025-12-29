@@ -167,12 +167,23 @@ const CustomerDetails = () => {
                     Device QR Code
                 </h3>
                 <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
-                    <QRCodeSVG
-                        value={getProvisioningQRData(customer)}
-                        size={180}
-                        level="H"
-                        includeMargin={true}
-                    />
+                    {/* Debug: Log QR data */}
+                    {(() => {
+                        const qrData = getProvisioningQRData(customer);
+                        console.log('QR Payload:', qrData);
+                        return (
+                            <div className="bg-white p-2 rounded-xl">
+                                <QRCodeSVG
+                                    value={qrData}
+                                    size={320}
+                                    level="L"
+                                    bgColor="#FFFFFF"
+                                    fgColor="#000000"
+                                    includeMargin={true}
+                                />
+                            </div>
+                        );
+                    })()}
                 </div>
                 <p className="text-sm text-muted-foreground">Scan to configure mobile client</p>
             </div>

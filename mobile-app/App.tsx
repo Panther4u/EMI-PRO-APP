@@ -95,7 +95,6 @@ export default function App() {
                 setIsEnrolled(true);
                 const enrollmentData = JSON.parse(enrollmentDataStr);
                 currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
-                currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
                 await syncStatus(enrollmentData.customerId, currentServerUrl);
                 // Verify Device Details & Sync Offline Token
                 verifyDevice(enrollmentData.customerId, currentServerUrl);
