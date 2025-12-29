@@ -4,7 +4,7 @@ import { getProvisioningQRData } from '@/utils/provisioning';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MapPin, Phone, CreditCard, Smartphone, Calendar, Shield, AlertTriangle, QrCode, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, CreditCard, Smartphone, Calendar, Shield, AlertTriangle, QrCode, Lock, Unlock, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -257,18 +257,23 @@ const CustomerDetails = () => {
                     Device Onboarding Status
                 </h3>
                 <div className="space-y-4">
-                    {/* Step 1: QR Scanned (Inferred from creation/existence) */}
+                    {/* Step 1: QR Scanned */}
                     <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center">
-                            <Check className="w-4 h-4" />
+                        <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+                            customer.deviceStatus?.steps?.qrScanned ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
+                        )}>
+                            {customer.deviceStatus?.steps?.qrScanned ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
                         </div>
                         <div className="flex-1">
-                            <p className="text-sm font-medium">QR Generated & Ready</p>
-                            <p className="text-xs text-muted-foreground">Device provisioning initiated.</p>
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.qrScanned && "text-muted-foreground")}>QR Scanned</p>
+                            <p className="text-xs text-muted-foreground">
+                                {customer.deviceStatus?.steps?.qrScanned ? "Device successfully scanned the setup QR." : "Waiting for scan..."}
+                            </p>
                         </div>
                     </div>
 
-                    {/* Step 2: App Installed (Reported by App) */}
+                    {/* Step 2: App Installed */}
                     <div className="flex items-center gap-3">
                         <div className={cn(
                             "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
@@ -277,14 +282,30 @@ const CustomerDetails = () => {
                             {customer.deviceStatus?.steps?.appInstalled ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
                         </div>
                         <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.appInstalled && "text-muted-foreground")}>App Installed & Connected</p>
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.appInstalled && "text-muted-foreground")}>App Installed</p>
                             <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.appInstalled ? "Client application successfully installed." : "Waiting for device to connect..."}
+                                {customer.deviceStatus?.steps?.appInstalled ? "Client application installed on device." : "Waiting for installation..."}
                             </p>
                         </div>
                     </div>
 
-                    {/* Step 3: Details Fetched */}
+                    {/* Step 3: App Launched */}
+                    <div className="flex items-center gap-3">
+                        <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+                            customer.deviceStatus?.steps?.appLaunched ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
+                        )}>
+                            {customer.deviceStatus?.steps?.appLaunched ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
+                        </div>
+                        <div className="flex-1">
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.appLaunched && "text-muted-foreground")}>App Launched</p>
+                            <p className="text-xs text-muted-foreground">
+                                {customer.deviceStatus?.steps?.appLaunched ? "Mobile app started successfully." : "Waiting for FIRST launch..."}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 4: Details Fetched */}
                     <div className="flex items-center gap-3">
                         <div className={cn(
                             "w-6 h-6 rounded-full flex items-center justify-center transition-colors",

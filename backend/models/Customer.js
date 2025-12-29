@@ -23,6 +23,11 @@ const CustomerSchema = new mongoose.Schema({
     // Offline Lock Tokens
     offlineLockToken: { type: String }, // 6-digit PIN for locking via SMS
     offlineUnlockToken: { type: String }, // Token to unlock via SMS
+
+    // Device Binding (QR)
+    deviceBindToken: { type: String },
+    bindTokenExpiresAt: { type: Date },
+
     deviceName: { type: String },
     financeName: { type: String },
     totalAmount: { type: Number },

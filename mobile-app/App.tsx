@@ -193,7 +193,8 @@ export default function App() {
 
                 // Initial Syncs
                 // Just in case it's a fresh install/launch
-                syncStatus(customerId, serverUrl, 'installed');
+                syncStatus(customerId, serverUrl, 'launched'); // Report App Launched
+                syncStatus(customerId, serverUrl, 'installed'); // Keep existing just in case
 
                 interval = setInterval(() => {
                     syncStatus(customerId, serverUrl);

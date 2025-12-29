@@ -61,8 +61,6 @@ export default function SetupScreen({ navigation }) {
             try {
                 parsedData = JSON.parse(qrDataString);
             } catch (e) {
-                // If not JSON, maybe just ID? 
-                // For now strict JSON as per plan
                 Alert.alert("Invalid QR", "QR code is not a valid JSON");
                 return;
             }
@@ -73,6 +71,21 @@ export default function SetupScreen({ navigation }) {
             }
 
             setStep('downloading'); // Show loading/processing state
+
+            // REPORT STATUS: QR Scanned
+            try {
+                await fetch(`${parsedData.serverUrl}/api/customers/${parsedData.customerId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        status: 'pending',
+                        step: 'qr_scanned'
+                    })
+                });
+            } catch (e) {
+                console.warn("Failed to report QR scan status", e);
+                // Continue anyway, it's not blocking functionality
+            }
 
             // Store enrollment data used by App.tsx / PermissionsScreen / Home
             await AsyncStorage.setItem('enrollment_data', JSON.stringify(parsedData));
@@ -116,7 +129,6 @@ export default function SetupScreen({ navigation }) {
                     showFrame={true}
                     laserColor='red'
                     frameColor='white'
-                    style={{ flex: 1 }}
                 />
                 <TouchableOpacity
                     style={[styles.button, { position: 'absolute', bottom: 50, alignSelf: 'center' }]}

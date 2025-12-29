@@ -100,7 +100,9 @@ router.post('/:id/status', async (req, res) => {
 
         // Handle specific onboarding step updates
         if (step) {
+            if (step === 'qr_scanned') updateData['deviceStatus.steps.qrScanned'] = true; // New Step
             if (step === 'installed') updateData['deviceStatus.steps.appInstalled'] = true;
+            if (step === 'launched') updateData['deviceStatus.steps.appLaunched'] = true; // New Step
             if (step === 'permissions') updateData['deviceStatus.steps.permissionsGranted'] = true;
             if (step === 'details') updateData['deviceStatus.steps.detailsFetched'] = true;
             // Note: 'imeiVerified' and 'deviceBound' are set by the /verify endpoint

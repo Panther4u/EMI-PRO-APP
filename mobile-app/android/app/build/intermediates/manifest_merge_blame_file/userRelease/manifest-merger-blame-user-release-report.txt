@@ -1,0 +1,342 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.securefinance.emilock.user"
+4    android:versionCode="5"
+5    android:versionName="0.0.5" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:5:5-67
+11-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:5:22-64
+12    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+12-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:6:5-79
+12-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:6:22-76
+13    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+13-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:7:5-81
+13-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:7:22-78
+14    <uses-permission android:name="android.permission.CAMERA" />
+14-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:8:5-65
+14-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:8:22-62
+15    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+15-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:9:5-75
+15-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:9:22-72
+16    <uses-permission android:name="android.permission.READ_SMS" />
+16-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:10:5-67
+16-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:10:22-64
+17    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+17-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:11:5-70
+17-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:11:22-67
+18    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+18-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:12:5-77
+18-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:12:22-74
+19
+20    <!-- Critical for Lock Screen Control -->
+21    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+21-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:15:5-78
+21-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:15:22-75
+22    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+22-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:16:5-77
+22-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:16:22-74
+23    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+23-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:17:5-89
+23-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:17:22-86
+24    <uses-permission android:name="android.permission.WAKE_LOCK" />
+24-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:18:5-68
+24-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:18:22-65
+25    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+25-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:19:5-81
+25-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:19:22-78
+26    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+26-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:20:5-75
+26-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:20:22-72
+27
+28    <!-- Required for querying/managing other apps on Android 11+ -->
+29    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+29-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:23:5-77
+29-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:23:22-74
+30
+31    <!-- Device Admin Permission -->
+32    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+32-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:26:5-76
+32-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:26:22-73
+33    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+33-->[:react-native-camera-kit] /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-camera-kit/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:8:5-80
+33-->[:react-native-camera-kit] /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-camera-kit/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:8:22-77
+34    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+34-->[:react-native-camera-kit] /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-camera-kit/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:9:5-81
+34-->[:react-native-camera-kit] /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/node_modules/react-native-camera-kit/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:9:22-78
+35
+36    <permission
+36-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+37        android:name="com.securefinance.emilock.user.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+37-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+38        android:protectionLevel="signature" />
+38-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+39
+40    <uses-permission android:name="com.securefinance.emilock.user.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- Although the *SdkVersion is captured in gradle build files, this is required for non gradle builds -->
+40-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+40-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+41    <!-- <uses-sdk android:minSdkVersion="14"/> -->
+42    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+42-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:25:5-79
+42-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:25:22-76
+43
+44    <application
+44-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:28:5-92:19
+45        android:name="com.securefinance.emilock.MainApplication"
+45-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:29:9-40
+46        android:allowBackup="false"
+46-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:33:9-36
+47        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+47-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+48        android:extractNativeLibs="false"
+49        android:icon="@mipmap/ic_launcher"
+49-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:31:9-43
+50        android:label="SecureFinance EMI"
+50-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:30:9-42
+51        android:theme="@style/AppTheme" >
+51-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:32:9-40
+52        <activity
+52-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:35:9-46:20
+53            android:name="com.securefinance.emilock.MainActivity"
+53-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:36:13-41
+54            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+54-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:38:13-90
+55            android:exported="true"
+55-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:41:13-36
+56            android:label="SecureFinance EMI"
+56-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:37:13-46
+57            android:launchMode="singleTask"
+57-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:39:13-44
+58            android:windowSoftInputMode="adjustResize" >
+58-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:40:13-55
+59            <intent-filter>
+59-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:42:13-45:29
+60                <action android:name="android.intent.action.MAIN" />
+60-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:43:17-69
+60-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:43:25-66
+61
+62                <category android:name="android.intent.category.LAUNCHER" />
+62-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:44:17-77
+62-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:44:27-74
+63            </intent-filter>
+64        </activity>
+65
+66        <!-- Device Admin Receiver -->
+67        <receiver
+67-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:49:9-62:20
+68            android:name="com.securefinance.emilock.DeviceAdminReceiver"
+68-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:50:13-48
+69            android:description="@string/device_admin_description"
+69-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:52:13-67
+70            android:exported="true"
+70-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:54:13-36
+71            android:label="SecureFinance Device Admin"
+71-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:51:13-55
+72            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+72-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:53:13-70
+73            <meta-data
+73-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:55:13-57:56
+74                android:name="android.app.device_admin"
+74-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:56:17-56
+75                android:resource="@xml/device_admin" />
+75-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:57:17-53
+76
+77            <intent-filter>
+77-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:58:13-61:29
+78                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+78-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:59:17-82
+78-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:59:25-79
+79                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
+79-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:60:17-83
+79-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:60:25-80
+80            </intent-filter>
+81        </receiver>
+82
+83        <!-- SMS Lock Receiver -->
+84        <receiver
+84-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:65:9-71:20
+85            android:name="com.securefinance.emilock.SmsLockReceiver"
+85-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:65:19-50
+86            android:exported="true"
+86-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:66:19-42
+87            android:permission="android.permission.BROADCAST_SMS" >
+87-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:67:19-72
+88            <intent-filter>
+88-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:68:13-70:29
+89                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+89-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:69:17-82
+89-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:69:25-79
+90            </intent-filter>
+91        </receiver>
+92
+93        <!-- Boot Receiver for persistence -->
+94        <receiver
+94-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:74:9-81:20
+95            android:name="com.securefinance.emilock.BootReceiver"
+95-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:75:13-41
+96            android:enabled="true"
+96-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:76:13-35
+97            android:exported="false" >
+97-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:77:13-37
+98            <intent-filter>
+98-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:78:13-80:29
+99                <action android:name="android.intent.action.BOOT_COMPLETED" />
+99-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:79:17-79
+99-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:79:25-76
+100            </intent-filter>
+101        </receiver>
+102
+103        <!-- Lock Screen Service -->
+104        <service
+104-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:84:9-90:19
+105            android:name="com.securefinance.emilock.LockScreenService"
+105-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:85:13-46
+106            android:enabled="true"
+106-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:86:13-35
+107            android:exported="false"
+107-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:87:13-37
+108            android:foregroundServiceType="specialUse" >
+108-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:88:13-55
+109            <property
+109-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:89:13-121
+110                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+110-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:89:23-82
+111                android:value="lock_screen_control" />
+111-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/app/src/main/AndroidManifest.xml:89:83-118
+112        </service>
+113        <service
+113-->[com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/AndroidManifest.xml:9:9-15:19
+114            android:name="com.google.mlkit.common.internal.MlKitComponentDiscoveryService"
+114-->[com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/AndroidManifest.xml:10:13-91
+115            android:directBootAware="true"
+115-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:17:13-43
+116            android:exported="false" >
+116-->[com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/AndroidManifest.xml:11:13-37
+117            <meta-data
+117-->[com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/AndroidManifest.xml:12:13-14:85
+118                android:name="com.google.firebase.components:com.google.mlkit.vision.barcode.internal.BarcodeRegistrar"
+118-->[com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/AndroidManifest.xml:13:17-120
+119                android:value="com.google.firebase.components.ComponentRegistrar" />
+119-->[com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/2a8fd128931903f1a537e6e3d343e82b/transformed/jetified-play-services-mlkit-barcode-scanning-18.0.0/AndroidManifest.xml:14:17-82
+120            <meta-data
+120-->[com.google.mlkit:vision-common:17.0.0] /Users/kavi/.gradle/caches/8.10/transforms/cef00f88af9805e6f1dc61c6d0b06695/transformed/jetified-vision-common-17.0.0/AndroidManifest.xml:12:13-14:85
+121                android:name="com.google.firebase.components:com.google.mlkit.vision.common.internal.VisionCommonRegistrar"
+121-->[com.google.mlkit:vision-common:17.0.0] /Users/kavi/.gradle/caches/8.10/transforms/cef00f88af9805e6f1dc61c6d0b06695/transformed/jetified-vision-common-17.0.0/AndroidManifest.xml:13:17-124
+122                android:value="com.google.firebase.components.ComponentRegistrar" />
+122-->[com.google.mlkit:vision-common:17.0.0] /Users/kavi/.gradle/caches/8.10/transforms/cef00f88af9805e6f1dc61c6d0b06695/transformed/jetified-vision-common-17.0.0/AndroidManifest.xml:14:17-82
+123            <meta-data
+123-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:20:13-22:85
+124                android:name="com.google.firebase.components:com.google.mlkit.common.internal.CommonComponentRegistrar"
+124-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:21:17-120
+125                android:value="com.google.firebase.components.ComponentRegistrar" />
+125-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:22:17-82
+126        </service>
+127
+128        <provider
+128-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:9:9-13:38
+129            android:name="com.google.mlkit.common.internal.MlKitInitProvider"
+129-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:10:13-78
+130            android:authorities="com.securefinance.emilock.user.mlkitinitprovider"
+130-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:11:13-69
+131            android:exported="false"
+131-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:12:13-37
+132            android:initOrder="99" />
+132-->[com.google.mlkit:common:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/b8142d1aecbd364c63ff153791f220f5/transformed/jetified-common-18.0.0/AndroidManifest.xml:13:13-35
+133
+134        <activity
+134-->[com.google.android.gms:play-services-base:18.0.1] /Users/kavi/.gradle/caches/8.10/transforms/5c780fcd6ceb068403654075f2ce2cd9/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:20:9-22:45
+135            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+135-->[com.google.android.gms:play-services-base:18.0.1] /Users/kavi/.gradle/caches/8.10/transforms/5c780fcd6ceb068403654075f2ce2cd9/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:20:19-85
+136            android:exported="false"
+136-->[com.google.android.gms:play-services-base:18.0.1] /Users/kavi/.gradle/caches/8.10/transforms/5c780fcd6ceb068403654075f2ce2cd9/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:22:19-43
+137            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+137-->[com.google.android.gms:play-services-base:18.0.1] /Users/kavi/.gradle/caches/8.10/transforms/5c780fcd6ceb068403654075f2ce2cd9/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:21:19-78
+138
+139        <meta-data
+139-->[com.google.android.gms:play-services-basement:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/5c25f5ad6cb5f9f9ad44f3e8f8208aab/transformed/jetified-play-services-basement-18.0.0/AndroidManifest.xml:21:9-23:69
+140            android:name="com.google.android.gms.version"
+140-->[com.google.android.gms:play-services-basement:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/5c25f5ad6cb5f9f9ad44f3e8f8208aab/transformed/jetified-play-services-basement-18.0.0/AndroidManifest.xml:22:13-58
+141            android:value="@integer/google_play_services_version" />
+141-->[com.google.android.gms:play-services-basement:18.0.0] /Users/kavi/.gradle/caches/8.10/transforms/5c25f5ad6cb5f9f9ad44f3e8f8208aab/transformed/jetified-play-services-basement-18.0.0/AndroidManifest.xml:23:13-66
+142
+143        <service
+143-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:26:9-35:19
+144            android:name="androidx.camera.core.impl.MetadataHolderService"
+144-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:27:13-75
+145            android:enabled="false"
+145-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:28:13-36
+146            android:exported="false" >
+146-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:29:13-37
+147            <meta-data
+147-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:32:13-34:89
+148                android:name="androidx.camera.core.impl.MetadataHolderService.DEFAULT_CONFIG_PROVIDER"
+148-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:33:17-103
+149                android:value="androidx.camera.camera2.Camera2Config$DefaultProvider" />
+149-->[androidx.camera:camera-camera2:1.1.0] /Users/kavi/.gradle/caches/8.10/transforms/2ebfc4630c0017eabebcde6112a7ab11/transformed/jetified-camera-camera2-1.1.0/AndroidManifest.xml:34:17-86
+150        </service>
+151
+152        <provider
+152-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+153            android:name="androidx.startup.InitializationProvider"
+153-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
+154            android:authorities="com.securefinance.emilock.user.androidx-startup"
+154-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
+155            android:exported="false" >
+155-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
+156            <meta-data
+156-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+157                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+157-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
+158                android:value="androidx.startup" />
+158-->[androidx.emoji2:emoji2:1.2.0] /Users/kavi/.gradle/caches/8.10/transforms/a4812d5768581b75ebb88e63fe3d2f22/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
+159            <meta-data
+159-->[androidx.lifecycle:lifecycle-process:2.4.1] /Users/kavi/.gradle/caches/8.10/transforms/ad90925825eb2e9a4c0629793148457f/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:31:13-33:52
+160                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+160-->[androidx.lifecycle:lifecycle-process:2.4.1] /Users/kavi/.gradle/caches/8.10/transforms/ad90925825eb2e9a4c0629793148457f/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:32:17-78
+161                android:value="androidx.startup" />
+161-->[androidx.lifecycle:lifecycle-process:2.4.1] /Users/kavi/.gradle/caches/8.10/transforms/ad90925825eb2e9a4c0629793148457f/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:33:17-49
+162        </provider>
+163
+164        <meta-data
+164-->[com.facebook.soloader:soloader:0.10.5] /Users/kavi/.gradle/caches/8.10/transforms/95bbd8f0559183ab17c6506b2491e59c/transformed/jetified-soloader-0.10.5/AndroidManifest.xml:12:9-14:37
+165            android:name="com.facebook.soloader.enabled"
+165-->[com.facebook.soloader:soloader:0.10.5] /Users/kavi/.gradle/caches/8.10/transforms/95bbd8f0559183ab17c6506b2491e59c/transformed/jetified-soloader-0.10.5/AndroidManifest.xml:13:13-57
+166            android:value="false" />
+166-->[com.facebook.soloader:soloader:0.10.5] /Users/kavi/.gradle/caches/8.10/transforms/95bbd8f0559183ab17c6506b2491e59c/transformed/jetified-soloader-0.10.5/AndroidManifest.xml:14:13-34
+167
+168        <service
+168-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:29:9-35:19
+169            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+169-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:30:13-103
+170            android:exported="false" >
+170-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:31:13-37
+171            <meta-data
+171-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:32:13-34:39
+172                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+172-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:33:17-94
+173                android:value="cct" />
+173-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/kavi/.gradle/caches/8.10/transforms/c7ba101559576f38f82a46ad14200517/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:34:17-36
+174        </service>
+175        <service
+175-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:26:9-30:19
+176            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+176-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:27:13-117
+177            android:exported="false"
+177-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:28:13-37
+178            android:permission="android.permission.BIND_JOB_SERVICE" >
+178-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:29:13-69
+179        </service>
+180
+181        <receiver
+181-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:32:9-34:40
+182            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+182-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:33:13-132
+183            android:exported="false" />
+183-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/kavi/.gradle/caches/8.10/transforms/f6e61fabe4c2947e1309aa849fd4177d/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:34:13-37
+184    </application>
+185
+186</manifest>
