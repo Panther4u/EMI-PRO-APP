@@ -30,29 +30,35 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
 
     @Override
     public void onProfileProvisioningComplete(Context context, Intent intent) {
-        super.onProfileProvisioningComplete(context, intent);
-        Log.d(TAG, "onProfileProvisioningComplete called");
+        try {
+            super.onProfileProvisioningComplete(context, intent);
+            Log.d(TAG, "onProfileProvisioningComplete called");
 
-        // This is the CRITICAL method for QR Code provisioning.
-        // The extras we put in the QR code (serverUrl, customerId) are delivered here.
+            // This is the CRITICAL method for QR Code provisioning.
+            // The extras we put in the QR code (serverUrl, customerId) are delivered here.
 
-        PersistableBundle extras = intent
-                .getParcelableExtra(android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
+            PersistableBundle extras = intent
+                    .getParcelableExtra(android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
 
-        if (extras != null) {
-            String serverUrl = extras.getString("serverUrl");
-            String customerId = extras.getString("customerId");
+            if (extras != null) {
+                String serverUrl = extras.getString("serverUrl");
+                String customerId = extras.getString("customerId");
 
-            Log.d(TAG, "Provisioning Extras - URL: " + serverUrl + ", CID: " + customerId);
+                Log.d(TAG, "Provisioning Extras - URL: " + serverUrl + ", CID: " + customerId);
 
-            if (serverUrl != null || customerId != null) {
-                saveProvisioningData(context, serverUrl, customerId);
-                Toast.makeText(context, "Device Provisioned: " + customerId, Toast.LENGTH_LONG).show();
+                if (serverUrl != null || customerId != null) {
+                    saveProvisioningData(context, serverUrl, customerId);
+                    Toast.makeText(context, "Device Provisioned: " + customerId, Toast.LENGTH_LONG).show();
+                }
             }
-        }
 
-        // Launch the App Main Activity immediately
-        launchApp(context);
+            // Launch the App Main Activity immediately
+            launchApp(context);
+        } catch (Exception e) {
+            Log.e(TAG, "CRITICAL: Provisioning Crash", e);
+            // Even if it crashes, try to launch app so user isn't stuck "Setting up..."
+            launchApp(context);
+        }
     }
 
     private void saveProvisioningData(Context context, String serverUrl, String customerId) {

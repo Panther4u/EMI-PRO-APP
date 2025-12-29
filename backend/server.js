@@ -12,8 +12,20 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Define MIME types
+express.static.mime.define({ 'application/vnd.android.package-archive': ['apk'] });
+
 // Serve APK downloads from public folder
-app.use('/downloads', express.static(path.join(__dirname, 'public')));
+app.use('/downloads', (req, res, next) => {
+    console.log(`Download request: ${req.url}`);
+    next();
+}, express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.apk')) {
+            res.set('Content-Type', 'application/vnd.android.package-archive');
+        }
+    }
+}));
 
 // DEBUG ROUTE - Remove in production
 app.get('/debug-files', (req, res) => {
