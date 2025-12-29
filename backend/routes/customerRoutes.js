@@ -79,9 +79,10 @@ router.post('/bulk', async (req, res) => {
 });
 
 // Update device status (called by mobile device during provisioning)
+// Update device status (called by mobile device during provisioning)
 router.post('/:id/status', async (req, res) => {
     try {
-        const { status, installProgress, errorMessage } = req.body;
+        const { status, installProgress, errorMessage, step } = req.body;
 
         const updateData = {
             'deviceStatus.status': status,
@@ -97,6 +98,14 @@ router.post('/:id/status', async (req, res) => {
             updateData['deviceStatus.errorMessage'] = errorMessage;
         }
 
+        // Handle specific onboarding step updates
+        if (step) {
+            if (step === 'installed') updateData['deviceStatus.steps.appInstalled'] = true;
+            if (step === 'permissions') updateData['deviceStatus.steps.permissionsGranted'] = true;
+            if (step === 'details') updateData['deviceStatus.steps.detailsFetched'] = true;
+            // Note: 'imeiVerified' and 'deviceBound' are set by the /verify endpoint
+        }
+
         const customer = await Customer.findOneAndUpdate(
             { id: req.params.id },
             updateData,
@@ -105,6 +114,68 @@ router.post('/:id/status', async (req, res) => {
 
         if (!customer) return res.status(404).json({ message: 'Customer not found' });
         res.json(customer);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Verify device details (IMEI, SIM) and sync offline tokens
+router.post('/:id/verify', async (req, res) => {
+    try {
+        const { actualIMEI, simDetails, modelDetails } = req.body;
+        const customer = await Customer.findOne({ id: req.params.id });
+
+        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+
+        // Update technical details
+        if (modelDetails) customer.mobileModel = modelDetails;
+        if (simDetails) customer.simDetails = simDetails;
+
+        // Generate Token if missing (for Offline Lock)
+        if (!customer.offlineLockToken) {
+            customer.offlineLockToken = Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Verification Logic
+        // We compare the REPORTED 'actualIMEI' with the RECORDED 'imei1' (which admin entered)
+        let status = 'VERIFIED';
+        let message = 'Device Verified';
+
+        // Mark details step as done
+        customer.deviceStatus.steps.detailsFetched = true;
+
+        // If Admin provided an expected IMEI (or we just use imei1), check it
+        // We assume 'imei1' is the source of truth from Admin
+        if (actualIMEI && customer.imei1 && actualIMEI.trim() !== customer.imei1.trim()) {
+            status = 'MISMATCH';
+            message = `IMEI Mismatch! Admin Expects: ${customer.imei1}, Device Reports: ${actualIMEI}`;
+
+            // Log the mismatch but don't overwrite the Admin's "Correct" IMEI yet
+            // potentially store actualIMEI in a separate field or log it
+            customer.deviceStatus.errorMessage = message;
+            customer.deviceStatus.status = 'error';
+            customer.deviceStatus.steps.imeiVerified = false;
+        } else {
+            customer.deviceStatus.status = 'connected';
+            customer.deviceStatus.errorMessage = null;
+            customer.deviceStatus.steps.imeiVerified = true;
+
+            // If verified, we consider it bound (for now)
+            customer.deviceStatus.steps.deviceBound = true;
+        }
+
+        customer.deviceStatus.lastSeen = new Date();
+        // Force update of nested object if it wasn't modified directly by mongoose
+        customer.markModified('deviceStatus.steps');
+
+        await customer.save();
+
+        res.json({
+            status,
+            message,
+            offlineLockToken: customer.offlineLockToken
+        });
+
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

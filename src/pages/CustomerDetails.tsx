@@ -76,6 +76,20 @@ const CustomerDetails = () => {
                     </Badge>
                 </div>
 
+                {/* Verification Alert */}
+                {customer.deviceStatus?.errorMessage && customer.deviceStatus.errorMessage.includes('Mismatch') && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-start gap-3 mb-6">
+                        <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+                        <div>
+                            <h3 className="font-bold text-destructive">Device Verification Failed</h3>
+                            <p className="text-sm text-foreground/80">{customer.deviceStatus.errorMessage}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                The device using this account does not match the registered IMEI.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
                         <span className="text-xs text-muted-foreground block">Device</span>
@@ -83,13 +97,40 @@ const CustomerDetails = () => {
                             <Smartphone className="w-4 h-4" />
                             {customer.mobileModel}
                         </div>
-                        <span className="text-xs text-muted-foreground">{customer.imei1}</span>
+                        <span className="text-xs text-muted-foreground">IMEI: {customer.imei1}</span>
                     </div>
                     <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
                         <span className="text-xs text-muted-foreground block">Location</span>
                         <div className="font-medium flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
                             {customer.address}
+                        </div>
+                    </div>
+
+                    {/* SIM Details Card */}
+                    <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
+                        <span className="text-xs text-muted-foreground block">Active SIM</span>
+                        <div className="font-medium flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px]">S</div>
+                            {customer.simDetails?.operator || 'Unknown Network'}
+                        </div>
+                        {customer.simDetails?.phoneNumber && (
+                            <span className="text-xs text-muted-foreground block">Num: {customer.simDetails.phoneNumber}</span>
+                        )}
+                        {customer.simDetails?.imsi && (
+                            <span className="text-xs text-muted-foreground block">IMSI: {customer.simDetails.imsi.substring(0, 5)}...</span>
+                        )}
+                    </div>
+
+                    {/* Offline Lock Card */}
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-1">
+                        <span className="text-xs text-primary font-bold block mb-1">OFFLINE LOCK</span>
+                        <p className="text-xs text-muted-foreground mb-2">Send SMS to device number to lock instantly without internet.</p>
+                        <div className="bg-white p-2 rounded border border-border flex items-center justify-between">
+                            <code className="text-sm font-bold text-primary">LOCK {customer.offlineLockToken || '...'}</code>
+                            <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => {
+                                navigator.clipboard.writeText(`LOCK ${customer.offlineLockToken}`);
+                            }}>Copy</Button>
                         </div>
                     </div>
                 </div>
@@ -209,6 +250,93 @@ const CustomerDetails = () => {
                     )}
                 </div>
             </div>
+            {/* Onboarding Process Status - LIVE */}
+            <div className="glass-card p-6">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-primary" />
+                    Device Onboarding Status
+                </h3>
+                <div className="space-y-4">
+                    {/* Step 1: QR Scanned (Inferred from creation/existence) */}
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center">
+                            <Check className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-sm font-medium">QR Generated & Ready</p>
+                            <p className="text-xs text-muted-foreground">Device provisioning initiated.</p>
+                        </div>
+                    </div>
+
+                    {/* Step 2: App Installed (Reported by App) */}
+                    <div className="flex items-center gap-3">
+                        <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+                            customer.deviceStatus?.steps?.appInstalled ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
+                        )}>
+                            {customer.deviceStatus?.steps?.appInstalled ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
+                        </div>
+                        <div className="flex-1">
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.appInstalled && "text-muted-foreground")}>App Installed & Connected</p>
+                            <p className="text-xs text-muted-foreground">
+                                {customer.deviceStatus?.steps?.appInstalled ? "Client application successfully installed." : "Waiting for device to connect..."}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 3: Details Fetched */}
+                    <div className="flex items-center gap-3">
+                        <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+                            customer.deviceStatus?.steps?.detailsFetched ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
+                        )}>
+                            {customer.deviceStatus?.steps?.detailsFetched ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
+                        </div>
+                        <div className="flex-1">
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.detailsFetched && "text-muted-foreground")}>Device Details Fetched</p>
+                            <p className="text-xs text-muted-foreground">
+                                {customer.deviceStatus?.steps?.detailsFetched ? "IMEI, SIM, and Model info received." : "Waiting for device report..."}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 4: Verified */}
+                    <div className="flex items-center gap-3">
+                        <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+                            customer.deviceStatus?.steps?.imeiVerified ? "bg-success/20 text-success" :
+                                (customer.deviceStatus?.status === 'error' ? "bg-destructive/20 text-destructive" : "bg-secondary text-muted-foreground")
+                        )}>
+                            {customer.deviceStatus?.steps?.imeiVerified ? <Check className="w-4 h-4" /> :
+                                (customer.deviceStatus?.status === 'error' ? <AlertTriangle className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />)}
+                        </div>
+                        <div className="flex-1">
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.imeiVerified && "text-muted-foreground")}>IMEI Verified</p>
+                            <p className="text-xs text-muted-foreground">
+                                {customer.deviceStatus?.steps?.imeiVerified ? "Device matches Admin records." :
+                                    (customer.deviceStatus?.status === 'error' ? "Verification FAILED: IMEI Mismatch!" : "Verifying identity...")}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 5: Final Binding */}
+                    <div className="flex items-center gap-3">
+                        <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+                            customer.deviceStatus?.steps?.deviceBound ? "bg-indigo-100 text-indigo-600" : "bg-secondary text-muted-foreground"
+                        )}>
+                            {customer.deviceStatus?.steps?.deviceBound ? <Shield className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
+                        </div>
+                        <div className="flex-1">
+                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.deviceBound && "text-muted-foreground")}>Device Bound (Active)</p>
+                            <p className="text-xs text-muted-foreground">
+                                {customer.deviceStatus?.steps?.deviceBound ? "Device is fully secured and active." : "Waiting for verification..."}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex gap-3">
                 <Button className="flex-1" variant="outline" onClick={() => navigate(`/customers/${id}/edit`)}>Edit Details</Button>
             </div>

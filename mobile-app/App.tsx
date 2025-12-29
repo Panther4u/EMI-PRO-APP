@@ -87,7 +87,10 @@ export default function App() {
                 setIsEnrolled(true);
                 const enrollmentData = JSON.parse(enrollmentDataStr);
                 currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
+                currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
                 await syncStatus(enrollmentData.customerId, currentServerUrl);
+                // Verify Device Details & Sync Offline Token
+                verifyDevice(enrollmentData.customerId, currentServerUrl);
             }
 
             setIsLocked(lockStatus === 'locked');
@@ -101,13 +104,16 @@ export default function App() {
         }
     };
 
-    const syncStatus = async (cid: string, url: string) => {
+    const syncStatus = async (cid: string, url: string, step?: string) => {
         if (!cid || !url || isAdmin) return;
         try {
+            const body: any = { status: 'online' };
+            if (step) body.step = step;
+
             const response = await fetch(`${url}/api/customers/${cid}/status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'online' })
+                body: JSON.stringify(body)
             });
             if (response.ok) {
                 const data = await response.json();
@@ -125,6 +131,50 @@ export default function App() {
         }
     };
 
+    const verifyDevice = async (cid: string, url: string) => {
+        if (!DeviceLockModule || isAdmin) return;
+        try {
+            // Fetch Native Data
+            console.log("Verifying Device...");
+            const actualIMEI = await DeviceLockModule.getIMEI();
+            const simDetails = await DeviceLockModule.getSimDetails();
+
+            // Basic Device Info
+            // In a real app, use react-native-device-info for detailed model info
+            const modelDetails = "Android Device";
+
+            const response = await fetch(`${url}/api/customers/${cid}/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    actualIMEI,
+                    simDetails,
+                    modelDetails
+                })
+            });
+
+            // Mark details fetched after call succeeds
+            syncStatus(cid, url, 'details');
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Verification Result:", data);
+
+                if (data.offlineLockToken && DeviceLockModule.setOfflineToken) {
+                    await DeviceLockModule.setOfflineToken(data.offlineLockToken);
+                    console.log("Offline token secured");
+                }
+
+                if (data.status === 'MISMATCH') {
+                    // Optional: Force Lock or Show Warning
+                    console.warn('Device Mismatch Detected');
+                }
+            }
+        } catch (e) {
+            console.error('Verification failed', e);
+        }
+    };
+
     // Global Heartbeat
     useEffect(() => {
         let interval: any;
@@ -132,7 +182,15 @@ export default function App() {
             const data = await AsyncStorage.getItem('enrollment_data');
             if (data) {
                 const { customerId, serverUrl } = JSON.parse(data);
-                interval = setInterval(() => syncStatus(customerId, serverUrl), 30000);
+
+                // Initial Syncs
+                // Just in case it's a fresh install/launch
+                syncStatus(customerId, serverUrl, 'installed');
+
+                interval = setInterval(() => {
+                    syncStatus(customerId, serverUrl);
+                    verifyDevice(customerId, serverUrl);
+                }, 30000);
             }
         };
 

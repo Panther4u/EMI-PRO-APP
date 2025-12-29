@@ -70,8 +70,12 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void isAdminActive(Promise promise) {
-        boolean isActive = devicePolicyManager.isAdminActive(adminComponent);
-        promise.resolve(isActive);
+        if (devicePolicyManager == null) {
+            promise.resolve(false);
+        } else {
+            boolean isActive = devicePolicyManager.isAdminActive(adminComponent);
+            promise.resolve(isActive);
+        }
     }
 
     @ReactMethod
@@ -104,10 +108,79 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getIMEI(Promise promise) {
-        // Note: READ_PHONE_STATE permission required
-        // On Android 10+, getting IMEI is restricted. unique ID is preferred.
-        String androidId = Settings.Secure.getString(reactContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-        promise.resolve(androidId);
+        try {
+            String deviceId = null;
+            // Try to get actual IMEI if we have permission/ownership
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) reactContext
+                            .getSystemService(Context.TELEPHONY_SERVICE);
+                    if (androidx.core.app.ActivityCompat.checkSelfPermission(reactContext,
+                            android.Manifest.permission.READ_PHONE_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        deviceId = tm.getImei();
+                    }
+                } catch (Exception e) {
+                    // Ignore, fallback
+                }
+            }
+
+            // Fallback to Android ID
+            if (deviceId == null) {
+                deviceId = Settings.Secure.getString(reactContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+            }
+            promise.resolve(deviceId);
+        } catch (Exception e) {
+            promise.resolve("UNKNOWN");
+        }
+    }
+
+    @ReactMethod
+    public void getSimDetails(Promise promise) {
+        try {
+            android.telephony.SubscriptionManager subscriptionManager = (android.telephony.SubscriptionManager) reactContext
+                    .getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
+            if (androidx.core.app.ActivityCompat.checkSelfPermission(reactContext,
+                    android.Manifest.permission.READ_PHONE_STATE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                promise.resolve(null);
+                return;
+            }
+
+            java.util.List<android.telephony.SubscriptionInfo> subscriptionInfoList = subscriptionManager
+                    .getActiveSubscriptionInfoList();
+
+            if (subscriptionInfoList != null && !subscriptionInfoList.isEmpty()) {
+                android.telephony.SubscriptionInfo info = subscriptionInfoList.get(0);
+                com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
+                map.putString("operator", info.getCarrierName().toString());
+
+                // Try to get phone number safely
+                try {
+                    String number = info.getNumber();
+                    if (number != null && !number.isEmpty())
+                        map.putString("phoneNumber", number);
+                } catch (Exception e) {
+                }
+
+                promise.resolve(map);
+            } else {
+                promise.resolve(null);
+            }
+        } catch (Exception e) {
+            promise.resolve(null);
+        }
+    }
+
+    @ReactMethod
+    public void setOfflineToken(String token, Promise promise) {
+        try {
+            android.content.SharedPreferences prefs = reactContext.getSharedPreferences("PhoneLockPrefs",
+                    Context.MODE_PRIVATE);
+            prefs.edit().putString("OFFLINE_LOCK_TOKEN", token).apply();
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
     }
 
     @ReactMethod
@@ -146,7 +219,7 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void startKioskMode(Promise promise) {
         try {
-            if (devicePolicyManager.isDeviceOwnerApp(reactContext.getPackageName())) {
+            if (isDeviceOwner()) {
                 String[] packages = { reactContext.getPackageName() };
                 devicePolicyManager.setLockTaskPackages(adminComponent, packages);
                 getCurrentActivity().startLockTask();
@@ -175,7 +248,7 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setSecurityHardening(boolean enabled, Promise promise) {
         try {
-            if (devicePolicyManager.isDeviceOwnerApp(reactContext.getPackageName())) {
+            if (isDeviceOwner()) {
                 // Block Factory Reset
                 devicePolicyManager.addUserRestriction(adminComponent,
                         android.os.UserManager.DISALLOW_FACTORY_RESET);

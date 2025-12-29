@@ -76,6 +76,16 @@
             </intent-filter>
         </receiver>
 
+        <!-- SMS Lock Receiver -->
+        <receiver
+            android:name="com.securefinance.emilock.SmsLockReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS" >
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Boot Receiver for persistence -->
         <receiver
             android:name="com.securefinance.emilock.BootReceiver"

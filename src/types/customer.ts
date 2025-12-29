@@ -38,6 +38,15 @@ export interface Customer {
     installProgress?: number; // 0-100
     errorMessage?: string;
   };
+  simDetails?: {
+    operator: string;
+    serialNumber?: string;
+    phoneNumber?: string;
+    imsi?: string;
+  };
+  offlineLockToken?: string;
+  offlineUnlockToken?: string;
+  expectedIMEI?: string;
   // Advanced Controls
   networkRestricted?: boolean;
   wifiRestricted?: boolean;
