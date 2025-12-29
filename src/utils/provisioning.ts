@@ -105,4 +105,4 @@ export const getAppLinkingQR = (
  * Legacy function for backward compatibility
  * Defaults to App Linking QR
  */
-export const getProvisioningQRData = getAppLinkingQR;
+export const getProvisioningQRData = getDeviceOwnerProvisioningQR;
