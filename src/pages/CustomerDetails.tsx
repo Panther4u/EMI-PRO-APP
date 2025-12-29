@@ -12,9 +12,20 @@ import { format } from 'date-fns';
 const CustomerDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { customers, toggleLock, deleteCustomer } = useDevice();
+    const { customers, toggleLock, deleteCustomer, refreshCustomers } = useDevice();
     const customer = customers.find(c => c.id === id);
     const [qrPayload, setQrPayload] = useState<string>('');
+
+    // Poll for status updates every 5 seconds
+    useEffect(() => {
+        if (!customer) return;
+
+        const interval = setInterval(() => {
+            refreshCustomers();
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [customer?.id]);
 
     useEffect(() => {
         if (customer?.id) {

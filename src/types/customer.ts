@@ -37,6 +37,14 @@ export interface Customer {
     lastStatusUpdate?: Date;
     installProgress?: number; // 0-100
     errorMessage?: string;
+    steps?: {
+      qrScanned?: boolean;
+      appInstalled?: boolean;
+      appLaunched?: boolean;
+      detailsFetched?: boolean;
+      imeiVerified?: boolean;
+      deviceBound?: boolean;
+    };
   };
   simDetails?: {
     operator: string;
