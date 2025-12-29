@@ -45,6 +45,9 @@ export const getDeviceOwnerProvisioningQR = (
         "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
             "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
 
+        "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME":
+            "com.securefinance.emilock.user",
+
         // Required: APK Download URL (MUST be publicly accessible)
         // We FORCE the production URL here because the APK checksum below corresponds 
         // to the signed Release APK, which is hosted on production.
@@ -57,7 +60,7 @@ export const getDeviceOwnerProvisioningQR = (
             "pj9glGWFzBampchUldFQEiGyWFWYCEe_8puAP3OKNnM",
 
         // Optional but recommended: Skip encryption for faster setup
-        "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
+        "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": false,
 
         // Optional: Leave system apps enabled
         "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
