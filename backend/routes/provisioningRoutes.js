@@ -39,6 +39,9 @@ router.get('/payload/:customerId', (req, res) => {
             // "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": false, // Removed for compatibility
             // "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true, // Removed for compatibility
 
+            "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM":
+                "9MBtfICaLx0RVCoQ4oNB1DNh-FCGkLPc3dRNCLnVHJc",
+
             "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
                 "customerId": customerId,
                 "serverUrl": baseUrl // Tell the app where to connect back to
