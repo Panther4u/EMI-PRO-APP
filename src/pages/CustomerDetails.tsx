@@ -1,6 +1,6 @@
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect, useState } from 'react';
-import { getProvisioningQRData } from '@/utils/provisioning';
+import { API_BASE_URL } from '@/config/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,16 @@ const CustomerDetails = () => {
     const navigate = useNavigate();
     const { customers, toggleLock, deleteCustomer } = useDevice();
     const customer = customers.find(c => c.id === id);
+    const [qrPayload, setQrPayload] = useState<string>('');
+
+    useEffect(() => {
+        if (customer?.id) {
+            fetch(`${API_BASE_URL}/api/provisioning/payload/${customer.id}`)
+                .then(res => res.json())
+                .then(data => setQrPayload(JSON.stringify(data)))
+                .catch(err => console.error("Failed to load QR payload", err));
+        }
+    }, [customer?.id]);
 
     if (!customer) {
         return (
@@ -169,12 +179,11 @@ const CustomerDetails = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
                     {/* Debug: Log QR data */}
                     {(() => {
-                        const qrData = getProvisioningQRData(customer);
-                        console.log('QR Payload:', qrData);
+                        if (!qrPayload) return <p className="text-sm text-muted-foreground p-4">Loading QR...</p>;
                         return (
                             <div className="bg-white p-2 rounded-xl">
                                 <QRCodeSVG
-                                    value={qrData}
+                                    value={qrPayload}
                                     size={320}
                                     level="L"
                                     bgColor="#FFFFFF"

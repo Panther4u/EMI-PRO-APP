@@ -44,6 +44,7 @@ app.get('/debug-files', (req, res) => {
 
 // API Routes
 app.use('/api/customers', customerRoutes);
+app.use('/api/provisioning', require('./routes/provisioningRoutes'));
 
 // Serve frontend build (production)
 app.use(express.static(path.join(__dirname, '../dist')));
