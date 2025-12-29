@@ -14,9 +14,13 @@
     <!-- Critical for Lock Screen Control -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    
+    <!-- Required for querying/managing other apps on Android 11+ -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <!-- Device Admin Permission -->
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
@@ -81,7 +85,9 @@
             android:name=".LockScreenService" 
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="systemExempted" />
+            android:foregroundServiceType="specialUse" >
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="lock_screen_control" />
+        </service>
 
     </application>
 </manifest>

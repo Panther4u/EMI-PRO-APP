@@ -57,26 +57,34 @@ export default function App() {
             // 1. FAST CHECK: Is this the Admin APK?
             const dlm = NativeModules.DeviceLockModule;
             if (dlm && dlm.getAppInfo) {
-                const appInfo = await dlm.getAppInfo();
-                if (appInfo?.packageName?.endsWith('.admin')) {
-                    console.log("Admin APK detected");
-                    setIsAdmin(true);
-                    setLoading(false); // Open immediately for Admin
-                    checkForUpdates(currentServerUrl);
-                    return;
+                try {
+                    const appInfo = await dlm.getAppInfo();
+                    if (appInfo?.packageName?.endsWith('.admin')) {
+                        console.log("Admin APK detected");
+                        setIsAdmin(true);
+                        setLoading(false); // Open immediately for Admin
+                        checkForUpdates(currentServerUrl);
+                        return;
+                    }
+                } catch (appInfoError) {
+                    console.warn("getAppInfo failed, continuing as user app:", appInfoError);
                 }
             }
 
             // 2. USER DEVICE CHECK
             console.log("Checking User Provisioning...");
             if (dlm && dlm.getProvisioningData) {
-                const provisioningData = await dlm.getProvisioningData();
-                if (provisioningData?.customerId) {
-                    await AsyncStorage.setItem('enrollment_data', JSON.stringify({
-                        customerId: provisioningData.customerId,
-                        serverUrl: provisioningData.serverUrl,
-                        enrolledAt: new Date().toISOString()
-                    }));
+                try {
+                    const provisioningData = await dlm.getProvisioningData();
+                    if (provisioningData?.customerId) {
+                        await AsyncStorage.setItem('enrollment_data', JSON.stringify({
+                            customerId: provisioningData.customerId,
+                            serverUrl: provisioningData.serverUrl,
+                            enrolledAt: new Date().toISOString()
+                        }));
+                    }
+                } catch (provError) {
+                    console.warn("getProvisioningData failed:", provError);
                 }
             }
 
