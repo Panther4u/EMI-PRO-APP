@@ -56,7 +56,7 @@ const CustomerSchema = new mongoose.Schema({
     deviceStatus: {
         status: {
             type: String,
-            enum: ['pending', 'installing', 'connected', 'online', 'offline', 'error'],
+            enum: ['pending', 'installing', 'connected', 'online', 'offline', 'error', 'ADMIN_INSTALLED'],
             default: 'pending'
         },
         lastSeen: { type: Date },
