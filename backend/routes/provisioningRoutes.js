@@ -20,7 +20,15 @@ router.get('/payload/:customerId', (req, res) => {
         const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
-        // Calculate Checksum Check
+        // Check if APK exists before calculating checksum
+        const fs = require('fs');
+        if (!fs.existsSync(apkPath)) {
+            console.error(`❌ APK NOT FOUND: ${apkPath}`);
+            console.error(`   Files in public/:`, fs.readdirSync(path.join(__dirname, '../public')));
+            throw new Error(`APK file not found at ${apkPath}`);
+        }
+
+        // Calculate Checksum
         const checksum = getApkChecksum(apkPath);
 
         // Construct Android Enterprise Provisioning Payload
@@ -41,10 +49,18 @@ router.get('/payload/:customerId', (req, res) => {
         res.json(payload);
 
     } catch (err) {
-        console.error("Provisioning Error:", err);
+        console.error("❌ Provisioning Error:", err);
+        console.error("   APK Path attempted:", path.join(__dirname, '../public', 'app-admin-release.apk'));
+        console.error("   __dirname:", __dirname);
+
+        // Check if it's a file not found error
+        const isFileNotFound = err.code === 'ENOENT' || err.message.includes('no such file');
+
         res.status(500).json({
             error: "Failed to generate provisioning payload",
-            details: err.message
+            details: err.message,
+            hint: isFileNotFound ? "APK file not found on server. Check deployment." : "Checksum calculation failed.",
+            apkPath: path.join(__dirname, '../public', 'app-admin-release.apk')
         });
     }
 });
