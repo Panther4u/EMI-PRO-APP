@@ -285,6 +285,7 @@ export const QRCodeGenerator = () => {
         description: 'Could not generate QR code. Please try again.',
         variant: 'destructive',
       });
+      setQrGenerated(false); // Hide the success state if generation failed
     } finally {
       setQrLoading(false);
     }
