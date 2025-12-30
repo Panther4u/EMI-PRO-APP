@@ -39,7 +39,8 @@ router.get('/payload/:customerId', (req, res) => {
 
             "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
                 "serverUrl": baseUrl,
-                "customerId": customerId
+                "customerId": customerId,
+                "userApkUrl": `${baseUrl}/downloads/app-user-release.apk`
             },
             "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true
         };
