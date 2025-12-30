@@ -180,6 +180,42 @@ router.post('/:id/verify', async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ message: err.message });
+    });
+
+// Heartbeat endpoint - User App sends status every few seconds
+router.post('/heartbeat', async (req, res) => {
+    try {
+        const { deviceId, customerId, status, appInstalled, lastSeen } = req.body;
+
+        const updateData = {
+            'deviceStatus.status': status || 'active',
+            'deviceStatus.lastSeen': new Date(lastSeen || Date.now()),
+            isEnrolled: appInstalled !== false
+        };
+
+        // Mark all steps as complete if app is installed and running
+        if (appInstalled) {
+            updateData['deviceStatus.steps.appInstalled'] = true;
+            updateData['deviceStatus.steps.appLaunched'] = true;
+            updateData['deviceStatus.steps.permissionsGranted'] = true;
+            updateData['deviceStatus.steps.detailsFetched'] = true;
+            updateData['deviceStatus.steps.imeiVerified'] = true;
+            updateData['deviceStatus.steps.deviceBound'] = true;
+        }
+
+        const customer = await Customer.findOneAndUpdate(
+            { $or: [{ id: customerId }, { imei1: deviceId }] },
+            updateData,
+            { new: true }
+        );
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
+        res.json({ ok: true, status: customer.deviceStatus.status });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 

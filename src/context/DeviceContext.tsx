@@ -138,7 +138,15 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     useEffect(() => {
+        // Initial load
         refreshCustomers();
+
+        // Poll every 3 seconds for real-time updates
+        const interval = setInterval(() => {
+            refreshCustomers();
+        }, 3000);
+
+        return () => clearInterval(interval);
     }, []);
 
     return (
