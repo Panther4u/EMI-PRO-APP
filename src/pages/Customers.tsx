@@ -38,7 +38,7 @@ const Customers = () => {
     }
 
     if (action === 'add') {
-      navigate('/settings'); // Navigate to settings to add customer
+      navigate('/generate-qr'); // Navigate to Generate QR page to add customer
     }
   }, [searchParams, navigate]);
 

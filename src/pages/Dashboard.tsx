@@ -125,7 +125,7 @@ const Dashboard = () => {
             description="Register new"
             icon={Plus}
             color="success"
-            onClick={() => navigate('/customers?action=add')}
+            onClick={() => navigate('/generate-qr')} // Navigate directly to Generate QR/Add Form
           />
 
           {/* View Devices */}
