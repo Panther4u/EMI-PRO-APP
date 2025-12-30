@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.PersistableBundle;
+import android.app.admin.DevicePolicyManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -34,8 +35,22 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
             super.onProfileProvisioningComplete(context, intent);
             Log.d(TAG, "onProfileProvisioningComplete called - Device Owner setup complete");
 
-            // Simplified: Just launch the app
-            // Admin extras removed from QR payload to prevent provisioning failures
+            // SAFE EXTRACTION OF EXTRAS
+            try {
+                PersistableBundle extras = intent
+                        .getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
+                if (extras != null) {
+                    String serverUrl = extras.getString("serverUrl");
+                    String customerId = extras.getString("customerId");
+                    Log.d(TAG, "Extras found: CustomerID=" + customerId);
+                    saveProvisioningData(context, serverUrl, customerId);
+                } else {
+                    Log.w(TAG, "No Admin Extras Bundle found in intent");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error reading admin extras: " + e.getMessage());
+            }
+
             Toast.makeText(context, "Device Setup Complete", Toast.LENGTH_LONG).show();
 
             // Launch the App Main Activity immediately

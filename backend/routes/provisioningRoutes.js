@@ -36,11 +36,10 @@ router.get('/payload/:customerId', (req, res) => {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME":
                 "com.securefinance.emilock.user",
 
-            // "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": false, // Removed for compatibility
-            // "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true, // Removed for compatibility
-
-            // REMOVED: Signature checksum (causing setup failures after APK rebuild)
-            // REMOVED: Admin extras bundle (not required for basic provisioning)
+            "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
+                "serverUrl": baseUrl,
+                "customerId": customerId
+            }
         };
 
         res.json(payload);
