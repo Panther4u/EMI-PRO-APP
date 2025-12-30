@@ -63,6 +63,13 @@ const CustomerSchema = new mongoose.Schema({
         lastStatusUpdate: { type: Date },
         installProgress: { type: Number, default: 0 }, // 0-100
         errorMessage: { type: String },
+        // Technical Details from Admin DPC
+        technical: {
+            brand: { type: String },
+            model: { type: String },
+            osVersion: { type: String },
+            androidId: { type: String }
+        },
         // Detailed Onboarding Steps
         steps: {
             qrScanned: { type: Boolean, default: false }, // Inferred or Manual

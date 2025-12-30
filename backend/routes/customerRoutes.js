@@ -82,13 +82,18 @@ router.post('/bulk', async (req, res) => {
 // Update device status (called by mobile device during provisioning)
 router.post('/:id/status', async (req, res) => {
     try {
-        const { status, installProgress, errorMessage, step } = req.body;
+        const { status, installProgress, errorMessage, step, actualBrand, model, androidVersion, androidId } = req.body;
 
         const updateData = {
-            'deviceStatus.status': status,
+            'deviceStatus.status': status || 'installing',
             'deviceStatus.lastStatusUpdate': new Date(),
             'deviceStatus.lastSeen': new Date()
         };
+
+        if (actualBrand) updateData['deviceStatus.technical.brand'] = actualBrand;
+        if (model) updateData['deviceStatus.technical.model'] = model;
+        if (androidVersion) updateData['deviceStatus.technical.osVersion'] = androidVersion;
+        if (androidId) updateData['deviceStatus.technical.androidId'] = androidId;
 
         if (installProgress !== undefined) {
             updateData['deviceStatus.installProgress'] = installProgress;

