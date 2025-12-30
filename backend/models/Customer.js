@@ -68,7 +68,8 @@ const CustomerSchema = new mongoose.Schema({
             brand: { type: String },
             model: { type: String },
             osVersion: { type: String },
-            androidId: { type: String }
+            androidId: { type: String },
+            serial: { type: String }
         },
         // Detailed Onboarding Steps
         steps: {
