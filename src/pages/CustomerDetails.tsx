@@ -4,17 +4,20 @@ import { API_BASE_URL } from '@/config/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MapPin, Phone, CreditCard, Smartphone, Calendar, Shield, AlertTriangle, QrCode, Lock, Unlock, Check } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, CreditCard, Smartphone, Calendar, Shield, AlertTriangle, QrCode, Lock, Unlock, Check, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 const CustomerDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { toast } = useToast();
     const { customers, toggleLock, deleteCustomer, refreshCustomers } = useDevice();
     const customer = customers.find(c => c.id === id);
     const [qrPayload, setQrPayload] = useState<string>('');
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Poll for status updates every 5 seconds
     useEffect(() => {
@@ -56,6 +59,26 @@ const CustomerDetails = () => {
         if (window.confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
             await deleteCustomer(customer.id);
             navigate('/customers');
+        }
+    };
+
+    const handleRefreshDeviceDetails = async () => {
+        setIsRefreshing(true);
+        try {
+            await refreshCustomers();
+            toast({
+                title: 'Device Details Refreshed',
+                description: 'Latest device information has been loaded from the backend.',
+            });
+        } catch (error) {
+            console.error('Error refreshing device details:', error);
+            toast({
+                title: 'Refresh Failed',
+                description: 'Could not fetch latest device details. Please try again.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
@@ -154,6 +177,22 @@ const CustomerDetails = () => {
                             }}>Copy</Button>
                         </div>
                     </div>
+                </div>
+
+                {/* Refresh Device Details */}
+                <div className="mt-4 pt-4 border-t border-border/50">
+                    <Button
+                        variant="outline"
+                        className="w-full gap-2"
+                        onClick={handleRefreshDeviceDetails}
+                        disabled={isRefreshing}
+                    >
+                        <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh Device Details'}
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                        Fetch latest device information from backend
+                    </p>
                 </div>
 
                 {/* Device Actions */}
