@@ -101,15 +101,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
-      {/* Header */}
-      <div className="space-y-1 px-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          SecureFinance
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Manage customers, devices, and EMI collections
-        </p>
-      </div>
+      {/* Header Removed as per request */}
 
       {/* Stats Grid Removed as per request */}
 
