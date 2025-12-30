@@ -1,0 +1,110 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:2:1-27:12
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:2:1-27:12
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:2:1-27:12
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:2:1-27:12
+MERGED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.core:core-ktx:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/d7112cbaca832a20bb62c788a0e77134/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/kavi/.gradle/caches/8.10/transforms/407a37198620d7d2ffd171a6c4297271/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/kavi/.gradle/caches/8.10/transforms/5250dc96a446830b7b0f67b160671851/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.3.1] /Users/kavi/.gradle/caches/8.10/transforms/748cbaba6e44ad364df28f3c3cff37a1/transformed/lifecycle-runtime-2.3.1/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/kavi/.gradle/caches/8.10/transforms/d2056bae96311bbab20f9b6afbbf3207/transformed/core-runtime-2.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] /Users/kavi/.gradle/caches/8.10/transforms/350411a3c590aea9051a24100934b2ff/transformed/jetified-annotation-experimental-1.3.0/AndroidManifest.xml:17:1-22:12
+	package
+		INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:4:5-26:19
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:4:5-26:19
+MERGED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:28:5-89
+MERGED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:28:5-89
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/kavi/.gradle/caches/8.10/transforms/407a37198620d7d2ffd171a6c4297271/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/kavi/.gradle/caches/8.10/transforms/407a37198620d7d2ffd171a6c4297271/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+	android:extractNativeLibs
+		INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+	android:label
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:6:9-44
+	android:icon
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:7:9-54
+	android:allowBackup
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:5:9-36
+	android:theme
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:8:9-55
+receiver#com.securefinance.emilock.admin.AdminReceiver
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:11:9-24:20
+	android:label
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:14:13-48
+	android:exported
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:16:13-36
+	android:permission
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:15:13-70
+	android:description
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:13:13-51
+	android:name
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:12:13-42
+meta-data#android.app.device_admin
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:17:13-19:56
+	android:resource
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:19:17-53
+	android:name
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:18:17-56
+intent-filter#action:name:android.app.action.DEVICE_ADMIN_ENABLED+action:name:android.app.action.PROFILE_PROVISIONING_COMPLETE
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:20:13-23:29
+action#android.app.action.DEVICE_ADMIN_ENABLED
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:21:17-82
+	android:name
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:21:25-79
+action#android.app.action.PROFILE_PROVISIONING_COMPLETE
+ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:22:17-91
+	android:name
+		ADDED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:22:25-88
+uses-sdk
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+MERGED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core-ktx:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/d7112cbaca832a20bb62c788a0e77134/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-ktx:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/d7112cbaca832a20bb62c788a0e77134/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/kavi/.gradle/caches/8.10/transforms/407a37198620d7d2ffd171a6c4297271/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/kavi/.gradle/caches/8.10/transforms/407a37198620d7d2ffd171a6c4297271/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/kavi/.gradle/caches/8.10/transforms/5250dc96a446830b7b0f67b160671851/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/kavi/.gradle/caches/8.10/transforms/5250dc96a446830b7b0f67b160671851/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.3.1] /Users/kavi/.gradle/caches/8.10/transforms/748cbaba6e44ad364df28f3c3cff37a1/transformed/lifecycle-runtime-2.3.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.3.1] /Users/kavi/.gradle/caches/8.10/transforms/748cbaba6e44ad364df28f3c3cff37a1/transformed/lifecycle-runtime-2.3.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/kavi/.gradle/caches/8.10/transforms/d2056bae96311bbab20f9b6afbbf3207/transformed/core-runtime-2.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/kavi/.gradle/caches/8.10/transforms/d2056bae96311bbab20f9b6afbbf3207/transformed/core-runtime-2.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] /Users/kavi/.gradle/caches/8.10/transforms/350411a3c590aea9051a24100934b2ff/transformed/jetified-annotation-experimental-1.3.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] /Users/kavi/.gradle/caches/8.10/transforms/350411a3c590aea9051a24100934b2ff/transformed/jetified-annotation-experimental-1.3.0/AndroidManifest.xml:20:5-44
+	android:targetSdkVersion
+		INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml
+permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+permission#com.securefinance.emilock.admin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+uses-permission#com.securefinance.emilock.admin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:22-94

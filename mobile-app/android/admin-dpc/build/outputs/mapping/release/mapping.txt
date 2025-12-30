@@ -1,0 +1,815 @@
+# compiler: R8
+# compiler_version: 8.2.42
+# min_api: 23
+# common_typos_disable
+# {"id":"com.android.tools.r8.mapping","version":"2.2"}
+# pg_map_id: 775a69a
+# pg_map_hash: SHA-256 775a69a65ba6244eca907b10009144daa89432a0c70e77f849291ffddcf59154
+android.app.AppComponentFactory -> android.app.AppComponentFactory:
+# {"id":"com.android.tools.r8.synthesized"}
+android.support.v4.app.RemoteActionCompatParcelizer -> android.support.v4.app.RemoteActionCompatParcelizer:
+# {"id":"sourceFile","fileName":"RemoteActionCompatParcelizer.java"}
+    1:1:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0:0 -> read
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lc/b;)Landroidx/core/app/RemoteActionCompat;"}
+    1:1:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroidx/core/app/RemoteActionCompat;Lc/b;)V"}
+android.support.v4.graphics.drawable.IconCompatParcelizer -> android.support.v4.graphics.drawable.IconCompatParcelizer:
+# {"id":"sourceFile","fileName":"IconCompatParcelizer.java"}
+    1:1:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0:0 -> read
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lc/b;)Landroidx/core/graphics/drawable/IconCompat;"}
+    1:1:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroidx/core/graphics/drawable/IconCompat;Lc/b;)V"}
+androidx.annotation.Keep -> androidx.annotation.Keep:
+# {"id":"sourceFile","fileName":"Keep.kt"}
+androidx.collection.ArrayMap -> a.b:
+# {"id":"sourceFile","fileName":"ArrayMap.java"}
+    int[] androidx.collection.SimpleArrayMap.mHashes -> a
+    java.lang.Object[] androidx.collection.SimpleArrayMap.mArray -> b
+    int androidx.collection.SimpleArrayMap.mSize -> c
+    androidx.collection.MapCollections mCollections -> d
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/a;"}
+    java.lang.Object[] androidx.collection.SimpleArrayMap.mBaseCache -> e
+    int androidx.collection.SimpleArrayMap.mBaseCacheSize -> f
+    java.lang.Object[] androidx.collection.SimpleArrayMap.mTwiceBaseCache -> g
+    int androidx.collection.SimpleArrayMap.mTwiceBaseCacheSize -> h
+    1:15:void androidx.collection.SimpleArrayMap.<init>():0:0 -> <init>
+    1:15:void <init>():0 -> <init>
+    10:96:void androidx.collection.SimpleArrayMap.allocArrays(int):0:0 -> a
+    10:96:void allocArrays(int):0 -> a
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:int androidx.collection.ContainerHelpers.binarySearch(int[],int,int):0:0 -> b
+    1:1:int androidx.collection.SimpleArrayMap.binarySearchHashes(int[],int,int):0 -> b
+    2:2:int androidx.collection.SimpleArrayMap.binarySearchHashes(int[],int,int):0:0 -> b
+    1:1:void androidx.collection.SimpleArrayMap.clear():0:0 -> c
+    1:4:void clear():0:0 -> clear
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:5:boolean containsKey(java.lang.Object):0:0 -> containsKey
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:5:boolean containsValue(java.lang.Object):0:0 -> containsValue
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:boolean androidx.collection.SimpleArrayMap.containsKey(java.lang.Object):0:0 -> d
+    1:1:boolean androidx.collection.SimpleArrayMap.containsValue(java.lang.Object):0:0 -> e
+    5:13:androidx.collection.MapCollections androidx.collection.ArrayMap.getCollection():0:0 -> entrySet
+    5:13:java.util.Set entrySet():0 -> entrySet
+    14:17:java.util.Set androidx.collection.MapCollections.getEntrySet():0:0 -> entrySet
+    14:17:java.util.Set entrySet():0 -> entrySet
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    18:28:java.util.Set androidx.collection.MapCollections.getEntrySet():0:0 -> entrySet
+    18:28:java.util.Set entrySet():0 -> entrySet
+    1:5:boolean equals(java.lang.Object):0:0 -> equals
+      # {"id":"com.android.tools.r8.synthesized"}
+    14:27:int androidx.collection.SimpleArrayMap.size():0:0 -> f
+    14:27:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0 -> f
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    28:31:java.lang.Object androidx.collection.SimpleArrayMap.keyAt(int):0:0 -> f
+    28:31:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0 -> f
+    32:33:java.lang.Object androidx.collection.SimpleArrayMap.valueAt(int):0:0 -> f
+    32:33:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0 -> f
+    34:41:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0:0 -> f
+    42:48:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0:0 -> f
+    49:84:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0:0 -> f
+    85:88:java.lang.Object androidx.collection.SimpleArrayMap.keyAt(int):0:0 -> f
+    85:88:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0 -> f
+    89:90:java.lang.Object androidx.collection.SimpleArrayMap.valueAt(int):0:0 -> f
+    89:90:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0 -> f
+    91:117:boolean androidx.collection.SimpleArrayMap.equals(java.lang.Object):0:0 -> f
+    1:1:void androidx.collection.SimpleArrayMap.freeArrays(int[],java.lang.Object[],int):0:0 -> g
+    1:5:java.lang.Object get(java.lang.Object):0:0 -> get
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:java.lang.Object androidx.collection.SimpleArrayMap.get(java.lang.Object):0:0 -> h
+    1:5:int hashCode():0:0 -> hashCode
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:int androidx.collection.SimpleArrayMap.hashCode():0:0 -> i
+    1:5:boolean isEmpty():0:0 -> isEmpty
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:int androidx.collection.SimpleArrayMap.indexOf(java.lang.Object,int):0:0 -> j
+    1:1:int indexOf(java.lang.Object,int):0 -> j
+      # {"id":"com.android.tools.r8.synthesized"}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(ILjava/lang/Object;)I"}
+    3:16:int androidx.collection.SimpleArrayMap.indexOfKey(java.lang.Object):0:0 -> k
+    3:16:int indexOfKey(java.lang.Object):0 -> k
+      # {"id":"com.android.tools.r8.synthesized"}
+    5:13:androidx.collection.MapCollections androidx.collection.ArrayMap.getCollection():0:0 -> keySet
+    5:13:java.util.Set keySet():0 -> keySet
+    14:17:java.util.Set androidx.collection.MapCollections.getKeySet():0:0 -> keySet
+    14:17:java.util.Set keySet():0 -> keySet
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    18:28:java.util.Set androidx.collection.MapCollections.getKeySet():0:0 -> keySet
+    18:28:java.util.Set keySet():0 -> keySet
+    10:74:int androidx.collection.SimpleArrayMap.indexOfNull():0:0 -> l
+    10:74:int indexOfNull():0 -> l
+      # {"id":"com.android.tools.r8.synthesized"}
+    13:40:int androidx.collection.SimpleArrayMap.indexOfValue(java.lang.Object):0:0 -> m
+    13:40:int indexOfValue(java.lang.Object):0 -> m
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:boolean androidx.collection.SimpleArrayMap.isEmpty():0:0 -> n
+    1:1:java.lang.Object androidx.collection.SimpleArrayMap.put(java.lang.Object,java.lang.Object):0:0 -> o
+    1:1:java.lang.Object androidx.collection.SimpleArrayMap.remove(java.lang.Object):0:0 -> p
+    1:5:java.lang.Object put(java.lang.Object,java.lang.Object):0:0 -> put
+      # {"id":"com.android.tools.r8.synthesized"}
+    12:43:void androidx.collection.SimpleArrayMap.ensureCapacity(int):0:0 -> putAll
+    12:43:void putAll(java.util.Map):0 -> putAll
+    44:71:void putAll(java.util.Map):0:0 -> putAll
+    72:76:void putAll(java.util.Map):0:0 -> putAll
+    77:82:void androidx.collection.SimpleArrayMap.ensureCapacity(int):0:0 -> putAll
+    77:82:void putAll(java.util.Map):0 -> putAll
+    7:134:java.lang.Object androidx.collection.SimpleArrayMap.removeAt(int):0:0 -> q
+    7:134:java.lang.Object removeAt(int):0 -> q
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:9:java.lang.String androidx.collection.SimpleArrayMap.toString():0:0 -> r
+      # {"id":"com.android.tools.r8.synthesized"}
+    10:39:java.lang.String androidx.collection.SimpleArrayMap.toString():0:0 -> r
+    40:45:java.lang.Object androidx.collection.SimpleArrayMap.keyAt(int):0:0 -> r
+    40:45:java.lang.String androidx.collection.SimpleArrayMap.toString():0 -> r
+    46:61:java.lang.String androidx.collection.SimpleArrayMap.toString():0:0 -> r
+    62:65:java.lang.Object androidx.collection.SimpleArrayMap.valueAt(int):0:0 -> r
+    62:65:java.lang.String androidx.collection.SimpleArrayMap.toString():0 -> r
+    66:85:java.lang.String androidx.collection.SimpleArrayMap.toString():0:0 -> r
+    1:5:java.lang.Object remove(java.lang.Object):0:0 -> remove
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:1:int size():0:0 -> size
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:5:java.lang.String toString():0:0 -> toString
+      # {"id":"com.android.tools.r8.synthesized"}
+    5:13:androidx.collection.MapCollections androidx.collection.ArrayMap.getCollection():0:0 -> values
+    5:13:java.util.Collection values():0 -> values
+    14:17:java.util.Collection androidx.collection.MapCollections.getValues():0:0 -> values
+    14:17:java.util.Collection values():0 -> values
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    18:27:java.util.Collection androidx.collection.MapCollections.getValues():0:0 -> values
+    18:27:java.util.Collection values():0 -> values
+androidx.collection.ArrayMap$1 -> a.a:
+# {"id":"sourceFile","fileName":"ArrayMap.java"}
+    androidx.collection.MapCollections$EntrySet androidx.collection.MapCollections.mEntrySet -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/e;"}
+    androidx.collection.MapCollections$KeySet androidx.collection.MapCollections.mKeySet -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/e;"}
+    androidx.collection.MapCollections$ValuesCollection androidx.collection.MapCollections.mValues -> c
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/g;"}
+    androidx.collection.ArrayMap this$0 -> d
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/b;"}
+    1:6:void androidx.collection.MapCollections.<init>():0:0 -> <init>
+    1:6:void <init>(androidx.collection.ArrayMap):0 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(La/b;)V"}
+    1:1:java.lang.Object colGetEntry(int,int):0:0 -> a
+    1:1:void colRemoveAt(int):0:0 -> b
+    1:1:boolean androidx.collection.MapCollections.equalsSetHelper(java.util.Set,java.lang.Object):0:0 -> c
+    3:4:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> d
+    3:4:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(java.lang.Object[],int):0 -> d
+    3:4:java.lang.Object[] toArrayHelper(java.lang.Object[],int):0 -> d
+      # {"id":"com.android.tools.r8.synthesized"}
+    5:40:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(java.lang.Object[],int):0:0 -> d
+    5:40:java.lang.Object[] toArrayHelper(java.lang.Object[],int):0 -> d
+androidx.collection.ContainerHelpers -> a.c:
+# {"id":"sourceFile","fileName":"ContainerHelpers.java"}
+    int[] EMPTY_INTS -> a
+    java.lang.Object[] EMPTY_OBJECTS -> b
+    1:1:void <clinit>():0:0 -> <clinit>
+androidx.collection.MapCollections -> R8$$REMOVED$$CLASS$$1:
+# {"id":"sourceFile","fileName":"MapCollections.java"}
+androidx.collection.MapCollections$ArrayIterator -> a.d:
+# {"id":"sourceFile","fileName":"MapCollections.java"}
+    int mOffset -> a
+    int mSize -> b
+    int mIndex -> c
+    boolean mCanRemove -> d
+    androidx.collection.MapCollections this$0 -> e
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/a;"}
+    11:12:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> <init>
+    11:12:void <init>(androidx.collection.MapCollections,int):0 -> <init>
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(La/a;I)V"}
+    13:17:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> <init>
+    13:17:void <init>(androidx.collection.MapCollections,int):0 -> <init>
+    1:1:boolean hasNext():0:0 -> hasNext
+    1:1:java.lang.Object next():0:0 -> next
+    1:1:void remove():0:0 -> remove
+androidx.collection.MapCollections$EntrySet -> a.e:
+# {"id":"sourceFile","fileName":"MapCollections.java"}
+    int $r8$classId -> a
+      # {"id":"com.android.tools.r8.synthesized"}
+    androidx.collection.MapCollections this$0 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/a;"}
+    1:8:void androidx.collection.MapCollections$EntrySet.<init>(androidx.collection.MapCollections):0:0 -> <init>
+    1:8:void $r8$init$synthetic(androidx.collection.ArrayMap$1,int):0 -> <init>
+      # {"id":"com.android.tools.r8.synthesized"}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(La/a;I)V"}
+    6:11:boolean androidx.collection.MapCollections$KeySet.add(java.lang.Object):0:0 -> add
+    6:11:boolean add$bridge(java.lang.Object):0 -> add
+      # {"id":"com.android.tools.r8.synthesized"}
+    12:13:boolean androidx.collection.MapCollections$EntrySet.add(java.lang.Object):0:0 -> add
+    12:13:boolean add$bridge(java.lang.Object):0 -> add
+    14:20:boolean androidx.collection.MapCollections$EntrySet.add(java.util.Map$Entry):0:0 -> add
+    14:20:boolean androidx.collection.MapCollections$EntrySet.add(java.lang.Object):0 -> add
+    14:20:boolean add$bridge(java.lang.Object):0 -> add
+    6:13:boolean androidx.collection.MapCollections$KeySet.addAll(java.util.Collection):0:0 -> addAll
+    6:13:boolean addAll$bridge(java.util.Collection):0 -> addAll
+      # {"id":"com.android.tools.r8.synthesized"}
+    14:15:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> addAll
+    14:15:boolean androidx.collection.MapCollections$EntrySet.addAll(java.util.Collection):0 -> addAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    14:15:boolean addAll$bridge(java.util.Collection):0 -> addAll
+    16:17:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> addAll
+    16:17:boolean androidx.collection.MapCollections$EntrySet.addAll(java.util.Collection):0 -> addAll
+    16:17:boolean addAll$bridge(java.util.Collection):0 -> addAll
+    18:43:boolean androidx.collection.MapCollections$EntrySet.addAll(java.util.Collection):0:0 -> addAll
+    18:43:boolean addAll$bridge(java.util.Collection):0 -> addAll
+    44:47:void androidx.collection.ArrayMap$1.colPut(java.lang.Object,java.lang.Object):0:0 -> addAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    44:47:boolean androidx.collection.MapCollections$EntrySet.addAll(java.util.Collection):0 -> addAll
+    44:47:boolean addAll$bridge(java.util.Collection):0 -> addAll
+    48:56:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> addAll
+    48:56:boolean androidx.collection.MapCollections$EntrySet.addAll(java.util.Collection):0 -> addAll
+    48:56:boolean addAll$bridge(java.util.Collection):0 -> addAll
+    8:9:void androidx.collection.ArrayMap$1.colClear():0:0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    8:9:void androidx.collection.MapCollections$KeySet.clear():0 -> clear
+    8:9:void clear$bridge():0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+      # {"id":"com.android.tools.r8.synthesized"}
+    10:13:void androidx.collection.ArrayMap$1.colClear():0:0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    10:13:void androidx.collection.MapCollections$KeySet.clear():0 -> clear
+    10:13:void clear$bridge():0 -> clear
+    14:15:void androidx.collection.ArrayMap$1.colClear():0:0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    14:15:void androidx.collection.MapCollections$EntrySet.clear():0 -> clear
+    14:15:void clear$bridge():0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+    16:20:void androidx.collection.ArrayMap$1.colClear():0:0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    16:20:void androidx.collection.MapCollections$EntrySet.clear():0 -> clear
+    16:20:void clear$bridge():0 -> clear
+    10:11:int androidx.collection.ArrayMap$1.colIndexOfKey(java.lang.Object):0:0 -> contains
+    10:11:boolean androidx.collection.MapCollections$KeySet.contains(java.lang.Object):0 -> contains
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    10:11:boolean contains$bridge(java.lang.Object):0 -> contains
+      # {"id":"com.android.tools.r8.synthesized"}
+    12:19:int androidx.collection.ArrayMap$1.colIndexOfKey(java.lang.Object):0:0 -> contains
+    12:19:boolean androidx.collection.MapCollections$KeySet.contains(java.lang.Object):0 -> contains
+    12:19:boolean contains$bridge(java.lang.Object):0 -> contains
+    20:30:boolean androidx.collection.MapCollections$EntrySet.contains(java.lang.Object):0:0 -> contains
+    20:30:boolean contains$bridge(java.lang.Object):0 -> contains
+    31:32:int androidx.collection.ArrayMap$1.colIndexOfKey(java.lang.Object):0:0 -> contains
+    31:32:boolean androidx.collection.MapCollections$EntrySet.contains(java.lang.Object):0 -> contains
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    31:32:boolean contains$bridge(java.lang.Object):0 -> contains
+    33:39:int androidx.collection.ArrayMap$1.colIndexOfKey(java.lang.Object):0:0 -> contains
+    33:39:boolean androidx.collection.MapCollections$EntrySet.contains(java.lang.Object):0 -> contains
+    33:39:boolean contains$bridge(java.lang.Object):0 -> contains
+    40:51:boolean androidx.collection.MapCollections$EntrySet.contains(java.lang.Object):0:0 -> contains
+    40:51:boolean contains$bridge(java.lang.Object):0 -> contains
+    52:60:boolean androidx.collection.ContainerHelpers.equal(java.lang.Object,java.lang.Object):0:0 -> contains
+    52:60:boolean androidx.collection.MapCollections$EntrySet.contains(java.lang.Object):0 -> contains
+    52:60:boolean contains$bridge(java.lang.Object):0 -> contains
+    10:11:java.util.Map androidx.collection.ArrayMap$1.colGetMap():0:0 -> containsAll
+    10:11:boolean androidx.collection.MapCollections$KeySet.containsAll(java.util.Collection):0 -> containsAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    10:11:boolean containsAll$bridge(java.util.Collection):0 -> containsAll
+      # {"id":"com.android.tools.r8.synthesized"}
+    12:25:boolean androidx.collection.MapCollections.containsAllHelper(java.util.Map,java.util.Collection):0:0 -> containsAll
+    12:25:boolean androidx.collection.MapCollections$KeySet.containsAll(java.util.Collection):0 -> containsAll
+    12:25:boolean containsAll$bridge(java.util.Collection):0 -> containsAll
+    26:33:boolean androidx.collection.MapCollections.containsAllHelper(java.util.Map,java.util.Collection):0:0 -> containsAll
+    26:33:boolean androidx.collection.MapCollections$KeySet.containsAll(java.util.Collection):0 -> containsAll
+    26:33:boolean containsAll$bridge(java.util.Collection):0 -> containsAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+    34:56:boolean androidx.collection.MapCollections$EntrySet.containsAll(java.util.Collection):0:0 -> containsAll
+    34:56:boolean containsAll$bridge(java.util.Collection):0 -> containsAll
+    6:10:boolean androidx.collection.MapCollections$KeySet.equals(java.lang.Object):0:0 -> equals
+    6:10:boolean equals$bridge(java.lang.Object):0 -> equals
+      # {"id":"com.android.tools.r8.synthesized"}
+    11:16:boolean androidx.collection.MapCollections$EntrySet.equals(java.lang.Object):0:0 -> equals
+    11:16:boolean equals$bridge(java.lang.Object):0 -> equals
+    10:11:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> hashCode
+    10:11:int androidx.collection.MapCollections$KeySet.hashCode():0 -> hashCode
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    10:11:int hashCode$bridge():0 -> hashCode
+      # {"id":"com.android.tools.r8.synthesized"}
+    12:17:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> hashCode
+    12:17:int androidx.collection.MapCollections$KeySet.hashCode():0 -> hashCode
+    12:17:int hashCode$bridge():0 -> hashCode
+    18:34:int androidx.collection.MapCollections$KeySet.hashCode():0:0 -> hashCode
+    18:34:int hashCode$bridge():0 -> hashCode
+    35:36:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> hashCode
+    35:36:int androidx.collection.MapCollections$EntrySet.hashCode():0 -> hashCode
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    35:36:int hashCode$bridge():0 -> hashCode
+    37:42:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> hashCode
+    37:42:int androidx.collection.MapCollections$EntrySet.hashCode():0 -> hashCode
+    37:42:int hashCode$bridge():0 -> hashCode
+    43:72:int androidx.collection.MapCollections$EntrySet.hashCode():0:0 -> hashCode
+    43:72:int hashCode$bridge():0 -> hashCode
+    10:11:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> isEmpty
+    10:11:boolean androidx.collection.MapCollections$KeySet.isEmpty():0 -> isEmpty
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    10:11:boolean isEmpty$bridge():0 -> isEmpty
+      # {"id":"com.android.tools.r8.synthesized"}
+    12:17:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> isEmpty
+    12:17:boolean androidx.collection.MapCollections$KeySet.isEmpty():0 -> isEmpty
+    12:17:boolean isEmpty$bridge():0 -> isEmpty
+    18:19:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> isEmpty
+    18:19:boolean androidx.collection.MapCollections$EntrySet.isEmpty():0 -> isEmpty
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    18:19:boolean isEmpty$bridge():0 -> isEmpty
+    20:26:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> isEmpty
+    20:26:boolean androidx.collection.MapCollections$EntrySet.isEmpty():0 -> isEmpty
+    20:26:boolean isEmpty$bridge():0 -> isEmpty
+    8:14:java.util.Iterator androidx.collection.MapCollections$KeySet.iterator():0:0 -> iterator
+    8:14:java.util.Iterator iterator$bridge():0 -> iterator
+      # {"id":"com.android.tools.r8.synthesized"}
+    15:20:java.util.Iterator androidx.collection.MapCollections$EntrySet.iterator():0:0 -> iterator
+    15:20:java.util.Iterator iterator$bridge():0 -> iterator
+    8:9:int androidx.collection.ArrayMap$1.colIndexOfKey(java.lang.Object):0:0 -> remove
+    8:9:boolean androidx.collection.MapCollections$KeySet.remove(java.lang.Object):0 -> remove
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    8:9:boolean remove$bridge(java.lang.Object):0 -> remove
+      # {"id":"com.android.tools.r8.synthesized"}
+    10:15:int androidx.collection.ArrayMap$1.colIndexOfKey(java.lang.Object):0:0 -> remove
+    10:15:boolean androidx.collection.MapCollections$KeySet.remove(java.lang.Object):0 -> remove
+    10:15:boolean remove$bridge(java.lang.Object):0 -> remove
+    16:22:boolean androidx.collection.MapCollections$KeySet.remove(java.lang.Object):0:0 -> remove
+    16:22:boolean remove$bridge(java.lang.Object):0 -> remove
+    23:28:boolean androidx.collection.MapCollections$EntrySet.remove(java.lang.Object):0:0 -> remove
+    23:28:boolean remove$bridge(java.lang.Object):0 -> remove
+    8:9:java.util.Map androidx.collection.ArrayMap$1.colGetMap():0:0 -> removeAll
+    8:9:boolean androidx.collection.MapCollections$KeySet.removeAll(java.util.Collection):0 -> removeAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    8:9:boolean removeAll$bridge(java.util.Collection):0 -> removeAll
+      # {"id":"com.android.tools.r8.synthesized"}
+    10:11:int androidx.collection.SimpleArrayMap.size():0:0 -> removeAll
+    10:11:boolean androidx.collection.MapCollections.removeAllHelper(java.util.Map,java.util.Collection):0 -> removeAll
+    10:11:boolean androidx.collection.MapCollections$KeySet.removeAll(java.util.Collection):0 -> removeAll
+    10:11:boolean removeAll$bridge(java.util.Collection):0 -> removeAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(3)"]}
+    12:25:boolean androidx.collection.MapCollections.removeAllHelper(java.util.Map,java.util.Collection):0:0 -> removeAll
+    12:25:boolean androidx.collection.MapCollections$KeySet.removeAll(java.util.Collection):0 -> removeAll
+    12:25:boolean removeAll$bridge(java.util.Collection):0 -> removeAll
+    26:29:boolean androidx.collection.MapCollections.removeAllHelper(java.util.Map,java.util.Collection):0:0 -> removeAll
+    26:29:boolean androidx.collection.MapCollections$KeySet.removeAll(java.util.Collection):0 -> removeAll
+    26:29:boolean removeAll$bridge(java.util.Collection):0 -> removeAll
+    30:37:int androidx.collection.SimpleArrayMap.size():0:0 -> removeAll
+    30:37:boolean androidx.collection.MapCollections.removeAllHelper(java.util.Map,java.util.Collection):0 -> removeAll
+    30:37:boolean androidx.collection.MapCollections$KeySet.removeAll(java.util.Collection):0 -> removeAll
+    30:37:boolean removeAll$bridge(java.util.Collection):0 -> removeAll
+    38:44:boolean androidx.collection.MapCollections$EntrySet.removeAll(java.util.Collection):0:0 -> removeAll
+    38:44:boolean removeAll$bridge(java.util.Collection):0 -> removeAll
+    8:9:java.util.Map androidx.collection.ArrayMap$1.colGetMap():0:0 -> retainAll
+    8:9:boolean androidx.collection.MapCollections$KeySet.retainAll(java.util.Collection):0 -> retainAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    8:9:boolean retainAll$bridge(java.util.Collection):0 -> retainAll
+      # {"id":"com.android.tools.r8.synthesized"}
+    10:11:int androidx.collection.SimpleArrayMap.size():0:0 -> retainAll
+    10:11:boolean androidx.collection.MapCollections.retainAllHelper(java.util.Map,java.util.Collection):0 -> retainAll
+    10:11:boolean androidx.collection.MapCollections$KeySet.retainAll(java.util.Collection):0 -> retainAll
+    10:11:boolean retainAll$bridge(java.util.Collection):0 -> retainAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(3)"]}
+    12:41:boolean androidx.collection.MapCollections.retainAllHelper(java.util.Map,java.util.Collection):0:0 -> retainAll
+    12:41:boolean androidx.collection.MapCollections$KeySet.retainAll(java.util.Collection):0 -> retainAll
+    12:41:boolean retainAll$bridge(java.util.Collection):0 -> retainAll
+    42:49:int androidx.collection.SimpleArrayMap.size():0:0 -> retainAll
+    42:49:boolean androidx.collection.MapCollections.retainAllHelper(java.util.Map,java.util.Collection):0 -> retainAll
+    42:49:boolean androidx.collection.MapCollections$KeySet.retainAll(java.util.Collection):0 -> retainAll
+    42:49:boolean retainAll$bridge(java.util.Collection):0 -> retainAll
+    50:56:boolean androidx.collection.MapCollections$EntrySet.retainAll(java.util.Collection):0:0 -> retainAll
+    50:56:boolean retainAll$bridge(java.util.Collection):0 -> retainAll
+    8:9:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> size
+    8:9:int androidx.collection.MapCollections$KeySet.size():0 -> size
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    8:9:int size$bridge():0 -> size
+      # {"id":"com.android.tools.r8.synthesized"}
+    10:12:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> size
+    10:12:int androidx.collection.MapCollections$KeySet.size():0 -> size
+    10:12:int size$bridge():0 -> size
+    13:14:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> size
+    13:14:int androidx.collection.MapCollections$EntrySet.size():0 -> size
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    13:14:int size$bridge():0 -> size
+    15:18:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> size
+    15:18:int androidx.collection.MapCollections$EntrySet.size():0 -> size
+    15:18:int size$bridge():0 -> size
+    1:1:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> toArray
+    1:1:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(int):0 -> toArray
+    1:1:java.lang.Object[] androidx.collection.MapCollections$KeySet.toArray():0 -> toArray
+    1:1:java.lang.Object[] toArray$bridge():0 -> toArray
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(3)"]}
+      # {"id":"com.android.tools.r8.synthesized"}
+    2:2:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> toArray
+    2:2:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(int):0 -> toArray
+    2:2:java.lang.Object[] androidx.collection.MapCollections$KeySet.toArray():0 -> toArray
+    2:2:java.lang.Object[] toArray$bridge():0 -> toArray
+    3:3:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(int):0:0 -> toArray
+    3:3:java.lang.Object[] androidx.collection.MapCollections$KeySet.toArray():0 -> toArray
+    3:3:java.lang.Object[] toArray$bridge():0 -> toArray
+    4:4:java.lang.Object[] androidx.collection.MapCollections$EntrySet.toArray():0:0 -> toArray
+    4:4:java.lang.Object[] toArray$bridge():0 -> toArray
+    5:5:java.lang.Object[] androidx.collection.MapCollections$KeySet.toArray(java.lang.Object[]):0:0 -> toArray
+    5:5:java.lang.Object[] toArray$bridge(java.lang.Object[]):0 -> toArray
+      # {"id":"com.android.tools.r8.synthesized"}
+    6:6:java.lang.Object[] androidx.collection.MapCollections$EntrySet.toArray(java.lang.Object[]):0:0 -> toArray
+    6:6:java.lang.Object[] toArray$bridge(java.lang.Object[]):0 -> toArray
+androidx.collection.MapCollections$KeySet -> R8$$REMOVED$$CLASS$$0:
+# {"id":"sourceFile","fileName":"MapCollections.java"}
+androidx.collection.MapCollections$MapIterator -> a.f:
+# {"id":"sourceFile","fileName":"MapCollections.java"}
+    int mEnd -> a
+    int mIndex -> b
+    boolean mEntryValid -> c
+    androidx.collection.MapCollections this$0 -> d
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/a;"}
+    9:10:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> <init>
+    9:10:void <init>(androidx.collection.MapCollections):0 -> <init>
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(La/a;)V"}
+    11:20:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> <init>
+    11:20:void <init>(androidx.collection.MapCollections):0 -> <init>
+    29:34:boolean androidx.collection.ContainerHelpers.equal(java.lang.Object,java.lang.Object):0:0 -> equals
+    29:34:boolean equals(java.lang.Object):0 -> equals
+    35:49:boolean equals(java.lang.Object):0:0 -> equals
+    50:57:boolean androidx.collection.ContainerHelpers.equal(java.lang.Object,java.lang.Object):0:0 -> equals
+    50:57:boolean equals(java.lang.Object):0 -> equals
+    58:65:boolean equals(java.lang.Object):0:0 -> equals
+    1:1:java.lang.Object getKey():0:0 -> getKey
+    1:1:java.lang.Object getValue():0:0 -> getValue
+    1:1:boolean hasNext():0:0 -> hasNext
+    1:1:int hashCode():0:0 -> hashCode
+    1:21:java.util.Map$Entry androidx.collection.MapCollections$MapIterator.next():0:0 -> next
+    1:21:java.lang.Object next():0 -> next
+    1:1:void remove():0:0 -> remove
+    13:14:java.lang.Object androidx.collection.SimpleArrayMap.setValueAt(int,java.lang.Object):0:0 -> setValue
+    13:14:java.lang.Object androidx.collection.ArrayMap$1.colSetValue(int,java.lang.Object):0 -> setValue
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    13:14:java.lang.Object setValue(java.lang.Object):0 -> setValue
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+    15:16:java.lang.Object androidx.collection.SimpleArrayMap.setValueAt(int,java.lang.Object):0:0 -> setValue
+    15:16:java.lang.Object androidx.collection.ArrayMap$1.colSetValue(int,java.lang.Object):0 -> setValue
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    15:16:java.lang.Object setValue(java.lang.Object):0 -> setValue
+    17:21:java.lang.Object androidx.collection.SimpleArrayMap.setValueAt(int,java.lang.Object):0:0 -> setValue
+    17:21:java.lang.Object androidx.collection.ArrayMap$1.colSetValue(int,java.lang.Object):0 -> setValue
+    17:21:java.lang.Object setValue(java.lang.Object):0 -> setValue
+    22:29:java.lang.Object setValue(java.lang.Object):0:0 -> setValue
+    1:1:java.lang.String toString():0:0 -> toString
+androidx.collection.MapCollections$ValuesCollection -> a.g:
+# {"id":"sourceFile","fileName":"MapCollections.java"}
+    androidx.collection.MapCollections this$0 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/a;"}
+    1:1:void <init>(androidx.collection.MapCollections):0:0 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(La/a;)V"}
+    1:1:boolean add(java.lang.Object):0:0 -> add
+    1:1:boolean addAll(java.util.Collection):0:0 -> addAll
+    3:4:void androidx.collection.ArrayMap$1.colClear():0:0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    3:4:void clear():0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+      # {"id":"com.android.tools.r8.synthesized"}
+    5:8:void androidx.collection.ArrayMap$1.colClear():0:0 -> clear
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    5:8:void clear():0 -> clear
+    3:4:int androidx.collection.ArrayMap$1.colIndexOfValue(java.lang.Object):0:0 -> contains
+    3:4:boolean contains(java.lang.Object):0 -> contains
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    5:14:int androidx.collection.ArrayMap$1.colIndexOfValue(java.lang.Object):0:0 -> contains
+    5:14:boolean contains(java.lang.Object):0 -> contains
+    1:1:boolean containsAll(java.util.Collection):0:0 -> containsAll
+    3:4:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> isEmpty
+    3:4:boolean isEmpty():0 -> isEmpty
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    5:12:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> isEmpty
+    5:12:boolean isEmpty():0 -> isEmpty
+    1:1:java.util.Iterator iterator():0:0 -> iterator
+    3:4:int androidx.collection.ArrayMap$1.colIndexOfValue(java.lang.Object):0:0 -> remove
+    3:4:boolean remove(java.lang.Object):0 -> remove
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    5:10:int androidx.collection.ArrayMap$1.colIndexOfValue(java.lang.Object):0:0 -> remove
+    5:10:boolean remove(java.lang.Object):0 -> remove
+    11:17:boolean remove(java.lang.Object):0:0 -> remove
+    3:4:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> removeAll
+    3:4:boolean removeAll(java.util.Collection):0 -> removeAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    5:11:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> removeAll
+    5:11:boolean removeAll(java.util.Collection):0 -> removeAll
+    12:32:boolean removeAll(java.util.Collection):0:0 -> removeAll
+    3:4:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> retainAll
+    3:4:boolean retainAll(java.util.Collection):0 -> retainAll
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    5:11:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> retainAll
+    5:11:boolean retainAll(java.util.Collection):0 -> retainAll
+    12:32:boolean retainAll(java.util.Collection):0:0 -> retainAll
+    3:4:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> size
+    3:4:int size():0 -> size
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    5:7:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> size
+    5:7:int size():0 -> size
+    1:1:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> toArray
+    1:1:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(int):0 -> toArray
+    1:1:java.lang.Object[] toArray():0 -> toArray
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+    2:2:int androidx.collection.ArrayMap$1.colGetSize():0:0 -> toArray
+    2:2:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(int):0 -> toArray
+    2:2:java.lang.Object[] toArray():0 -> toArray
+    3:3:java.lang.Object[] androidx.collection.MapCollections.toArrayHelper(int):0:0 -> toArray
+    3:3:java.lang.Object[] toArray():0 -> toArray
+    4:4:java.lang.Object[] toArray(java.lang.Object[]):0:0 -> toArray
+androidx.collection.SimpleArrayMap -> R8$$REMOVED$$CLASS$$2:
+# {"id":"sourceFile","fileName":"SimpleArrayMap.java"}
+androidx.core.app.CoreComponentFactory -> androidx.core.app.CoreComponentFactory:
+# {"id":"sourceFile","fileName":"CoreComponentFactory.java"}
+androidx.core.app.RemoteActionCompat -> androidx.core.app.RemoteActionCompat:
+# {"id":"sourceFile","fileName":"RemoteActionCompat.java"}
+    androidx.core.graphics.drawable.IconCompat mIcon -> a
+    java.lang.CharSequence mTitle -> b
+    java.lang.CharSequence mContentDescription -> c
+    android.app.PendingIntent mActionIntent -> d
+    boolean mEnabled -> e
+    boolean mShouldShowIcon -> f
+androidx.core.app.RemoteActionCompatParcelizer -> androidx.core.app.RemoteActionCompatParcelizer:
+# {"id":"sourceFile","fileName":"RemoteActionCompatParcelizer.java"}
+    9:15:androidx.versionedparcelable.VersionedParcelable androidx.versionedparcelable.VersionedParcel.readVersionedParcelable(androidx.versionedparcelable.VersionedParcelable,int):0:0 -> read
+    9:15:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lc/b;)Landroidx/core/app/RemoteActionCompat;"}
+    16:19:androidx.versionedparcelable.VersionedParcelable androidx.versionedparcelable.VersionedParcel.readVersionedParcelable(androidx.versionedparcelable.VersionedParcelable,int):0:0 -> read
+    16:19:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    20:26:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0:0 -> read
+    27:36:java.lang.CharSequence androidx.versionedparcelable.VersionedParcel.readCharSequence(java.lang.CharSequence,int):0:0 -> read
+    27:36:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    37:51:java.lang.CharSequence androidx.versionedparcelable.VersionedParcelParcel.readCharSequence():0:0 -> read
+    37:51:java.lang.CharSequence androidx.versionedparcelable.VersionedParcel.readCharSequence(java.lang.CharSequence,int):0 -> read
+    37:51:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    52:61:java.lang.CharSequence androidx.versionedparcelable.VersionedParcel.readCharSequence(java.lang.CharSequence,int):0:0 -> read
+    52:61:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    62:76:java.lang.CharSequence androidx.versionedparcelable.VersionedParcelParcel.readCharSequence():0:0 -> read
+    62:76:java.lang.CharSequence androidx.versionedparcelable.VersionedParcel.readCharSequence(java.lang.CharSequence,int):0 -> read
+    62:76:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    77:87:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0:0 -> read
+    88:98:boolean androidx.versionedparcelable.VersionedParcel.readBoolean(boolean,int):0:0 -> read
+    88:98:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    99:114:boolean androidx.versionedparcelable.VersionedParcelParcel.readBoolean():0:0 -> read
+    99:114:boolean androidx.versionedparcelable.VersionedParcel.readBoolean(boolean,int):0 -> read
+    99:114:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    115:123:boolean androidx.versionedparcelable.VersionedParcel.readBoolean(boolean,int):0:0 -> read
+    115:123:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    124:137:boolean androidx.versionedparcelable.VersionedParcelParcel.readBoolean():0:0 -> read
+    124:137:boolean androidx.versionedparcelable.VersionedParcel.readBoolean(boolean,int):0 -> read
+    124:137:androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    7:12:void androidx.versionedparcelable.VersionedParcel.writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable,int):0:0 -> write
+    7:12:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroidx/core/app/RemoteActionCompat;Lc/b;)V"}
+    13:15:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    16:21:void androidx.versionedparcelable.VersionedParcel.writeCharSequence(java.lang.CharSequence,int):0:0 -> write
+    16:21:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    22:27:void androidx.versionedparcelable.VersionedParcelParcel.writeCharSequence(java.lang.CharSequence):0:0 -> write
+    22:27:void androidx.versionedparcelable.VersionedParcel.writeCharSequence(java.lang.CharSequence,int):0 -> write
+    22:27:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    28:30:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    31:33:void androidx.versionedparcelable.VersionedParcel.writeCharSequence(java.lang.CharSequence,int):0:0 -> write
+    31:33:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    34:36:void androidx.versionedparcelable.VersionedParcelParcel.writeCharSequence(java.lang.CharSequence):0:0 -> write
+    34:36:void androidx.versionedparcelable.VersionedParcel.writeCharSequence(java.lang.CharSequence,int):0 -> write
+    34:36:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    37:39:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    40:42:void androidx.versionedparcelable.VersionedParcel.writeParcelable(android.os.Parcelable,int):0:0 -> write
+    40:42:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    43:45:void androidx.versionedparcelable.VersionedParcelParcel.writeParcelable(android.os.Parcelable):0:0 -> write
+    43:45:void androidx.versionedparcelable.VersionedParcel.writeParcelable(android.os.Parcelable,int):0 -> write
+    43:45:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    46:48:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    49:51:void androidx.versionedparcelable.VersionedParcel.writeBoolean(boolean,int):0:0 -> write
+    49:51:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    52:54:void androidx.versionedparcelable.VersionedParcelParcel.writeBoolean(boolean):0:0 -> write
+    52:54:void androidx.versionedparcelable.VersionedParcel.writeBoolean(boolean,int):0 -> write
+    52:54:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    55:57:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    58:60:void androidx.versionedparcelable.VersionedParcel.writeBoolean(boolean,int):0:0 -> write
+    58:60:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    61:64:void androidx.versionedparcelable.VersionedParcelParcel.writeBoolean(boolean):0:0 -> write
+    61:64:void androidx.versionedparcelable.VersionedParcel.writeBoolean(boolean,int):0 -> write
+    61:64:void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+androidx.core.graphics.drawable.IconCompat -> androidx.core.graphics.drawable.IconCompat:
+# {"id":"sourceFile","fileName":"IconCompat.java"}
+    int mType -> a
+    java.lang.Object mObj1 -> b
+    byte[] mData -> c
+    android.os.Parcelable mParcelable -> d
+    int mInt1 -> e
+    int mInt2 -> f
+    android.content.res.ColorStateList mTintList -> g
+    android.graphics.PorterDuff$Mode mTintMode -> h
+    java.lang.String mTintModeStr -> i
+    java.lang.String mString1 -> j
+    android.graphics.PorterDuff$Mode DEFAULT_TINT_MODE -> k
+    1:1:java.lang.String toString():0:0 -> toString
+    2:2:int androidx.core.graphics.drawable.IconCompat$Api23Impl.getResId(java.lang.Object):0:0 -> toString
+    2:2:int getResId():0 -> toString
+    2:2:java.lang.String toString():0 -> toString
+    3:3:java.lang.String toString():0:0 -> toString
+    4:4:int getResId():0:0 -> toString
+    4:4:java.lang.String toString():0 -> toString
+    5:5:java.lang.String toString():0:0 -> toString
+androidx.core.graphics.drawable.IconCompat$Api23Impl -> R8$$REMOVED$$CLASS$$3:
+# {"id":"sourceFile","fileName":"IconCompat.java"}
+androidx.core.graphics.drawable.IconCompat$Api28Impl -> b.a:
+# {"id":"sourceFile","fileName":"IconCompat.java"}
+    1:1:int getResId(java.lang.Object):0:0 -> a
+    1:1:java.lang.String getResPackage(java.lang.Object):0:0 -> b
+    1:1:int getType(java.lang.Object):0:0 -> c
+    1:1:android.net.Uri getUri(java.lang.Object):0:0 -> d
+androidx.core.graphics.drawable.IconCompatParcelizer -> androidx.core.graphics.drawable.IconCompatParcelizer:
+# {"id":"sourceFile","fileName":"IconCompatParcelizer.java"}
+    9:18:int androidx.versionedparcelable.VersionedParcel.readInt(int,int):0:0 -> read
+    9:18:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lc/b;)Landroidx/core/graphics/drawable/IconCompat;"}
+    19:29:int androidx.versionedparcelable.VersionedParcelParcel.readInt():0:0 -> read
+    19:29:int androidx.versionedparcelable.VersionedParcel.readInt(int,int):0 -> read
+    19:29:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    30:39:byte[] androidx.versionedparcelable.VersionedParcel.readByteArray(byte[],int):0:0 -> read
+    30:39:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    40:60:byte[] androidx.versionedparcelable.VersionedParcelParcel.readByteArray():0:0 -> read
+    40:60:byte[] androidx.versionedparcelable.VersionedParcel.readByteArray(byte[],int):0 -> read
+    40:60:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    61:69:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0:0 -> read
+    70:79:int androidx.versionedparcelable.VersionedParcel.readInt(int,int):0:0 -> read
+    70:79:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    80:90:int androidx.versionedparcelable.VersionedParcelParcel.readInt():0:0 -> read
+    80:90:int androidx.versionedparcelable.VersionedParcel.readInt(int,int):0 -> read
+    80:90:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    91:100:int androidx.versionedparcelable.VersionedParcel.readInt(int,int):0:0 -> read
+    91:100:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    101:111:int androidx.versionedparcelable.VersionedParcelParcel.readInt():0:0 -> read
+    101:111:int androidx.versionedparcelable.VersionedParcel.readInt(int,int):0 -> read
+    101:111:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    112:122:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0:0 -> read
+    123:132:java.lang.String androidx.versionedparcelable.VersionedParcel.readString(java.lang.String,int):0:0 -> read
+    123:132:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    133:144:java.lang.String androidx.versionedparcelable.VersionedParcelParcel.readString():0:0 -> read
+    133:144:java.lang.String androidx.versionedparcelable.VersionedParcel.readString(java.lang.String,int):0 -> read
+    133:144:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    145:153:java.lang.String androidx.versionedparcelable.VersionedParcel.readString(java.lang.String,int):0:0 -> read
+    145:153:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    154:163:java.lang.String androidx.versionedparcelable.VersionedParcelParcel.readString():0:0 -> read
+    154:163:java.lang.String androidx.versionedparcelable.VersionedParcel.readString(java.lang.String,int):0 -> read
+    154:163:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    164:250:void androidx.core.graphics.drawable.IconCompat.onPostParceling():0:0 -> read
+    164:250:androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel):0 -> read
+    1:1:void androidx.core.graphics.drawable.IconCompat.onPreParceling(boolean):0:0 -> write
+    1:1:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroidx/core/graphics/drawable/IconCompat;Lc/b;)V"}
+    2:2:void androidx.core.graphics.drawable.IconCompat.onPreParceling(boolean):0:0 -> write
+    2:2:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    3:3:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    4:4:void androidx.versionedparcelable.VersionedParcel.writeInt(int,int):0:0 -> write
+    4:4:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    5:5:void androidx.versionedparcelable.VersionedParcelParcel.writeInt(int):0:0 -> write
+    5:5:void androidx.versionedparcelable.VersionedParcel.writeInt(int,int):0 -> write
+    5:5:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    6:6:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    7:7:void androidx.versionedparcelable.VersionedParcel.writeByteArray(byte[],int):0:0 -> write
+    7:7:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    8:8:void androidx.versionedparcelable.VersionedParcelParcel.writeByteArray(byte[]):0:0 -> write
+    8:8:void androidx.versionedparcelable.VersionedParcel.writeByteArray(byte[],int):0 -> write
+    8:8:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    9:9:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    10:10:void androidx.versionedparcelable.VersionedParcel.writeParcelable(android.os.Parcelable,int):0:0 -> write
+    10:10:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    11:11:void androidx.versionedparcelable.VersionedParcelParcel.writeParcelable(android.os.Parcelable):0:0 -> write
+    11:11:void androidx.versionedparcelable.VersionedParcel.writeParcelable(android.os.Parcelable,int):0 -> write
+    11:11:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    12:12:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    13:13:void androidx.versionedparcelable.VersionedParcel.writeInt(int,int):0:0 -> write
+    13:13:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    14:14:void androidx.versionedparcelable.VersionedParcelParcel.writeInt(int):0:0 -> write
+    14:14:void androidx.versionedparcelable.VersionedParcel.writeInt(int,int):0 -> write
+    14:14:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    15:15:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    16:16:void androidx.versionedparcelable.VersionedParcel.writeInt(int,int):0:0 -> write
+    16:16:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    17:17:void androidx.versionedparcelable.VersionedParcelParcel.writeInt(int):0:0 -> write
+    17:17:void androidx.versionedparcelable.VersionedParcel.writeInt(int,int):0 -> write
+    17:17:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    18:18:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    19:19:void androidx.versionedparcelable.VersionedParcel.writeParcelable(android.os.Parcelable,int):0:0 -> write
+    19:19:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    20:20:void androidx.versionedparcelable.VersionedParcelParcel.writeParcelable(android.os.Parcelable):0:0 -> write
+    20:20:void androidx.versionedparcelable.VersionedParcel.writeParcelable(android.os.Parcelable,int):0 -> write
+    20:20:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    21:21:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    22:22:void androidx.versionedparcelable.VersionedParcel.writeString(java.lang.String,int):0:0 -> write
+    22:22:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    23:23:void androidx.versionedparcelable.VersionedParcelParcel.writeString(java.lang.String):0:0 -> write
+    23:23:void androidx.versionedparcelable.VersionedParcel.writeString(java.lang.String,int):0 -> write
+    23:23:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    24:24:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0:0 -> write
+    25:25:void androidx.versionedparcelable.VersionedParcel.writeString(java.lang.String,int):0:0 -> write
+    25:25:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+    26:26:void androidx.versionedparcelable.VersionedParcelParcel.writeString(java.lang.String):0:0 -> write
+    26:26:void androidx.versionedparcelable.VersionedParcel.writeString(java.lang.String,int):0 -> write
+    26:26:void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel):0 -> write
+androidx.lifecycle.CompositeGeneratedAdaptersObserver -> androidx.lifecycle.CompositeGeneratedAdaptersObserver:
+# {"id":"sourceFile","fileName":"CompositeGeneratedAdaptersObserver.java"}
+androidx.lifecycle.FullLifecycleObserverAdapter -> androidx.lifecycle.FullLifecycleObserverAdapter:
+# {"id":"sourceFile","fileName":"FullLifecycleObserverAdapter.java"}
+androidx.lifecycle.Lifecycling$1 -> androidx.lifecycle.Lifecycling$1:
+# {"id":"sourceFile","fileName":"Lifecycling.java"}
+androidx.lifecycle.ReflectiveGenericLifecycleObserver -> androidx.lifecycle.ReflectiveGenericLifecycleObserver:
+# {"id":"sourceFile","fileName":"ReflectiveGenericLifecycleObserver.java"}
+androidx.lifecycle.SingleGeneratedAdapterObserver -> androidx.lifecycle.SingleGeneratedAdapterObserver:
+# {"id":"sourceFile","fileName":"SingleGeneratedAdapterObserver.java"}
+androidx.versionedparcelable.CustomVersionedParcelable -> androidx.versionedparcelable.CustomVersionedParcelable:
+# {"id":"sourceFile","fileName":"CustomVersionedParcelable.java"}
+androidx.versionedparcelable.ParcelImpl -> androidx.versionedparcelable.ParcelImpl:
+# {"id":"sourceFile","fileName":"ParcelImpl.java"}
+    androidx.versionedparcelable.VersionedParcelable mParcel -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lc/d;"}
+    3:8:void androidx.versionedparcelable.ParcelImpl$1.<init>():0:0 -> <clinit>
+    3:8:void <clinit>():0 -> <clinit>
+androidx.versionedparcelable.ParcelImpl$1 -> c.a:
+# {"id":"sourceFile","fileName":"ParcelImpl.java"}
+    1:6:androidx.versionedparcelable.ParcelImpl androidx.versionedparcelable.ParcelImpl$1.createFromParcel(android.os.Parcel):0:0 -> createFromParcel
+    1:6:java.lang.Object createFromParcel(android.os.Parcel):0 -> createFromParcel
+    1:3:androidx.versionedparcelable.ParcelImpl[] androidx.versionedparcelable.ParcelImpl$1.newArray(int):0:0 -> newArray
+    1:3:java.lang.Object[] newArray(int):0 -> newArray
+androidx.versionedparcelable.VersionedParcel -> c.b:
+# {"id":"sourceFile","fileName":"VersionedParcel.java"}
+    androidx.collection.ArrayMap mReadCache -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/b;"}
+    androidx.collection.ArrayMap mWriteCache -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/b;"}
+    androidx.collection.ArrayMap mParcelizerCache -> c
+      # {"id":"com.android.tools.r8.residualsignature","signature":"La/b;"}
+    1:1:void <init>(androidx.collection.ArrayMap,androidx.collection.ArrayMap,androidx.collection.ArrayMap):0:0 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(La/b;La/b;La/b;)V"}
+    androidx.versionedparcelable.VersionedParcel createSubParcel() -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"()Lc/c;"}
+    7:10:java.lang.Class findParcelClass(java.lang.Class):0:0 -> b
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+      # {"id":"com.android.tools.r8.synthesized"}
+    11:53:java.lang.Class findParcelClass(java.lang.Class):0:0 -> b
+    54:57:java.lang.Class findParcelClass(java.lang.Class):0:0 -> b
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    3:6:java.lang.reflect.Method getReadMethod(java.lang.String):0:0 -> c
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+      # {"id":"com.android.tools.r8.synthesized"}
+    7:35:java.lang.reflect.Method getReadMethod(java.lang.String):0:0 -> c
+    36:39:java.lang.reflect.Method getReadMethod(java.lang.String):0:0 -> c
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    7:10:java.lang.reflect.Method getWriteMethod(java.lang.Class):0:0 -> d
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+      # {"id":"com.android.tools.r8.synthesized"}
+    11:42:java.lang.reflect.Method getWriteMethod(java.lang.Class):0:0 -> d
+    43:46:java.lang.reflect.Method getWriteMethod(java.lang.Class):0:0 -> d
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(0)"]}
+    boolean readField(int) -> e
+    13:23:android.os.Parcelable androidx.versionedparcelable.VersionedParcelParcel.readParcelable():0:0 -> f
+    13:23:android.os.Parcelable readParcelable(android.os.Parcelable,int):0 -> f
+    6:13:java.lang.String androidx.versionedparcelable.VersionedParcelParcel.readString():0:0 -> g
+    6:13:androidx.versionedparcelable.VersionedParcelable readVersionedParcelable():0 -> g
+      # {"id":"com.android.tools.r8.residualsignature","signature":"()Lc/d;"}
+    14:17:androidx.versionedparcelable.VersionedParcelable readVersionedParcelable():0:0 -> g
+    18:89:androidx.versionedparcelable.VersionedParcelable androidx.versionedparcelable.VersionedParcel.readFromParcel(java.lang.String,androidx.versionedparcelable.VersionedParcel):0:0 -> g
+    18:89:androidx.versionedparcelable.VersionedParcelable readVersionedParcelable():0 -> g
+    void setOutputField(int) -> h
+    9:12:void androidx.versionedparcelable.VersionedParcelParcel.writeString(java.lang.String):0:0 -> i
+    9:12:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lc/d;)V"}
+    13:29:void androidx.versionedparcelable.VersionedParcel.writeVersionedParcelableCreator(androidx.versionedparcelable.VersionedParcelable):0:0 -> i
+    13:29:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+    30:32:void androidx.versionedparcelable.VersionedParcelParcel.writeString(java.lang.String):0:0 -> i
+    30:32:void androidx.versionedparcelable.VersionedParcel.writeVersionedParcelableCreator(androidx.versionedparcelable.VersionedParcelable):0 -> i
+    30:32:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+    33:36:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0:0 -> i
+    37:56:void androidx.versionedparcelable.VersionedParcel.writeToParcel(androidx.versionedparcelable.VersionedParcelable,androidx.versionedparcelable.VersionedParcel):0:0 -> i
+    37:56:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+    57:92:void androidx.versionedparcelable.VersionedParcelParcel.closeField():0:0 -> i
+    57:92:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+    93:140:void androidx.versionedparcelable.VersionedParcel.writeToParcel(androidx.versionedparcelable.VersionedParcelable,androidx.versionedparcelable.VersionedParcel):0:0 -> i
+    93:140:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+    141:160:void androidx.versionedparcelable.VersionedParcel.writeVersionedParcelableCreator(androidx.versionedparcelable.VersionedParcelable):0:0 -> i
+    141:160:void writeVersionedParcelable(androidx.versionedparcelable.VersionedParcelable):0 -> i
+androidx.versionedparcelable.VersionedParcelParcel -> c.c:
+# {"id":"sourceFile","fileName":"VersionedParcelParcel.java"}
+    android.util.SparseIntArray mPositionLookup -> d
+    android.os.Parcel mParcel -> e
+    int mOffset -> f
+    int mEnd -> g
+    java.lang.String mPrefix -> h
+    int mCurrentField -> i
+    int mNextRead -> j
+    int mFieldId -> k
+    1:1:void <init>(android.os.Parcel):0:0 -> <init>
+    2:2:void <init>(android.os.Parcel,int,int,java.lang.String,androidx.collection.ArrayMap,androidx.collection.ArrayMap,androidx.collection.ArrayMap):0:0 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroid/os/Parcel;IILjava/lang/String;La/b;La/b;La/b;)V"}
+    1:1:androidx.versionedparcelable.VersionedParcel createSubParcel():0:0 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"()Lc/c;"}
+    1:1:boolean readField(int):0:0 -> e
+    9:29:void androidx.versionedparcelable.VersionedParcelParcel.closeField():0:0 -> h
+    9:29:void setOutputField(int):0 -> h
+    30:37:void setOutputField(int):0:0 -> h
+    38:44:void androidx.versionedparcelable.VersionedParcelParcel.writeInt(int):0:0 -> h
+    38:44:void setOutputField(int):0 -> h
+androidx.versionedparcelable.VersionedParcelable -> c.d:
+# {"id":"sourceFile","fileName":"VersionedParcelable.java"}
+com.securefinance.emilock.admin.AdminReceiver -> com.securefinance.emilock.admin.AdminReceiver:
+# {"id":"sourceFile","fileName":"AdminReceiver.java"}

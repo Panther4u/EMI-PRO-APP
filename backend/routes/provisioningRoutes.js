@@ -25,7 +25,7 @@ router.get('/payload/:customerId', (req, res) => {
         // Construct Android Enterprise Provisioning Payload
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
-                "com.securefinance.emilock.admin/com.securefinance.emilock.DeviceAdminReceiver",
+                "com.securefinance.emilock.admin/.AdminReceiver",
 
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
                 downloadUrl,

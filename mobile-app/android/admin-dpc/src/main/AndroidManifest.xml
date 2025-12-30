@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="false"
+        android:label="SecureFinance Admin"
+        android:icon="@android:drawable/ic_lock_lock"
+        android:theme="@android:style/Theme.NoDisplay">
+
+        <!-- Device Admin Receiver: The CORE of the DPC -->
+        <receiver
+            android:name=".AdminReceiver"
+            android:description="@string/app_name"
+            android:label="SecureFinance Admin"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

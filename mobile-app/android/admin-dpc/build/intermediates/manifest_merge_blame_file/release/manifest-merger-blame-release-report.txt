@@ -1,0 +1,68 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.securefinance.emilock.admin"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="34" />
+10
+11    <permission
+11-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+12        android:name="com.securefinance.emilock.admin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+12-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+13        android:protectionLevel="signature" />
+13-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+14
+15    <uses-permission android:name="com.securefinance.emilock.admin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+15-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+15-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+16
+17    <application
+17-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:4:5-26:19
+18        android:allowBackup="false"
+18-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:5:9-36
+19        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+19-->[androidx.core:core:1.12.0] /Users/kavi/.gradle/caches/8.10/transforms/3efeadafb0392324d136a85b454f0159/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+20        android:extractNativeLibs="false"
+21        android:icon="@android:drawable/ic_lock_lock"
+21-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:7:9-54
+22        android:label="SecureFinance Admin"
+22-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:6:9-44
+23        android:theme="@android:style/Theme.NoDisplay" >
+23-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:8:9-55
+24
+25        <!-- Device Admin Receiver: The CORE of the DPC -->
+26        <receiver
+26-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:11:9-24:20
+27            android:name="com.securefinance.emilock.admin.AdminReceiver"
+27-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:12:13-42
+28            android:description="@string/app_name"
+28-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:13:13-51
+29            android:exported="true"
+29-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:16:13-36
+30            android:label="SecureFinance Admin"
+30-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:14:13-48
+31            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+31-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:15:13-70
+32            <meta-data
+32-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:17:13-19:56
+33                android:name="android.app.device_admin"
+33-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:18:17-56
+34                android:resource="@xml/device_admin" />
+34-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:19:17-53
+35
+36            <intent-filter>
+36-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:20:13-23:29
+37                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+37-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:21:17-82
+37-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:21:25-79
+38                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+38-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:22:17-91
+38-->/Volumes/Kavi/Emi Pro/EMI-PRO/mobile-app/android/admin-dpc/src/main/AndroidManifest.xml:22:25-88
+39            </intent-filter>
+40        </receiver>
+41    </application>
+42
+43</manifest>
