@@ -16,7 +16,8 @@ router.get('/payload/:customerId', (req, res) => {
         const protocol = req.protocol;
         const host = req.get('host');
         // Prefer PROVISIONING_BASE_URL env var if set (for production behind proxies), otherwise request host
-        const baseUrl = process.env.PROVISIONING_BASE_URL || `${protocol}://${host}`;
+        // FORCE HTTPS: Android 12+ provisioning BLOCKS http downloads.
+        const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate Checksum Check
@@ -39,7 +40,8 @@ router.get('/payload/:customerId', (req, res) => {
             "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
                 "serverUrl": baseUrl,
                 "customerId": customerId
-            }
+            },
+            "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true
         };
 
         res.json(payload);
