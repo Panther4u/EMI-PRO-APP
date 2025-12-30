@@ -108,7 +108,7 @@ const Dashboard = () => {
       {/* Quick Actions Grid */}
       <div>
         <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 px-1">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* View All Customers */}
           <QuickActionCard
             title="Customers"
