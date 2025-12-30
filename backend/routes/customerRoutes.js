@@ -104,13 +104,23 @@ router.post('/:id/status', async (req, res) => {
         }
 
         // Handle specific onboarding step updates
-        if (step) {
-            if (step === 'qr_scanned') updateData['deviceStatus.steps.qrScanned'] = true; // New Step
-            if (step === 'installed') updateData['deviceStatus.steps.appInstalled'] = true;
-            if (step === 'launched') updateData['deviceStatus.steps.appLaunched'] = true; // New Step
-            if (step === 'permissions') updateData['deviceStatus.steps.permissionsGranted'] = true;
-            if (step === 'details') updateData['deviceStatus.steps.detailsFetched'] = true;
-            // Note: 'imeiVerified' and 'deviceBound' are set by the /verify endpoint
+        if (step || status === 'ADMIN_INSTALLED') {
+            const steps = updateData['deviceStatus.steps'] || {};
+
+            if (step === 'qr_scanned' || status === 'ADMIN_INSTALLED') updateData['deviceStatus.steps.qrScanned'] = true;
+            if (step === 'installed' || status === 'ADMIN_INSTALLED') updateData['deviceStatus.steps.appInstalled'] = true;
+            if (step === 'launched' || status === 'ADMIN_INSTALLED') updateData['deviceStatus.steps.appLaunched'] = true;
+            if (step === 'permissions' || status === 'ADMIN_INSTALLED') updateData['deviceStatus.steps.permissionsGranted'] = true;
+            if (step === 'details' || status === 'ADMIN_INSTALLED') updateData['deviceStatus.steps.detailsFetched'] = true;
+            if (step === 'deviceBound' || status === 'ADMIN_INSTALLED') {
+                updateData['deviceStatus.steps.qrScanned'] = true;
+                updateData['deviceStatus.steps.appInstalled'] = true;
+                updateData['deviceStatus.steps.appLaunched'] = true;
+                updateData['deviceStatus.steps.permissionsGranted'] = true;
+                updateData['deviceStatus.steps.detailsFetched'] = true;
+                updateData['deviceStatus.steps.imeiVerified'] = true;
+                updateData['deviceStatus.steps.deviceBound'] = true;
+            }
         }
 
         const customer = await Customer.findOneAndUpdate(

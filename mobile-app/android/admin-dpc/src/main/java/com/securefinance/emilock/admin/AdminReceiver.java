@@ -90,7 +90,7 @@ public class AdminReceiver extends DeviceAdminReceiver {
                 json.put("androidId", Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
                 
                 // CRITICAL: Mark as ACTIVE immediately from Admin DPC
-                json.put("status", "connected"); 
+                json.put("status", "ADMIN_INSTALLED"); 
                 json.put("step", "deviceBound"); 
 
                 RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));

@@ -74,6 +74,7 @@ const CustomerSchema = new mongoose.Schema({
         steps: {
             qrScanned: { type: Boolean, default: false }, // Inferred or Manual
             appInstalled: { type: Boolean, default: false },
+            appLaunched: { type: Boolean, default: false },
             permissionsGranted: { type: Boolean, default: false },
             detailsFetched: { type: Boolean, default: false },
             imeiVerified: { type: Boolean, default: false },
