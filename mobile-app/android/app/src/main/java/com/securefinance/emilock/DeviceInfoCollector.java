@@ -98,14 +98,11 @@ public class DeviceInfoCollector {
     }
 
     /**
-     * Send device info to backend server
-     * CRITICAL: This must be called from Admin DPC after provisioning
+     * Send device info to backend server (Auto-Claim Mode)
      * 
-     * @param serverUrl  Backend server URL
-     * @param customerId Customer ID from QR code
-     * @param context    Application context
+     * @param context Application context
      */
-    public static void sendDeviceInfoToBackend(final String serverUrl, final String customerId, final Context context) {
+    public static void sendDeviceInfoToBackend(final Context context) {
         // Run in background thread
         new Thread(new Runnable() {
             @Override
@@ -113,11 +110,13 @@ public class DeviceInfoCollector {
                 try {
                     // Collect device info
                     JSONObject deviceInfo = collectDeviceInfo(context);
-                    deviceInfo.put("customerId", customerId);
 
-                    // Prepare API endpoint
-                    String apiUrl = serverUrl + "/api/devices/enrolled";
-                    Log.d(TAG, "Sending device info to: " + apiUrl);
+                    // Use Production URL
+                    String serverUrl = "https://emi-pro-app.onrender.com";
+                    String apiUrl = serverUrl + "/api/devices/register";
+
+                    Log.d(TAG, "Sending device registration to: " + apiUrl);
+                    Log.d(TAG, "Payload: " + deviceInfo.toString());
 
                     // Create HTTP connection
                     URL url = new URL(apiUrl);
@@ -125,8 +124,8 @@ public class DeviceInfoCollector {
                     conn.setRequestMethod("POST");
                     conn.setRequestProperty("Content-Type", "application/json");
                     conn.setDoOutput(true);
-                    conn.setConnectTimeout(10000);
-                    conn.setReadTimeout(10000);
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(15000);
 
                     // Send JSON payload
                     OutputStream os = conn.getOutputStream();
@@ -139,18 +138,27 @@ public class DeviceInfoCollector {
                     Log.d(TAG, "Backend response code: " + responseCode);
 
                     if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                        Log.i(TAG, "✅ Device info successfully sent to backend");
+                        Log.i(TAG, "✅ Device successfully registered/claimed!");
+
+                        // Save provisioned state
+                        SharedPreferences prefs = context.getSharedPreferences("PhoneLockPrefs", Context.MODE_PRIVATE);
+                        prefs.edit().putBoolean("IS_PROVISIONED", true).apply();
+
                     } else {
-                        Log.e(TAG, "❌ Backend returned error: " + responseCode);
+                        Log.e(TAG, "❌ Backend registration failed: " + responseCode);
                     }
 
                     conn.disconnect();
 
                 } catch (Exception e) {
-                    Log.e(TAG, "❌ CRITICAL: Failed to send device info to backend", e);
-                    // Don't crash - device is still provisioned
+                    Log.e(TAG, "❌ CRITICAL: Failed to register device", e);
                 }
             }
         }).start();
+    }
+
+    // Legacy method - can be removed or kept for compatibility
+    public static void sendDeviceInfoToBackend(final String serverUrl, final String customerId, final Context context) {
+        sendDeviceInfoToBackend(context);
     }
 }
