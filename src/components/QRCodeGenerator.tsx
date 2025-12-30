@@ -242,6 +242,10 @@ export const QRCodeGenerator = () => {
 
       setQrGenerated(true);
       setCreatedCustomerId(newId);
+
+      // Fetch QR data from backend
+      await fetchQRData(newId);
+
       toast({
         title: 'Success',
         description: 'Customer registered. Please scan the QR code.',
@@ -252,24 +256,39 @@ export const QRCodeGenerator = () => {
     }
   };
 
-  // Generate QR Data using the centralized utility
-  const qrData = useMemo(() => {
-    return getDeviceOwnerProvisioningQR(
-      {
-        id: createdCustomerId || `CUST${Date.now().toString().slice(-6)}`,
-        name: formData.customerName,
-        phoneNo: formData.phoneNo,
-        mobileModel: formData.mobileModel,
-        imei1: formData.imei1,
-        imei2: formData.imei2,
-        financeName: formData.financeName || 'SecureFinance EMI',
-        totalAmount: formData.totalAmount,
-        emiAmount: formData.emiAmount,
-        totalEmis: formData.totalEmis,
-      },
-      undefined // Use default serverUrl
-    );
-  }, [formData, createdCustomerId]);
+  const [qrData, setQrData] = useState<string>('');
+  const [qrLoading, setQrLoading] = useState(false);
+
+  // Fetch QR data when customer is created
+  const fetchQRData = async (customerId: string) => {
+    setQrLoading(true);
+    try {
+      const data = await getDeviceOwnerProvisioningQR(
+        {
+          id: customerId,
+          name: formData.customerName,
+          phoneNo: formData.phoneNo,
+          mobileModel: formData.mobileModel,
+          imei1: formData.imei1,
+          imei2: formData.imei2,
+          financeName: formData.financeName || 'SecureFinance EMI',
+          totalAmount: formData.totalAmount,
+          emiAmount: formData.emiAmount,
+          totalEmis: formData.totalEmis,
+        }
+      );
+      setQrData(data);
+    } catch (error) {
+      console.error('Error generating QR data:', error);
+      toast({
+        title: 'QR Generation Failed',
+        description: 'Could not generate QR code. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setQrLoading(false);
+    }
+  };
 
   const copyQRData = () => {
     navigator.clipboard.writeText(qrData);

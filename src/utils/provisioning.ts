@@ -35,52 +35,20 @@ export const getDeviceOwnerProvisioningQR = (
         password: string;
         securityType?: 'WPA' | 'WEP' | 'NONE';
     }
-): string => {
-    // Android Device Owner Provisioning Payload
-    // This is what Android expects during factory reset QR provisioning
-    const provisioningPayload: any = {
-        // Required: Device Admin Component
-        // Format: packageName/receiverClass
-        // The package name MUST match the applicationId in build.gradle (com.securefinance.emilock.user)
-        "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
-            "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
-
-        "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME":
-            "com.securefinance.emilock.user",
-
-        // Required: APK Download URL (MUST be publicly accessible)
-        // We FORCE the production URL here because the APK checksum below corresponds 
-        // to the signed Release APK, which is hosted on production.
-        "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
-            `${PROVISIONING_BASE_URL}/downloads/app-user-release.apk`,
-
-        // Required: APK SHA-256 Checksum (URL-Safe Base64 encoded)
-        // CRITICAL: Must use URL-safe alphabet (-_) and NO padding
-        "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM":
-            "FgkXX4FuNRqxP7LXG6aQrPwAFbRdOMjH90LuhF-dlzI",
-
-        // Optional but recommended: Skip encryption for faster setup
-        "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": false,
-
-        // Optional: Leave system apps enabled
-        "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
-
-        // Custom data passed to the Device Admin Receiver
-        "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-            // We pass the production URL so the app connects to the right server immediately
-            serverUrl: PROVISIONING_BASE_URL,
-            customerId: customer.id
+): Promise<string> => {
+    // CRITICAL: Fetch the provisioning payload from the backend
+    // This ensures the checksum is always calculated from the actual APK file on the server
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/provisioning/payload/${customer.id}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch provisioning payload');
         }
-    };
-
-    // Add Wi-Fi configuration if provided
-    if (wifiConfig) {
-        provisioningPayload["android.app.extra.PROVISIONING_WIFI_SSID"] = wifiConfig.ssid;
-        provisioningPayload["android.app.extra.PROVISIONING_WIFI_PASSWORD"] = wifiConfig.password;
-        provisioningPayload["android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE"] = wifiConfig.securityType || "WPA";
+        const payload = await response.json();
+        return JSON.stringify(payload);
+    } catch (error) {
+        console.error('Error fetching provisioning payload:', error);
+        throw error;
     }
-
-    return JSON.stringify(provisioningPayload);
 };
 
 
