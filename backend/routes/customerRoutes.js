@@ -180,7 +180,8 @@ router.post('/:id/verify', async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ message: err.message });
-    });
+    }
+});
 
 // Heartbeat endpoint - User App sends status every few seconds
 router.post('/heartbeat', async (req, res) => {
