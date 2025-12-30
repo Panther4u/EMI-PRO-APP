@@ -18,6 +18,18 @@ import java.net.URL;
 
 public class AdminReceiver extends DeviceAdminReceiver {
     private static final String TAG = "SecureFinanceAdmin";
+    private static final String ACTION_INSTALL_COMPLETE = "INSTALL_COMPLETE";
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        
+        if (ACTION_INSTALL_COMPLETE.equals(intent.getAction())) {
+            Log.d(TAG, "User APK installation completed");
+            // Launch the User App
+            launchUserApp(context);
+        }
+    }
 
     @Override
     public void onEnabled(Context context, Intent intent) {
@@ -131,5 +143,23 @@ public class AdminReceiver extends DeviceAdminReceiver {
                 Log.e(TAG, "Failed to install User APK", e);
             }
         }).start();
+    }
+
+    private void launchUserApp(Context context) {
+        try {
+            Intent launchIntent = context.getPackageManager()
+                .getLaunchIntentForPackage("com.securefinance.emilock.user");
+            
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                context.startActivity(launchIntent);
+                Log.d(TAG, "User App launched successfully");
+            } else {
+                Log.e(TAG, "User App launch intent not found");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch User App", e);
+        }
     }
 }
