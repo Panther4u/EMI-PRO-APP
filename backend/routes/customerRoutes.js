@@ -27,10 +27,17 @@ router.post('/', async (req, res) => {
     try {
         const customerData = req.body;
 
-        // Check if IMEI already exists
+        // Check if IMEI already exists - UPDATE instead of rejecting
         const existing = await Customer.findOne({ imei1: customerData.imei1 });
         if (existing) {
-            return res.status(409).json({ message: 'Device with this IMEI already exists. Duplicates are not allowed.' });
+            // Update existing customer
+            const updatedCustomer = await Customer.findOneAndUpdate(
+                { imei1: customerData.imei1 },
+                { $set: customerData },
+                { new: true }
+            );
+            console.log(`✅ Updated existing customer: ${updatedCustomer.name}`);
+            return res.status(200).json(updatedCustomer);
         }
 
         const customer = new Customer(customerData);
