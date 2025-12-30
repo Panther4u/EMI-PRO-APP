@@ -1,10 +1,12 @@
 package com.securefinance.emilock.admin;
 
+import android.app.PendingIntent;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInstaller;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PersistableBundle;
@@ -18,6 +20,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -29,14 +32,23 @@ import okhttp3.Response;
 
 public class AdminReceiver extends DeviceAdminReceiver {
     private static final String TAG = "SecureFinanceAdmin";
-    private static final String ACTION_INSTALL_COMPLETE = "INSTALL_COMPLETE";
+    private static final String ACTION_INSTALL_COMPLETE = "com.securefinance.emilock.admin.INSTALL_COMPLETE";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (ACTION_INSTALL_COMPLETE.equals(intent.getAction())) {
-            Log.d(TAG, "User APK installation completed");
-            launchUserApp(context);
+        String action = intent.getAction();
+        Log.d(TAG, "onReceive: " + action);
+
+        if (PackageInstaller.ACTION_SESSION_COMMITTED.equals(action) || ACTION_INSTALL_COMPLETE.equals(action)) {
+            int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE);
+            if (status == PackageInstaller.STATUS_SUCCESS || status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+                Log.d(TAG, "Installation success or pending. Attempting launch...");
+                launchUserApp(context);
+            } else {
+                String msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
+                Log.e(TAG, "Installation failed: " + msg + " (Status: " + status + ")");
+            }
         }
     }
 
@@ -52,7 +64,13 @@ public class AdminReceiver extends DeviceAdminReceiver {
         
         DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName adminComponent = getWho(context);
-        dpm.setProfileEnabled(adminComponent);
+        
+        // 1. Enable Profile
+        try {
+            dpm.setProfileEnabled(adminComponent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to enable profile", e);
+        }
         
         PersistableBundle extras = intent.getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
         if (extras != null) {
@@ -60,38 +78,40 @@ public class AdminReceiver extends DeviceAdminReceiver {
             String customerId = extras.getString("customerId");
             String userApkUrl = extras.getString("userApkUrl");
             
-            // 1. IMMEDIATE REPORT: Send device info to backend
+            Log.d(TAG, "Config: server=" + serverUrl + ", customer=" + customerId);
+
+            // 2. IMMEDIATE REPORT: Device Info
             sendDeviceInfo(context, customerId, serverUrl);
             
-            // 2. Hide Admin App
+            // 3. Hide Admin App (Optional but keeps it clean)
             try {
                 dpm.setApplicationHidden(adminComponent, context.getPackageName(), true);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to hide admin app", e);
-            }
+            } catch (Exception e) {}
 
-            // 3. Auto-install User APK
+            // 4. Auto-install User APK
             if (userApkUrl != null && !userApkUrl.isEmpty()) {
                 installUserApp(context, dpm, adminComponent, userApkUrl, serverUrl, customerId);
+            } else {
+                Log.e(TAG, "No User APK URL found in provisioning extras!");
             }
         }
 
-        Toast.makeText(context, "SecureFinance Device Configured", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Configuring SecureFinance...", Toast.LENGTH_SHORT).show();
     }
 
     private void sendDeviceInfo(Context context, String customerId, String serverUrl) {
         new Thread(() -> {
             try {
                 TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                String imei = "";
+                String imei = "unknown";
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         imei = tm.getImei();
                     } else {
                         imei = tm.getDeviceId();
                     }
-                } catch (SecurityException e) {
-                    Log.e(TAG, "Permission denied for IMEI", e);
+                } catch (Exception e) {
+                    Log.w(TAG, "Could not get IMEI: " + e.getMessage());
                 }
 
                 JSONObject json = new JSONObject();
@@ -100,33 +120,16 @@ public class AdminReceiver extends DeviceAdminReceiver {
                 json.put("model", Build.MODEL);
                 json.put("androidVersion", Build.VERSION.SDK_INT);
                 json.put("imei", imei);
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        json.put("serial", Build.getSerial());
-                    }
-                } catch (SecurityException e) {
-                    Log.e(TAG, "Permission denied for Serial", e);
-                }
                 json.put("androidId", Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
-                json.put("enrolledAt", System.currentTimeMillis());
+                json.put("status", "ADMIN_INSTALLED");
 
-                RequestBody body = RequestBody.create(
-                        json.toString(),
-                        MediaType.parse("application/json")
-                );
-
-                Request request = new Request.Builder()
-                        .url(serverUrl + "/api/devices/register")
-                        .post(body)
-                        .build();
-
-                OkHttpClient client = new OkHttpClient();
-                try (Response response = client.newCall(request).execute()) {
-                    Log.d(TAG, "Device registered: " + response.code());
-                }
-
+                RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+                Request request = new Request.Builder().url(serverUrl + "/api/devices/register").post(body).build();
+                
+                new OkHttpClient().newCall(request).execute();
+                Log.d(TAG, "Immediate device report sent");
             } catch (Exception e) {
-                Log.e(TAG, "Failed to send device info", e);
+                Log.e(TAG, "DeviceInfo report failed", e);
             }
         }).start();
     }
@@ -136,69 +139,76 @@ public class AdminReceiver extends DeviceAdminReceiver {
                                 final String serverUrl, final String customerId) {
         new Thread(() -> {
             try {
+                Log.d(TAG, "Downloading User APK: " + apkUrl);
                 URL url = new URL(apkUrl);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(15000);
+                conn.connect();
+
+                if (conn.getResponseCode() != 200) {
+                    Log.e(TAG, "Download failed code: " + conn.getResponseCode());
+                    return;
+                }
 
                 File apkFile = new File(context.getCacheDir(), "user-app.apk");
-                try (InputStream input = connection.getInputStream();
-                     FileOutputStream output = new FileOutputStream(apkFile)) {
-                    byte[] buffer = new byte[65536];
-                    int bytesRead;
-                    while ((bytesRead = input.read(buffer)) != -1) {
-                        output.write(buffer, 0, bytesRead);
-                    }
+                try (InputStream in = conn.getInputStream(); OutputStream out = new FileOutputStream(apkFile)) {
+                    byte[] buf = new byte[8192];
+                    int len;
+                    while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
                 }
 
-                android.content.pm.PackageInstaller packageInstaller = context.getPackageManager().getPackageInstaller();
-                android.content.pm.PackageInstaller.SessionParams params = 
-                    new android.content.pm.PackageInstaller.SessionParams(android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-                int sessionId = packageInstaller.createSession(params);
-                android.content.pm.PackageInstaller.Session session = packageInstaller.openSession(sessionId);
-                
-                try (FileOutputStream output = (FileOutputStream) session.openWrite("user-app", 0, -1);
-                     InputStream input = new java.io.FileInputStream(apkFile)) {
-                    byte[] buffer = new byte[65536];
-                    int bytesRead;
-                    while ((bytesRead = input.read(buffer)) != -1) {
-                        output.write(buffer, 0, bytesRead);
-                    }
-                    session.fsync(output);
+                Log.d(TAG, "Download complete. Starting silent install...");
+
+                PackageInstaller installer = context.getPackageManager().getPackageInstaller();
+                PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
+                        PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+                params.setAppPackageName("com.securefinance.emilock.user");
+
+                int sessionId = installer.createSession(params);
+                PackageInstaller.Session session = installer.openSession(sessionId);
+
+                try (OutputStream out = session.openWrite("user_app_install", 0, -1);
+                     InputStream in = new java.io.FileInputStream(apkFile)) {
+                    byte[] buf = new byte[65536];
+                    int len;
+                    while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+                    session.fsync(out);
                 }
-                
+
                 Intent intent = new Intent(context, AdminReceiver.class);
                 intent.setAction(ACTION_INSTALL_COMPLETE);
-                android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(
-                    context, 0, intent, android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_MUTABLE);
-                
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                        context, sessionId, intent, 
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+
                 session.commit(pendingIntent.getIntentSender());
                 session.close();
                 
-                // Grant permissions
-                String userPackage = "com.securefinance.emilock.user";
-                String[] permissions = {
-                    android.Manifest.permission.READ_PHONE_STATE,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                    android.Manifest.permission.READ_SMS,
-                    android.Manifest.permission.RECEIVE_SMS
-                };
-                for (String p : permissions) {
-                    try { dpm.setPermissionGrantState(adminComponent, userPackage, p, DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED); } catch (Exception e) {}
-                }
-                
+                Log.d(TAG, "Install session committed");
+
+                // Pre-grant permissions
+                String pkg = "com.securefinance.emilock.user";
+                dpm.setPermissionGrantState(adminComponent, pkg, android.Manifest.permission.READ_PHONE_STATE, DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
+                dpm.setPermissionGrantState(adminComponent, pkg, android.Manifest.permission.ACCESS_FINE_LOCATION, DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
+
             } catch (Exception e) {
-                Log.e(TAG, "Install failed", e);
+                Log.e(TAG, "Technical install error", e);
             }
         }).start();
     }
 
     private void launchUserApp(Context context) {
         try {
-            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage("com.securefinance.emilock.user");
-            if (launchIntent != null) {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(launchIntent);
+            Intent i = context.getPackageManager().getLaunchIntentForPackage("com.securefinance.emilock.user");
+            if (i != null) {
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(i);
+                Log.d(TAG, "User app launched successfully");
+            } else {
+                Log.e(TAG, "User app launch intent NULL. Is it installed?");
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            Log.e(TAG, "Launch error", e);
+        }
     }
 }
