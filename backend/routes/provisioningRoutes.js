@@ -9,7 +9,7 @@ router.get('/payload/:customerId', (req, res) => {
         const { customerId } = req.params;
 
         // Dynamic determination of APK Path (assuming standard deployment)
-        const apkFileName = 'app-user-release.apk';
+        const apkFileName = 'app-admin-release.apk';
         const apkPath = path.join(__dirname, '../public', apkFileName);
 
         // Determine Base URL dynamically or from ENV
@@ -25,7 +25,7 @@ router.get('/payload/:customerId', (req, res) => {
         // Construct Android Enterprise Provisioning Payload
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
-                "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
+                "com.securefinance.emilock.admin/com.securefinance.emilock.DeviceAdminReceiver",
 
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
                 downloadUrl,
@@ -34,7 +34,7 @@ router.get('/payload/:customerId', (req, res) => {
                 checksum,
 
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME":
-                "com.securefinance.emilock.user",
+                "com.securefinance.emilock.admin",
 
             "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
                 "serverUrl": baseUrl,
