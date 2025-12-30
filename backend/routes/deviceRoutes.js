@@ -4,22 +4,70 @@ const Device = require("../models/Device");
 const Customer = require("../models/Customer");
 
 // Legacy endpoint - kept for backward compatibility
+// Auto-Claim Register Endpoint (Step 2)
+// Matches device to customer using IMEI
 router.post("/register", async (req, res) => {
     try {
-        const { customerId } = req.body;
-        const device = await Device.findOneAndUpdate(
-            { customerId: customerId },
+        const { imei, imei2, brand, model, androidVersion, androidId, serial } = req.body;
+        let { customerId } = req.body;
+
+        console.log(`📡 Device Register Request: ${brand} ${model} (IMEI: ${imei})`);
+
+        // If no customerId provided, try to find by IMEI (Auto-Claim)
+        if (!customerId) {
+            console.log("   Searching for customer by IMEI...");
+            const searchImei = imei || imei2;
+            if (searchImei) {
+                // Find match in imei1 field
+                const customer = await Customer.findOne({ imei1: searchImei });
+                if (customer) {
+                    customerId = customer.id;
+                    console.log(`   ✅ Match Found! Customer: ${customer.name} (${customer.id})`);
+                } else {
+                    console.warn(`   ⚠️ No matching customer found for IMEI: ${searchImei}`);
+                    return res.status(404).json({
+                        success: false,
+                        error: "Device not pre-registered. No customer found with this IMEI."
+                    });
+                }
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    error: "IMEI required for auto-claim."
+                });
+            }
+        }
+
+        // Logic to update customer status (ADMIN_INSTALLED)
+        const updatedCustomer = await Customer.findOneAndUpdate(
+            { id: customerId },
             {
-                ...req.body,
-                status: "ADMIN_INSTALLED",
-                lastSeen: new Date(),
-                enrolledAt: req.body.enrolledAt || new Date()
+                $set: {
+                    "deviceStatus.status": "ADMIN_INSTALLED", // Step 2 Status
+                    "deviceStatus.lastSeen": new Date(),
+                    "deviceStatus.technical.brand": brand,
+                    "deviceStatus.technical.model": model,
+                    "deviceStatus.technical.osVersion": androidVersion,
+                    "deviceStatus.technical.androidId": androidId,
+                    "deviceStatus.technical.serial": serial,
+                    "isEnrolled": true
+                }
             },
-            { upsert: true, new: true }
+            { new: true }
         );
 
-        console.log(`Device registered: ${customerId} (${req.body.actualBrand} ${req.body.model})`);
-        res.json({ success: true, device });
+        if (!updatedCustomer) {
+            return res.status(404).json({ success: false, error: "Customer not found" });
+        }
+
+        console.log(`✅ Device Claimed Successfully for ${customerId}`);
+        res.json({
+            success: true,
+            message: "Device claimed",
+            customerId: customerId,
+            status: "ADMIN_INSTALLED"
+        });
+
     } catch (e) {
         console.error("Device registration error:", e);
         res.status(500).json({ error: e.message });
