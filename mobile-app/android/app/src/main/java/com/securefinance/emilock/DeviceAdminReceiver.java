@@ -32,25 +32,11 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
     public void onProfileProvisioningComplete(Context context, Intent intent) {
         try {
             super.onProfileProvisioningComplete(context, intent);
-            Log.d(TAG, "onProfileProvisioningComplete called");
+            Log.d(TAG, "onProfileProvisioningComplete called - Device Owner setup complete");
 
-            // This is the CRITICAL method for QR Code provisioning.
-            // The extras we put in the QR code (serverUrl, customerId) are delivered here.
-
-            PersistableBundle extras = intent
-                    .getParcelableExtra(android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
-
-            if (extras != null) {
-                String serverUrl = extras.getString("serverUrl");
-                String customerId = extras.getString("customerId");
-
-                Log.d(TAG, "Provisioning Extras - URL: " + serverUrl + ", CID: " + customerId);
-
-                if (serverUrl != null || customerId != null) {
-                    saveProvisioningData(context, serverUrl, customerId);
-                    Toast.makeText(context, "Device Provisioned: " + customerId, Toast.LENGTH_LONG).show();
-                }
-            }
+            // Simplified: Just launch the app
+            // Admin extras removed from QR payload to prevent provisioning failures
+            Toast.makeText(context, "Device Setup Complete", Toast.LENGTH_LONG).show();
 
             // Launch the App Main Activity immediately
             launchApp(context);
