@@ -253,7 +253,13 @@ export const QRCodeGenerator = () => {
       });
 
     } catch (error) {
-      console.error(error);
+      console.error('Error in generateQR:', error);
+      setQrGenerated(false);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to register customer. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 

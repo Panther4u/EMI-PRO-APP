@@ -75,7 +75,6 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         // Optimistic Update
         setCustomers(prev => [newCustomer, ...prev]);
-        toast.success('Customer registered successfully');
 
         try {
             const response = await fetch(getApiUrl('/api/customers'), {
@@ -83,9 +82,18 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newCustomer),
             });
-            if (!response.ok) throw new Error('Failed to add customer');
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                throw new Error(errorData.error || `Failed to add customer: ${response.status}`);
+            }
+
+            toast.success('Customer registered successfully');
         } catch (error) {
-            console.warn('API add failed, using local state only');
+            // Rollback optimistic update
+            setCustomers(prev => prev.filter(c => c.id !== newCustomer.id));
+            console.error('Failed to add customer:', error);
+            throw error; // Re-throw so QRCodeGenerator knows it failed
         }
     };
 
