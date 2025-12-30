@@ -34,13 +34,7 @@ router.get('/payload/:customerId', (req, res) => {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM":
                 checksum,
 
-            "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME":
-                "com.securefinance.emilock.admin",
-
-            "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-                "serverUrl": baseUrl,
-                "customerId": customerId
-            },
+            "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
             "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true
         };
 
