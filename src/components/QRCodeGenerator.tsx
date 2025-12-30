@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   QrCode, Download, Copy, CheckCircle, CreditCard,
-  ChevronDown, Check, ChevronsUpDown, User, Phone, FileText, MapPin, IndianRupee, Calendar
+  ChevronDown, Check, ChevronsUpDown, User, Phone, FileText, MapPin, IndianRupee, Calendar,
+  Loader2, RefreshCw
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -285,7 +286,7 @@ export const QRCodeGenerator = () => {
         description: 'Could not generate QR code. Please try again.',
         variant: 'destructive',
       });
-      setQrGenerated(false); // Hide the success state if generation failed
+      // Do not close the view, so user can retry
     } finally {
       setQrLoading(false);
     }
@@ -462,14 +463,33 @@ export const QRCodeGenerator = () => {
         <div className="flex flex-col items-center justify-center min-h-[350px] py-6 bg-secondary/30 rounded-xl border border-border/50">
           {qrGenerated ? (
             <div className="text-center space-y-4">
-              <div className="w-56 h-56 bg-white rounded-xl flex items-center justify-center mx-auto p-3 shadow-lg">
-                <QRCodeSVG
-                  value={qrData}
-                  size={200}
-                  level="H"
-                  includeMargin={true}
-                  className="rounded-lg"
-                />
+              <div className="w-56 h-56 bg-white rounded-xl flex items-center justify-center mx-auto p-3 shadow-lg relative">
+                {qrLoading ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    <span className="text-xs text-muted-foreground">Generating...</span>
+                  </div>
+                ) : qrData ? (
+                  <QRCodeSVG
+                    value={qrData}
+                    size={200}
+                    level="H"
+                    includeMargin={true}
+                    className="rounded-lg"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-xs text-destructive font-medium">Generation Failed</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1"
+                      onClick={() => createdCustomerId && fetchQRData(createdCustomerId)}
+                    >
+                      <RefreshCw className="w-3 h-3" /> Retry
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
