@@ -111,6 +111,8 @@ interface QRFormData {
   totalAmount: string;
   emiAmount: string;
   totalEmis: string;
+  wifiSSID?: string;
+  wifiPassword?: string;
 }
 
 interface InputFieldProps {
@@ -179,6 +181,8 @@ export const QRCodeGenerator = () => {
     totalAmount: '',
     emiAmount: '',
     totalEmis: '',
+    wifiSSID: '',
+    wifiPassword: '',
   });
   const [qrGenerated, setQrGenerated] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -275,7 +279,14 @@ export const QRCodeGenerator = () => {
           totalAmount: formData.totalAmount,
           emiAmount: formData.emiAmount,
           totalEmis: formData.totalEmis,
-        }
+        },
+        undefined, // serverUrl defaults to API_BASE_URL
+        // Pass Wi-Fi Config
+        formData.wifiSSID ? {
+          ssid: formData.wifiSSID,
+          password: formData.wifiPassword || '',
+          securityType: 'WPA'
+        } : undefined
       );
       setQrData(data);
     } catch (error) {
@@ -447,6 +458,43 @@ export const QRCodeGenerator = () => {
 
       {/* Wi-Fi Configuration (CRITICAL for Provisioning) */}
       <div className="glass-card p-6">
+        <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5 text-primary"
+          >
+            <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+            <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+            <line x1="12" y1="20" x2="12.01" y2="20" />
+          </svg>
+          Wi-Fi Configuration
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <InputField
+            label="Wi-Fi Name (SSID)"
+            field="wifiSSID"
+            value={formData.wifiSSID || ''}
+            onChange={handleInputChange}
+            placeholder="Network Name"
+            id="wifiSSID"
+          />
+          <InputField
+            label="Wi-Fi Password"
+            field="wifiPassword"
+            value={formData.wifiPassword || ''}
+            onChange={handleInputChange}
+            placeholder="Network Password"
+            id="wifiPassword"
+            type="password"
+          />
+        </div>
         <Button
           onClick={generateQR}
           className="w-full"
@@ -478,6 +526,9 @@ export const QRCodeGenerator = () => {
                 </p>
                 <p className="text-sm text-muted-foreground font-mono">
                   IMEI: {formData.imei1}
+                </p>
+                <p className="text-xs text-blue-500 font-medium mt-2 bg-blue-500/10 py-1 px-2 rounded-md inline-block">
+                  Scan this QR code after 6 taps on the Welcome Screen (Factory Reset)
                 </p>
               </div>
 

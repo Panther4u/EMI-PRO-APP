@@ -44,6 +44,16 @@ export const getDeviceOwnerProvisioningQR = async (
             throw new Error('Failed to fetch provisioning payload');
         }
         const payload = await response.json();
+
+        // MERGE Wi-Fi Config if provided
+        if (wifiConfig && wifiConfig.ssid) {
+            Object.assign(payload, {
+                "android.app.extra.PROVISIONING_WIFI_SSID": wifiConfig.ssid,
+                "android.app.extra.PROVISIONING_WIFI_PASSWORD": wifiConfig.password,
+                "android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE": wifiConfig.securityType || 'WPA'
+            });
+        }
+
         return JSON.stringify(payload);
     } catch (error) {
         console.error('Error fetching provisioning payload:', error);
