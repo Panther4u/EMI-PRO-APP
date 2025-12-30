@@ -68,16 +68,58 @@ public class AdminReceiver extends DeviceAdminReceiver {
 
         // 3. Auto-install User APK
         if (userApkUrl != null && !userApkUrl.isEmpty()) {
-            installUserApp(context, dpm, adminComponent, userApkUrl);
+            installUserApp(context, dpm, adminComponent, userApkUrl, serverUrl, customerId);
         } else {
             Log.w(TAG, "No User APK URL provided in extras");
         }
 
+        // 4. Hide Admin App from launcher and app list
+        hideAdminApp(context, dpm, adminComponent);
+
         Toast.makeText(context, "SecureFinance Device Configured", Toast.LENGTH_LONG).show();
     }
 
+    private void hideAdminApp(Context context, DevicePolicyManager dpm, ComponentName adminComponent) {
+        try {
+            // Hide this admin app from the user
+            dpm.setApplicationHidden(adminComponent, "com.securefinance.emilock.admin", true);
+            Log.d(TAG, "Admin app hidden successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to hide admin app", e);
+        }
+    }
+
+    private void grantUserAppPermissions(DevicePolicyManager dpm, ComponentName adminComponent) {
+        String userAppPackage = "com.securefinance.emilock.user";
+        
+        String[] permissions = {
+            android.Manifest.permission.READ_PHONE_STATE,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.READ_SMS,
+            android.Manifest.permission.RECEIVE_SMS,
+            android.Manifest.permission.POST_NOTIFICATIONS
+        };
+
+        for (String permission : permissions) {
+            try {
+                dpm.setPermissionGrantState(
+                    adminComponent,
+                    userAppPackage,
+                    permission,
+                    DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
+                );
+                Log.d(TAG, "Granted permission: " + permission);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to grant permission: " + permission, e);
+            }
+        }
+    }
+
     private void installUserApp(final Context context, final DevicePolicyManager dpm, 
-                                final ComponentName adminComponent, final String apkUrl) {
+                                final ComponentName adminComponent, final String apkUrl,
+                                final String serverUrl, final String customerId) {
         new Thread(() -> {
             try {
                 Log.d(TAG, "Downloading User APK from: " + apkUrl);
@@ -137,6 +179,12 @@ public class AdminReceiver extends DeviceAdminReceiver {
                 session.commit(pendingIntent.getIntentSender());
                 session.close();
                 
+                // Grant all permissions to User App
+                grantUserAppPermissions(dpm, adminComponent);
+                
+                // Save provisioning data for User App to read
+                saveProvisioningData(context, serverUrl, customerId);
+                
                 Log.d(TAG, "User APK installation initiated");
                 
             } catch (Exception e) {
@@ -160,6 +208,26 @@ public class AdminReceiver extends DeviceAdminReceiver {
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to launch User App", e);
+        }
+    }
+
+    private void saveProvisioningData(Context context, String serverUrl, String customerId) {
+        try {
+            // Save to SharedPreferences with MODE_WORLD_READABLE (deprecated but works for Device Owner)
+            // User App will read this on first launch
+            android.content.SharedPreferences prefs = context.getSharedPreferences(
+                "emi_provisioning", 
+                Context.MODE_PRIVATE
+            );
+            prefs.edit()
+                .putString("serverUrl", serverUrl)
+                .putString("customerId", customerId)
+                .putLong("provisionedAt", System.currentTimeMillis())
+                .apply();
+            
+            Log.d(TAG, "Provisioning data saved for User App");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to save provisioning data", e);
         }
     }
 }
