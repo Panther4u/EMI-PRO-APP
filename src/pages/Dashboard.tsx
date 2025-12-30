@@ -13,7 +13,6 @@ import {
   Plus,
   Search
 } from 'lucide-react';
-import { StatsCard } from '@/components/StatsCard';
 import { getAdminStats } from '@/data/mockCustomers';
 import { useDevice } from '@/context/DeviceContext';
 import { useNavigate } from 'react-router-dom';
@@ -112,37 +111,7 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Stats Grid - 4 columns on desktop, 2 on mobile */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatsCard
-          title="Total Customers"
-          value={stats.totalCustomers}
-          subtitle="Registered"
-          icon={Users}
-          variant="primary"
-        />
-        <StatsCard
-          title="Locked Devices"
-          value={stats.lockedDevices}
-          subtitle="Needs Action"
-          icon={Lock}
-          variant="danger"
-        />
-        <StatsCard
-          title="Active Devices"
-          value={stats.unlockedDevices}
-          subtitle="Healthy"
-          icon={Smartphone}
-          variant="success"
-        />
-        <StatsCard
-          title="EMI Portfolio"
-          value={`₹${(stats.totalEmiValue / 1000).toFixed(0)}K`}
-          subtitle="Outstanding"
-          icon={CreditCard}
-          variant="warning"
-        />
-      </div>
+      {/* Stats Grid Removed as per request */}
 
       {/* Quick Actions Grid */}
       <div>
