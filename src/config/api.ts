@@ -2,7 +2,7 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === 'production'
     ? 'https://emi-pro-app.onrender.com'
-    : 'https://emi-pro-app.onrender.com'); // Use Render backend only
+    : 'http://localhost:5000'); // Local backend for testing
 
 export const getApiUrl = (endpoint: string) => {
   // Remove leading slash if present to avoid double slashes
