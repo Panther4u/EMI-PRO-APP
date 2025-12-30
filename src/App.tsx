@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import { DeviceProvider } from "./context/DeviceContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Sidebar } from "./components/Sidebar";
@@ -60,12 +60,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     >
                         <Menu className="w-5 h-5 text-foreground" />
                     </button>
-                    <div className="ml-3 flex items-center gap-2">
+                    <Link to="/" className="ml-3 flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                             <Shield className="w-4 h-4 text-primary-foreground" />
                         </div>
                         <span className="font-bold text-foreground text-sm tracking-tight">SecureFinance</span>
-                    </div>
+                    </Link>
                 </header>
 
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full animate-in fade-in duration-500 scrollbar-hide relative">
