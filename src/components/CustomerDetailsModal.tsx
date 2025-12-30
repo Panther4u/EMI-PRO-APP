@@ -43,6 +43,26 @@ export const CustomerDetailsModal = ({
   onLockToggle,
   onCollectEmi
 }: CustomerDetailsModalProps) => {
+  const [qrData, setQrData] = React.useState<string>('');
+  const [qrLoading, setQrLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchQR = async () => {
+      if (customer && open) {
+        setQrLoading(true);
+        try {
+          const data = await getProvisioningQRData(customer);
+          setQrData(data);
+        } catch (error) {
+          console.error("Failed to generate QR", error);
+        } finally {
+          setQrLoading(false);
+        }
+      }
+    };
+    fetchQR();
+  }, [customer, open]);
+
   if (!customer) return null;
 
   const remainingEmis = customer.totalEmis - customer.paidEmis;
@@ -242,12 +262,18 @@ export const CustomerDetailsModal = ({
             Device Configuration QR
           </h3>
           <div className="flex flex-col items-center bg-white rounded-xl p-4 border border-border transition-all hover:shadow-md">
-            <QRCodeSVG
-              value={getProvisioningQRData(customer)}
-              size={180}
-              level="H"
-              includeMargin={true}
-            />
+            {qrLoading || !qrData ? (
+              <div className="w-[180px] h-[180px] flex items-center justify-center bg-gray-100 rounded-lg">
+                <span className="text-xs text-gray-500 animate-pulse">Generating QR...</span>
+              </div>
+            ) : (
+              <QRCodeSVG
+                value={qrData}
+                size={180}
+                level="H"
+                includeMargin={true}
+              />
+            )}
             <div className="mt-3 text-center">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Scan to Onboard Device</p>
               <p className="text-[9px] text-gray-400 mt-0.5 font-mono">{customer.imei1}</p>
