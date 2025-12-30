@@ -2,7 +2,7 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === 'production'
     ? 'https://emi-pro-app.onrender.com'
-    : 'http://localhost:5000');
+    : 'https://emi-pro-app.onrender.com'); // Default to Prod for now to ensure QR works locally
 
 export const getApiUrl = (endpoint: string) => {
   // Remove leading slash if present to avoid double slashes
