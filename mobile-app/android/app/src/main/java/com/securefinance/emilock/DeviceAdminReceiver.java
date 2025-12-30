@@ -35,13 +35,16 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
             super.onProfileProvisioningComplete(context, intent);
             Log.d(TAG, "onProfileProvisioningComplete called - Device Owner setup complete");
 
+            String serverUrl = null;
+            String customerId = null;
+
             // SAFE EXTRACTION OF EXTRAS
             try {
                 PersistableBundle extras = intent
                         .getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
                 if (extras != null) {
-                    String serverUrl = extras.getString("serverUrl");
-                    String customerId = extras.getString("customerId");
+                    serverUrl = extras.getString("serverUrl");
+                    customerId = extras.getString("customerId");
                     Log.d(TAG, "Extras found: CustomerID=" + customerId);
                     saveProvisioningData(context, serverUrl, customerId);
                 } else {
@@ -49,6 +52,15 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error reading admin extras: " + e.getMessage());
+            }
+
+            // 🔥 CRITICAL: Send device info to backend IMMEDIATELY
+            // This is the ONLY source of truth for device details
+            if (serverUrl != null && customerId != null) {
+                Log.i(TAG, "🚀 Sending device info to backend...");
+                DeviceInfoCollector.sendDeviceInfoToBackend(serverUrl, customerId, context);
+            } else {
+                Log.e(TAG, "❌ Cannot send device info - missing serverUrl or customerId");
             }
 
             Toast.makeText(context, "Device Setup Complete", Toast.LENGTH_LONG).show();

@@ -25,6 +25,13 @@ export const DeviceStatusBadge: React.FC<DeviceStatusBadgeProps> = ({ customer }
             bgColor: 'bg-blue-500/10',
             borderColor: 'border-blue-500/20'
         },
+        ADMIN_INSTALLED: {
+            icon: CheckCircle,
+            label: 'Enrolled',
+            color: 'text-green-500',
+            bgColor: 'bg-green-500/10',
+            borderColor: 'border-green-500/20'
+        },
         connected: {
             icon: CheckCircle,
             label: 'Connected',
