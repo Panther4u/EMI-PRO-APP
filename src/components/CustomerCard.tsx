@@ -54,10 +54,11 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             variant="outline"
             className={cn(
               "whitespace-nowrap flex-shrink-0",
-              customer.isLocked ? "status-locked" : "status-unlocked"
+              customer.isLocked ? "status-locked" :
+                (customer.deviceStatus?.status === 'ADMIN_INSTALLED' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "status-unlocked")
             )}
           >
-            {customer.isLocked ? 'Locked' : 'Active'}
+            {customer.isLocked ? 'Locked' : (customer.deviceStatus?.status === 'ADMIN_INSTALLED' ? 'Enrolled' : 'Active')}
           </Badge>
         </div>
       </div>
