@@ -14,3 +14,7 @@ services:
         value: 10000
       - key: MONGODB_URI
         sync: false
+      - key: PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM
+        value: 9MBtfICaLx0RVCoQ4oNB1DNh-FCGkLPc3dRNCLnVHJc
+      - key: PROVISIONING_BASE_URL
+        value: https://emi-pro-app.onrender.com
