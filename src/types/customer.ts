@@ -37,6 +37,12 @@ export interface Customer {
     lastStatusUpdate?: Date;
     installProgress?: number; // 0-100
     errorMessage?: string;
+    technical?: {
+      brand?: string;
+      model?: string;
+      osVersion?: string;
+      androidId?: string;
+    };
     steps?: {
       qrScanned?: boolean;
       appInstalled?: boolean;

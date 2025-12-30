@@ -149,23 +149,43 @@ export const CustomerDetailsModal = ({
             )}
           </div>
 
-          {/* Device Info */}
+          {/* Device Info (Manual) */}
           <div className="glass-card p-4">
             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-primary" />
-              Device Information
+              Initial Registration Info
             </h3>
             <InfoRow icon={Smartphone} label="Device Name" value={customer.mobileModel} />
             <InfoRow icon={Hash} label="IMEI 1" value={customer.imei1} />
-            <InfoRow icon={Hash} label="IMEI 2" value={customer.imei2} />
-            <div className="mt-4 pt-3 border-t border-border/50">
-              <Link to={`/mobile/${customer.imei1}`} target="_blank" className="w-full block">
-                <Button variant="outline" size="sm" className="w-full text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 border-blue-500/30">
-                  <Smartphone className="w-4 h-4 mr-2" />
-                  Open Device Simulator
-                </Button>
-              </Link>
+            <InfoRow icon={Hash} label="IMEI 2" value={customer.imei2 || 'Not Provided'} />
+          </div>
+
+          {/* Device Info (Live Verified) */}
+          {customer.deviceStatus?.technical && (
+            <div className="glass-card p-4 border-primary/20 bg-primary/5">
+              <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                <Smartphone className="w-4 h-4" />
+                Verified Live Device Info
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <InfoRow icon={Building} label="Brand" value={customer.deviceStatus.technical.brand || '-'} />
+                <InfoRow icon={Smartphone} label="Verified Model" value={customer.deviceStatus.technical.model || '-'} />
+                <InfoRow icon={Smartphone} label="Android Version" value={customer.deviceStatus.technical.osVersion || '-'} />
+                <InfoRow icon={Hash} label="Android ID" value={customer.deviceStatus.technical.androidId || '-'} />
+              </div>
+              <div className="mt-4 pt-3 border-t border-primary/10">
+                <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">Confirmed by SecureFinance Admin</p>
+              </div>
             </div>
+          )}
+
+          <div className="mt-2 pt-1">
+            <Link to={`/mobile/${customer.imei1}`} target="_blank" className="w-full block">
+              <Button variant="outline" size="sm" className="w-full text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 border-blue-500/30">
+                <Smartphone className="w-4 h-4 mr-2" />
+                Open Device Simulator
+              </Button>
+            </Link>
           </div>
         </div>
 
