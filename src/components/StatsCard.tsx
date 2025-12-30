@@ -47,22 +47,22 @@ export const StatsCard = ({
 
   return (
     <div className={cn(
-      "glass-card p-4 hover:border-border transition-all duration-300 group",
+      "glass-card p-4 sm:p-5 hover:border-border transition-all duration-300 group",
       styles.glow && `hover:${styles.glow}`
     )}>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">{title}</p>
-          <p className="text-xl font-bold text-foreground">{value}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">{title}</p>
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{value}</p>
           {subtitle && (
-            <p className="text-[10px] text-muted-foreground">{subtitle}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{subtitle}</p>
           )}
         </div>
         <div className={cn(
-          "w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110",
+          "w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110",
           styles.icon
         )}>
-          <Icon className="w-4 h-4" />
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       </div>
     </div>

@@ -68,7 +68,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-4 w-full animate-in fade-in duration-500 scrollbar-hide relative">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full animate-in fade-in duration-500 scrollbar-hide relative">
                     {children}
 
                     {/* Lock Overlay */}
