@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Search, Filter, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CustomerCard } from '@/components/CustomerCard';
 import { CustomerDetailsModal } from '@/components/CustomerDetailsModal';
 import { Customer } from '@/types/customer';
 import { useDevice } from '@/context/DeviceContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,11 +21,26 @@ import {
 const Customers = () => {
   const { customers, updateCustomer, deleteCustomer } = useDevice();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked'>('all');
+  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked' | 'enrolled'>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Handle URL parameters
+  useEffect(() => {
+    const urlFilter = searchParams.get('filter');
+    const action = searchParams.get('action');
+
+    if (urlFilter === 'enrolled' || urlFilter === 'locked' || urlFilter === 'unlocked') {
+      setFilter(urlFilter);
+    }
+
+    if (action === 'add') {
+      navigate('/settings'); // Navigate to settings to add customer
+    }
+  }, [searchParams, navigate]);
 
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -34,7 +49,8 @@ const Customers = () => {
 
     const matchesFilter = filter === 'all' ||
       (filter === 'locked' && c.isLocked) ||
-      (filter === 'unlocked' && !c.isLocked);
+      (filter === 'unlocked' && !c.isLocked) ||
+      (filter === 'enrolled' && c.isEnrolled);
 
     return matchesSearch && matchesFilter;
   });
