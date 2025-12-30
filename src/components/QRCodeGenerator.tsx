@@ -196,10 +196,10 @@ export const QRCodeGenerator = () => {
   }, []);
 
   const generateQR = async () => {
-    if (!formData.customerName || !formData.phoneNo || !formData.imei1 || !formData.deviceName || !formData.mobileModel) {
+    if (!formData.customerName || !formData.phoneNo || !formData.imei1) {
       toast({
         title: 'Missing Information',
-        description: 'Please fill in all required fields',
+        description: 'Please fill in all required fields (Name, Phone, IMEI)',
         variant: 'destructive',
       });
       return;
@@ -223,8 +223,8 @@ export const QRCodeGenerator = () => {
         phoneNo: formData.phoneNo,
         aadharNo: formData.aadharNo,
         address: formData.address,
-        deviceName: formData.deviceName,
-        mobileModel: formData.mobileModel,
+        deviceName: '', // Will be auto-fetched by Admin DPC
+        mobileModel: '', // Will be auto-fetched by Admin DPC
         financeName: formData.financeName,
         imei1: formData.imei1,
         imei2: formData.imei2,
@@ -248,7 +248,7 @@ export const QRCodeGenerator = () => {
 
       toast({
         title: 'Success',
-        description: 'Customer registered. Please scan the QR code.',
+        description: 'Customer registered. Device details will be auto-fetched after QR scan.',
       });
 
     } catch (error) {
@@ -355,128 +355,17 @@ export const QRCodeGenerator = () => {
             </div>
           </div>
           <div className="pt-4 border-t border-border/50">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Device Details</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Device Details</h3>
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
+                ℹ️ Auto-Detection Enabled
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Device brand and model will be automatically detected after QR provisioning.
+                Admin DPC will collect real device information and display it on the dashboard.
+              </p>
+            </div>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">
-                  Device Name (Brand) <span className="text-destructive">*</span>
-                </Label>
-                <Popover open={brandOpen} onOpenChange={setBrandOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={brandOpen}
-                      className="w-full justify-between bg-secondary/50 border-border/50 hover:bg-secondary/70 h-10 font-normal"
-                    >
-                      {formData.deviceName || "Select Brand"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                    <Command className="bg-popover border border-border">
-                      <CommandInput placeholder="Search brand..." className="h-9" />
-                      <CommandList>
-                        <CommandEmpty>No brand found.</CommandEmpty>
-                        <CommandGroup>
-                          {Object.keys(brandModelMap).map((brand) => (
-                            <CommandItem
-                              key={brand}
-                              value={brand}
-                              onSelect={() => {
-                                handleInputChange('deviceName', brand);
-                                handleInputChange('mobileModel', '');
-                                setBrandOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.deviceName === brand ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {brand}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">
-                  Device Model <span className="text-destructive">*</span>
-                </Label>
-                <Popover open={modelOpen} onOpenChange={setModelOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={modelOpen}
-                      className="w-full justify-between bg-secondary/50 border-border/50 hover:bg-secondary/70 h-10 font-normal"
-                      disabled={!formData.deviceName}
-                    >
-                      {formData.mobileModel || "Select or type model"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                    <Command className="bg-popover border border-border">
-                      <CommandInput
-                        placeholder="Search or type custom model..."
-                        className="h-9"
-                        value={formData.mobileModel}
-                        onValueChange={(value) => handleInputChange('mobileModel', value)}
-                      />
-                      <CommandList>
-                        <CommandEmpty>
-                          <div className="p-2 text-center">
-                            <p className="text-sm text-muted-foreground mb-2">Model not found</p>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setModelOpen(false);
-                              }}
-                              className="w-full"
-                            >
-                              Use "{formData.mobileModel}" as custom model
-                            </Button>
-                          </div>
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {(brandModelMap[formData.deviceName] || []).map((model) => (
-                            <CommandItem
-                              key={model}
-                              value={model}
-                              onSelect={() => {
-                                handleInputChange('mobileModel', model);
-                                setModelOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.mobileModel === model ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {model}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {formData.mobileModel && !brandModelMap[formData.deviceName]?.includes(formData.mobileModel) && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    Using custom model: {formData.mobileModel}
-                  </p>
-                )}
-              </div>
 
               <InputField
                 label="IMEI 1"
