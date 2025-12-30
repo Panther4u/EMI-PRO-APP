@@ -1,6 +1,7 @@
 package com.securefinance.emilock;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
