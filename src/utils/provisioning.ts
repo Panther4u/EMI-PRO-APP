@@ -12,7 +12,7 @@ const PROVISIONING_BASE_URL = 'https://emi-pro-app.onrender.com';
  * CRITICAL: This MUST follow Android's official provisioning format
  * Reference: https://developers.google.com/android/work/play/emm-api/prov-devices#create_a_qr_code
  */
-export const getDeviceOwnerProvisioningQR = (
+export const getDeviceOwnerProvisioningQR = async (
     customer: {
         id: string;
         name?: string;
