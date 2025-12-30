@@ -47,7 +47,7 @@ export const StatsCard = ({
 
   return (
     <div className={cn(
-      "glass-card p-4 sm:p-5 hover:border-border transition-all duration-300 group",
+      "glass-card p-3 sm:p-5 hover:border-border transition-all duration-300 group",
       styles.glow && `hover:${styles.glow}`
     )}>
       <div className="flex items-start justify-between">

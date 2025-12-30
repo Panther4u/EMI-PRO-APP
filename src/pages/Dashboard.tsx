@@ -55,24 +55,24 @@ const QuickActionCard = ({
     <button
       onClick={onClick}
       className={cn(
-        'relative group p-4 sm:p-6 rounded-2xl border-2 bg-gradient-to-br transition-all duration-300',
+        'relative group p-3 sm:p-6 rounded-xl sm:rounded-2xl border bg-gradient-to-br transition-all duration-300',
         'hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]',
-        'text-left w-full h-full flex flex-col justify-between',
+        'text-left w-full h-full flex flex-col justify-between gap-2 sm:gap-4',
         colorClasses[color]
       )}
     >
       {/* Count Badge */}
       {count !== undefined && count > 0 && (
-        <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full z-10">
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full z-10 shadow-sm">
           {count}
         </div>
       )}
 
       {/* Icon */}
-      <div className="mb-3 sm:mb-4">
+      <div>
         <div className={cn(
-          'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center',
-          'bg-background/50 backdrop-blur-sm',
+          'w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center',
+          'bg-background/80 backdrop-blur-sm shadow-sm',
           'group-hover:scale-110 transition-transform duration-300'
         )}>
           <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', iconColorClasses[color])} />
@@ -80,13 +80,13 @@ const QuickActionCard = ({
       </div>
 
       {/* Content */}
-      <div className="space-y-1">
-        <h3 className="font-bold text-foreground text-sm sm:text-lg leading-tight">{title}</h3>
-        <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-2">{description}</p>
+      <div className="space-y-0.5 sm:space-y-1">
+        <h3 className="font-bold text-foreground text-sm sm:text-lg leading-tight line-clamp-1">{title}</h3>
+        <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-2 leading-tight opacity-90">{description}</p>
       </div>
 
-      {/* Arrow */}
-      <ChevronRight className="absolute bottom-4 right-4 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:translate-x-1 transition-transform opacity-0 sm:opacity-100 group-hover:opacity-100" />
+      {/* Arrow - Hidden on mobile, distinct on desktop */}
+      <ChevronRight className="absolute bottom-3 right-3 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/50 group-hover:translate-x-1 transition-transform opacity-0 sm:opacity-100 group-hover:opacity-100" />
     </button>
   );
 };
