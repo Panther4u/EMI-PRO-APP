@@ -24,6 +24,9 @@
 
     <!-- Device Admin Permission -->
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+    
+    <!-- Required for In-App Updates -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:name=".MainApplication"
@@ -97,6 +100,17 @@
             android:foregroundServiceType="specialUse" >
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="lock_screen_control" />
         </service>
+
+        <!-- FileProvider for APK Installation -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
 
     </application>
 </manifest>

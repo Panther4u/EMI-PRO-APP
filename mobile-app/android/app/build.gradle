@@ -19,7 +19,7 @@ android {
     }
 
     project.ext.react = [
-        enableHermes: true,
+        enableHermes: false,
         bundleInDebug: false,
         bundleInRelease: true,
         bundleAssetName: "index.android.bundle",
