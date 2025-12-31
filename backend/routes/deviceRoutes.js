@@ -23,7 +23,33 @@ router.post("/register", async (req, res) => {
         const customer = await Customer.findOne({ imei1: imei });
 
         if (!customer) {
-            return res.status(404).json({ error: "No customer for this IMEI" });
+            // BACKEND UPSERT FIX: Capture the device even if IMEI does not match a customer
+            // This is critical for debugging Android 10+ devices sending AndroidID instead of IMEI
+            console.warn(`⚠️ IMEI Mismatch or New Device: ${imei}. Registering as 'Orphaned' device.`);
+
+            const orphanedDevice = await Device.findOneAndUpdate(
+                { imei: imei }, // Match by the reported ID (which might be AndroidID)
+                {
+                    $set: {
+                        customerId: "UNKNOWN_ORPHAN",
+                        actualBrand: brand,
+                        model: model,
+                        androidVersion: parseInt(androidVersion) || 0,
+                        serial: serial,
+                        androidId: androidId,
+                        status: "UNCLAIMED",
+                        lastSeen: new Date()
+                    }
+                },
+                { upsert: true, new: true }
+            );
+
+            // Return success to the device so it stops retrying and clears its local cache
+            return res.status(200).json({
+                success: true,
+                message: "Device registered as UNCLAIMED. Admin verification required.",
+                warning: "IMEI not found in customer database."
+            });
         }
 
         // Adapted: Update 'deviceStatus' and 'technical' fields based on our schema

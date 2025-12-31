@@ -55,7 +55,15 @@ public class DeviceInfoCollector {
         String imei = null;
         try {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // User requested strict logic: Android 10+ (Q) MUST use ANDROID_ID
+            // because IMEI is restricted/hidden for Device Owners in some cases or returns
+            // null.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Log.d(TAG, "Android 10+ detected: Forcing ANDROID_ID as IMEI substitute.");
+                imei = Settings.Secure.getString(
+                        context.getContentResolver(),
+                        Settings.Secure.ANDROID_ID);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 imei = tm.getImei();
             }
         } catch (Exception ignored) {
