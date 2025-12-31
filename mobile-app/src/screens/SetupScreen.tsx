@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform, PermissionsAndroid } from 'react-native';
+import { CameraScreen } from 'react-native-camera-kit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APP_VERSION } from '../config';
 
 export default function SetupScreen({ navigation }) {
