@@ -1,6 +1,6 @@
 {
-    "version": "0.0.7",
+    "version": "0.0.8",
     "apk_url": "https://emi-pro-app.onrender.com/downloads/securefinance-admin.apk",
     "admin_apk": "https://emi-pro-app.onrender.com/downloads/securefinance-admin.apk",
-    "releaseNotes": "Version 0.0.7: Added Live GPS Tracking, EMI Auto-Unlock, and SIM Change Detection."
+    "releaseNotes": "Version 0.0.8: CRITICAL FIX - IMEI-based provisioning, removed customerId requirement, auto-matching by device ID. Fixes 'Invalid QR' error."
 }

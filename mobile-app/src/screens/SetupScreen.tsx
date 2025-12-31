@@ -70,30 +70,65 @@ export default function SetupScreen({ navigation }) {
                 return;
             }
 
-            if (!parsedData.customerId) {
-                Alert.alert("Invalid QR", "QR code missing customerId");
-                return;
+            // Handle both Simple JSON and Android Enterprise Provisioning JSON
+            let customerId = parsedData.customerId;
+            let serverUrl = parsedData.serverUrl;
+
+            // Check if inside Admin Extras Bundle (Standard Provisioning Format)
+            if (!customerId && parsedData["android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE"]) {
+                let extras = parsedData["android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE"];
+                // Handle double-encoded JSON case
+                if (typeof extras === 'string') {
+                    try {
+                        extras = JSON.parse(extras);
+                    } catch (e) {
+                        console.warn("Failed to parse nested extras", e);
+                    }
+                }
+                customerId = extras?.customerId;
+                serverUrl = extras?.serverUrl;
             }
+
+            // 🎯 IMEI-BASED PROVISIONING: customerId is OPTIONAL
+            // If missing, backend will match by IMEI/deviceId
+            if (!customerId) {
+                console.log("⚠️ No customerId in QR - using IMEI-based provisioning");
+                // Set a placeholder that backend will ignore
+                customerId = "IMEI_BASED";
+            }
+
+            // Default to production server if not specified
+            if (!serverUrl) {
+                serverUrl = 'https://emi-pro-app.onrender.com';
+                console.log("Using default server:", serverUrl);
+            }
+
+            // Normalize data for consistent usage
+            parsedData.customerId = customerId;
+            parsedData.serverUrl = serverUrl;
 
             setStep('downloading'); // Show loading/processing state
 
-            // REPORT STATUS: QR Scanned
-            try {
-                await fetch(`${parsedData.serverUrl}/api/customers/${parsedData.customerId}/status`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        status: 'pending',
-                        step: 'qr_scanned'
-                    })
-                });
-            } catch (e) {
-                console.warn("Failed to report QR scan status", e);
-                // Continue anyway, it's not blocking functionality
+            // REPORT STATUS: QR Scanned (only if we have a real customerId)
+            if (customerId && customerId !== "IMEI_BASED") {
+                try {
+                    await fetch(`${parsedData.serverUrl}/api/customers/${parsedData.customerId}/status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            status: 'pending',
+                            step: 'qr_scanned'
+                        })
+                    });
+                } catch (e) {
+                    console.warn("Failed to report QR scan status", e);
+                    // Continue anyway, it's not blocking functionality
+                }
             }
 
             // Store enrollment data used by App.tsx / PermissionsScreen / Home
             await AsyncStorage.setItem('enrollment_data', JSON.stringify(parsedData));
+
 
             // Navigate to permissions or home
             navigation.navigate('Permissions', { enrollmentData: parsedData });

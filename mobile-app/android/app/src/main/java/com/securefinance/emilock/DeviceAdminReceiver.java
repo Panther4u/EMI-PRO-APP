@@ -11,24 +11,45 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
 
     @Override
     public void onProfileProvisioningComplete(Context context, Intent intent) {
-        Log.d(TAG, "Device Owner Activated - Provisioning Complete");
+        Log.i(TAG, "✅ Device Owner Activated - Provisioning Complete");
+        Log.i(TAG, "🎯 IMEI-BASED PROVISIONING - customerId NOT required from QR");
 
-        // Extract Customer ID and Server URL from extras
-        String customerId = intent.getStringExtra("EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE_CUSTOMER_ID");
-        String serverUrl = intent.getStringExtra("EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE_SERVER_URL");
+        // Try to extract optional extras from QR (may be null for IMEI-only flow)
+        String customerId = null;
+        String serverUrl = null;
 
-        // if null, try to get from bundle
-        if (customerId == null || serverUrl == null) {
+        try {
             android.os.Bundle extras = intent
                     .getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
             if (extras != null) {
                 customerId = extras.getString("customerId");
                 serverUrl = extras.getString("serverUrl");
+                Log.d(TAG, "QR extras found - customerId: " + customerId + ", serverUrl: " + serverUrl);
+            } else {
+                Log.i(TAG, "No QR extras - proceeding with IMEI-only registration");
             }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to read QR extras, continuing anyway", e);
         }
 
-        // 🔥 IMMEDIATELY report device info (Single APK Rule)
+        // Default to production server if not specified
+        if (serverUrl == null || serverUrl.isEmpty()) {
+            serverUrl = "https://emi-pro-app.onrender.com";
+            Log.i(TAG, "Using default server: " + serverUrl);
+        }
+
+        // 🔥 IMMEDIATELY report device info (IMEI-FIRST - customerId is optional)
         DeviceInfoCollector.collectAndSend(context, customerId, serverUrl);
+
+        // PERSIST for React Native (customerId may be null - that's OK!)
+        android.content.SharedPreferences prefs = context.getSharedPreferences("PhoneLockPrefs", Context.MODE_PRIVATE);
+        prefs.edit()
+                .putString("SERVER_URL", serverUrl)
+                .putString("CUSTOMER_ID", customerId) // May be null
+                .putBoolean("IS_PROVISIONED", true)
+                .apply();
+
+        Log.i(TAG, "✅ Provisioning data saved. Launching app...");
 
         // 🔥 LAUNCH the app immediately (MainActivity is our LockScreen)
         Intent launch = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());

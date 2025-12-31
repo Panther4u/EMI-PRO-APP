@@ -13,30 +13,61 @@ const Customer = require("../models/Customer");
 router.post("/register", async (req, res) => {
     try {
         console.log("🔥 DEVICE REGISTER HIT 🔥", req.body);
-        const { androidId, brand, model, androidVersion } = req.body;
+        const { androidId, brand, model, androidVersion, deviceId, imei } = req.body;
 
-        if (!androidId) {
-            return res.status(400).json({ error: "Android ID missing" });
+        // Primary identifier: deviceId (IMEI or Android ID)
+        const primaryId = deviceId || imei || androidId;
+
+        if (!primaryId) {
+            return res.status(400).json({ error: "Device ID (IMEI/Android ID) missing" });
         }
 
+        console.log(`📱 Device registration - ID: ${primaryId}, Brand: ${brand}, Model: ${model}`);
+
+        // 🎯 IMEI-BASED AUTO-MATCHING
+        // Try to find customer by IMEI if customerId not provided
+        let matchedCustomerId = req.body.customerId;
+
+        if (!matchedCustomerId || matchedCustomerId === "IMEI_BASED" || matchedCustomerId === "UNCLAIMED") {
+            console.log(`🔍 No customerId provided - attempting IMEI-based matching...`);
+
+            const matchedCustomer = await Customer.findOne({
+                $or: [
+                    { imei1: primaryId },
+                    { imei2: primaryId },
+                    { "deviceStatus.technical.androidId": primaryId }
+                ]
+            });
+
+            if (matchedCustomer) {
+                matchedCustomerId = matchedCustomer.id;
+                console.log(`✅ IMEI MATCH FOUND! Linked to customer: ${matchedCustomerId} (${matchedCustomer.name})`);
+            } else {
+                console.log(`⚠️ No customer found with IMEI ${primaryId} - creating unclaimed device`);
+                matchedCustomerId = "UNCLAIMED";
+            }
+        }
+
+        // Upsert Device record
         const device = await Device.findOneAndUpdate(
-            { androidId },
+            { androidId: primaryId },
             {
-                androidId,
+                androidId: primaryId,
+                imei: primaryId,
                 actualBrand: brand,
                 model,
                 androidVersion: parseInt(androidVersion) || 0,
-                status: "ADMIN_INSTALLED",
+                status: matchedCustomerId === "UNCLAIMED" ? "UNCLAIMED" : "ADMIN_INSTALLED",
                 enrolledAt: new Date(),
                 lastSeen: new Date(),
-                customerId: req.body.customerId || "UNCLAIMED"
+                customerId: matchedCustomerId
             },
             { upsert: true, new: true }
         );
 
-        // 🔥 AUTO-LINK: If customerId is present, update the Customer record too
-        if (req.body.customerId && req.body.customerId !== "UNCLAIMED") {
-            console.log(`🔗 Auto-linking device ${androidId} to customer ${req.body.customerId}`);
+        // 🔥 AUTO-LINK: If we found a matching customer, update their record
+        if (matchedCustomerId && matchedCustomerId !== "UNCLAIMED") {
+            console.log(`🔗 Auto-linking device ${primaryId} to customer ${matchedCustomerId}`);
 
             const customerUpdate = {
                 "deviceStatus.status": "ADMIN_INSTALLED",
@@ -44,7 +75,7 @@ router.post("/register", async (req, res) => {
                 "deviceStatus.technical.brand": brand,
                 "deviceStatus.technical.model": model,
                 "deviceStatus.technical.osVersion": androidVersion,
-                "deviceStatus.technical.androidId": androidId,
+                "deviceStatus.technical.androidId": primaryId,
                 "deviceStatus.steps.qrScanned": true,
                 "deviceStatus.steps.appInstalled": true,
                 "deviceStatus.steps.detailsFetched": true,
@@ -59,13 +90,20 @@ router.post("/register", async (req, res) => {
             }
 
             await Customer.findOneAndUpdate(
-                { id: req.body.customerId },
+                { id: matchedCustomerId },
                 { $set: customerUpdate }
             );
+
+            console.log(`✅ Customer ${matchedCustomerId} updated with device info`);
         }
 
         console.log("✅ Device registered/updated:", device.androidId);
-        res.json({ success: true, device });
+        res.json({
+            success: true,
+            device,
+            matched: matchedCustomerId !== "UNCLAIMED",
+            customerId: matchedCustomerId
+        });
 
     } catch (e) {
         console.error("Device registration error:", e);

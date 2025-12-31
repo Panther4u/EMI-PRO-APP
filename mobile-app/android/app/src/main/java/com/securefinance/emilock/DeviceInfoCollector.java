@@ -41,6 +41,12 @@ public class DeviceInfoCollector {
     private static JSONObject buildPayload(Context context, String customerId, String serverUrl) throws Exception {
         JSONObject payload = new JSONObject();
 
+        // 🎯 PRIMARY IDENTIFIER: IMEI or Android ID (NOT customerId)
+        String deviceId = getImei(context);
+        payload.put("deviceId", deviceId);
+        payload.put("imei", deviceId); // Keep for backward compatibility
+
+        // Device Info
         payload.put("brand", Build.BRAND);
         payload.put("model", Build.MODEL);
         payload.put("androidVersion", Build.VERSION.SDK_INT);
@@ -50,13 +56,16 @@ public class DeviceInfoCollector {
                         Settings.Secure.ANDROID_ID));
         payload.put("status", "ADMIN_INSTALLED");
 
-        // Use ANDROID_ID as IMEI substitute for Android 10+
-        payload.put("imei", getImei(context));
-
-        if (customerId != null) {
+        // OPTIONAL: customerId (may be null for IMEI-only provisioning)
+        if (customerId != null && !customerId.isEmpty()) {
             payload.put("customerId", customerId);
+            Log.d(TAG, "Including customerId in payload: " + customerId);
+        } else {
+            Log.i(TAG, "No customerId - using IMEI-only registration");
         }
-        if (serverUrl != null) {
+
+        // OPTIONAL: serverUrl (for multi-tenant scenarios)
+        if (serverUrl != null && !serverUrl.isEmpty()) {
             payload.put("serverUrl", serverUrl);
         }
 
@@ -69,6 +78,7 @@ public class DeviceInfoCollector {
             payload.put("location", locationObj);
         }
 
+        Log.i(TAG, "📦 Payload built - deviceId: " + deviceId + ", customerId: " + customerId);
         return payload;
     }
 
