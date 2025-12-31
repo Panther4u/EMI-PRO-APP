@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform, PermissionsAndroid } from 'react-native';
-import { CameraScreen } from 'react-native-camera-kit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_VERSION } from '../config';
 
 export default function SetupScreen({ navigation }) {
     const [step, setStep] = useState('welcome'); // welcome, scanning, downloading
@@ -9,6 +6,10 @@ export default function SetupScreen({ navigation }) {
 
     const handleTap = () => {
         const newCount = tapCount + 1;
+        // ... (skip lines)
+        <TouchableOpacity style={{ marginTop: 20, padding: 20 }} onPress={handleTap}>
+            <Text style={{ color: '#ccc' }}>Version {APP_VERSION}</Text>
+        </TouchableOpacity>
         setTapCount(newCount);
         if (newCount >= 1) { // Changed to 1 tap for easier access during dev, revert to 3 later?
             // Or keep user's 3-6 taps preference? User said "tap 5-7 times" for welcome screen.
