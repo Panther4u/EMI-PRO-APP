@@ -14,78 +14,43 @@ import java.net.URL;
 
 public class DeviceInfoCollector {
 
-    public static void collectAndSend(final Context context) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+    public static void collectAndSend(Context context) {
+        try {
+            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-                    String imei = null;
-                    try {
-                        // Requires READ_PHONE_STATE (granted to Device Owner)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            imei = tm.getImei();
-                        } else {
-                            imei = tm.getDeviceId();
-                        }
-                    } catch (SecurityException e) {
-                        Log.e("EMI_ADMIN", "Permission error getting IMEI", e);
-                    }
+            String imei = tm.getImei();
+            String androidId = Settings.Secure.getString(
+                    context.getContentResolver(),
+                    Settings.Secure.ANDROID_ID);
 
-                    if (imei == null)
-                        imei = "UNKNOWN_IMEI";
+            JSONObject payload = new JSONObject();
+            payload.put("imei", imei);
+            payload.put("brand", Build.BRAND);
+            payload.put("model", Build.MODEL);
+            payload.put("androidVersion", Build.VERSION.SDK_INT);
+            payload.put("serial", Build.getSerial());
+            payload.put("androidId", androidId);
+            payload.put("status", "ADMIN_INSTALLED");
 
-                    String androidId = Settings.Secure.getString(
-                            context.getContentResolver(),
-                            Settings.Secure.ANDROID_ID);
+            URL url = new URL(
+                    "https://emi-pro-app.onrender.com/api/devices/register");
 
-                    JSONObject payload = new JSONObject();
-                    payload.put("imei", imei);
-                    payload.put("brand", Build.BRAND);
-                    payload.put("model", Build.MODEL);
-                    payload.put("androidVersion", String.valueOf(Build.VERSION.SDK_INT));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            payload.put("serial", Build.getSerial());
-                        } else {
-                            payload.put("serial", Build.SERIAL);
-                        }
-                    } catch (SecurityException e) {
-                        payload.put("serial", "UNKNOWN");
-                    }
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
 
-                    payload.put("androidId", androidId);
-                    payload.put("status", "ADMIN_INSTALLED");
+            OutputStream os = conn.getOutputStream();
+            os.write(payload.toString().getBytes());
+            os.close();
 
-                    Log.d("EMI_ADMIN", "Sending Registration: " + payload.toString());
+            conn.getResponseCode();
 
-                    // HARDCODED PRODUCTION URL
-                    URL url = new URL("https://emi-pro-app.onrender.com/api/devices/register");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            Log.d("EMI_ADMIN", "Device info sent successfully");
 
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json");
-                    conn.setDoOutput(true);
-                    conn.setConnectTimeout(15000);
-
-                    OutputStream os = conn.getOutputStream();
-                    os.write(payload.toString().getBytes("UTF-8"));
-                    os.close();
-
-                    int code = conn.getResponseCode(); // trigger send
-                    Log.d("EMI_ADMIN", "Registration Response: " + code);
-
-                } catch (Exception e) {
-                    Log.e("EMI_ADMIN", "Device report failed", e);
-                }
-            }
-        }).start();
-    }
-
-    // Kept for compatibility if other classes call it, but redirects to main logic
-    public static void sendDeviceInfoToBackend(String serverUrl, String customerId, Context context) {
-        collectAndSend(context);
+        } catch (Exception e) {
+            Log.e("EMI_ADMIN", "Failed to send device info", e);
+        }
     }
 }

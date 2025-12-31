@@ -6,67 +6,52 @@ const Customer = require("../models/Customer");
 // Legacy endpoint - kept for backward compatibility
 // Auto-Claim Register Endpoint (Step 2)
 // Matches device to customer using IMEI
+// IMEI-based Device Registration Endpoint (Admin DPC)
+// Matches device to customer using IMEI provided by Admin APK
 router.post("/register", async (req, res) => {
     try {
-        const { imei, imei2, brand, model, androidVersion, androidId, serial } = req.body;
-        let { customerId } = req.body;
+        const { imei, brand, model, androidVersion, serial, androidId, status } = req.body;
 
-        console.log(`📡 Device Register Request: ${brand} ${model} (IMEI: ${imei})`);
-
-        // If no customerId provided, try to find by IMEI (Auto-Claim)
-        if (!customerId) {
-            console.log("   Searching for customer by IMEI...");
-            const searchImei = imei || imei2;
-            if (searchImei) {
-                // Find match in imei1 field
-                const customer = await Customer.findOne({ imei1: searchImei });
-                if (customer) {
-                    customerId = customer.id;
-                    console.log(`   ✅ Match Found! Customer: ${customer.name} (${customer.id})`);
-                } else {
-                    console.warn(`   ⚠️ No matching customer found for IMEI: ${searchImei}`);
-                    return res.status(404).json({
-                        success: false,
-                        error: "Device not pre-registered. No customer found with this IMEI."
-                    });
-                }
-            } else {
-                return res.status(400).json({
-                    success: false,
-                    error: "IMEI required for auto-claim."
-                });
-            }
+        if (!imei) {
+            return res.status(400).json({ error: "IMEI missing" });
         }
 
-        // Logic to update customer status (ADMIN_INSTALLED)
-        const updatedCustomer = await Customer.findOneAndUpdate(
-            { id: customerId },
-            {
-                $set: {
-                    "deviceStatus.status": "ADMIN_INSTALLED", // Step 2 Status
-                    "deviceStatus.lastSeen": new Date(),
-                    "deviceStatus.technical.brand": brand,
-                    "deviceStatus.technical.model": model,
-                    "deviceStatus.technical.osVersion": androidVersion,
-                    "deviceStatus.technical.androidId": androidId,
-                    "deviceStatus.technical.serial": serial,
-                    "isEnrolled": true
-                }
-            },
-            { new: true }
-        );
+        // Adapted: Match against 'imei1' which is the unique index in our Customer schema
+        // User provided logic: Customer.findOne({ expectedImei: imei });
+        // Our schema: imei1
+        const customer = await Customer.findOne({ imei1: imei });
 
-        if (!updatedCustomer) {
-            return res.status(404).json({ success: false, error: "Customer not found" });
+        if (!customer) {
+            return res.status(404).json({ error: "No customer for this IMEI" });
         }
 
-        console.log(`✅ Device Claimed Successfully for ${customerId}`);
-        res.json({
-            success: true,
-            message: "Device claimed",
-            customerId: customerId,
-            status: "ADMIN_INSTALLED"
-        });
+        // Adapted: Update 'deviceStatus' and 'technical' fields based on our schema
+        // User provided logic: customer.device = { ... }
+        // Our schema: customer.deviceStatus.technical = { ... }
+
+        customer.deviceStatus.status = "ADMIN_INSTALLED";
+        customer.deviceStatus.lastSeen = new Date();
+        customer.deviceStatus.lastStatusUpdate = new Date();
+
+        customer.deviceStatus.technical = {
+            brand,
+            model,
+            osVersion: androidVersion, // Schema uses osVersion
+            androidId,
+            serial
+        };
+
+        // Mark steps as complete
+        customer.deviceStatus.steps.qrScanned = true;
+        customer.deviceStatus.steps.appInstalled = true;
+        customer.deviceStatus.steps.detailsFetched = true;
+        customer.deviceStatus.steps.imeiVerified = true;
+
+        customer.isEnrolled = true;
+
+        await customer.save();
+
+        res.json({ success: true });
 
     } catch (e) {
         console.error("Device registration error:", e);
