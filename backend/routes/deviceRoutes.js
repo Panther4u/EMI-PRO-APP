@@ -190,5 +190,74 @@ router.post("/enrolled", async (req, res) => {
     }
 });
 
+// 🔥 FETCH UNCLAIMED DEVICES
+// Returns all devices that have status='UNCLAIMED' (orphans)
+router.get("/unclaimed", async (req, res) => {
+    try {
+        const devices = await Device.find({ status: "UNCLAIMED" }).sort({ lastSeen: -1 });
+        res.json(devices);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 🔥 CLAIM DEVICE
+// Links an unclaimed device to a specific customer
+router.post("/claim", async (req, res) => {
+    try {
+        const { deviceId, customerId } = req.body;
+
+        if (!deviceId || !customerId) {
+            return res.status(400).json({ error: "deviceId and customerId required" });
+        }
+
+        const device = await Device.findById(deviceId);
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        const customer = await Customer.findOne({ id: customerId });
+        if (!customer) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
+
+        // 1. Update Customer with Device Details
+        // We use the device's reported ID (IMEI or Android ID) as the source of truth
+        const reportedId = device.imei || device.androidId;
+
+        // Ensure we don't accidentally overwrite strict IMEI if the device reported Android ID
+        // But for claiming, we generally trust the device's report.
+        if (device.imei) {
+            customer.imei1 = device.imei;
+        }
+
+        customer.deviceStatus.status = "ADMIN_INSTALLED";
+        customer.deviceStatus.technical = {
+            brand: device.actualBrand,
+            model: device.model,
+            osVersion: device.androidVersion,
+            androidId: device.androidId,
+            serial: device.serial
+        };
+        customer.deviceStatus.lastSeen = new Date();
+        customer.isEnrolled = true;
+        customer.deviceStatus.steps.imeiVerified = true; // Manually verified by admin
+
+        await customer.save();
+
+        // 2. Update Device Record to be CLAIMED
+        device.status = "ENROLLED";
+        device.customerId = customerId;
+        device.enrolledAt = new Date();
+        await device.save();
+
+        res.json({ success: true, message: "Device successfully claimed and linked to customer" });
+
+    } catch (e) {
+        console.error("Claim error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;
 
