@@ -44,7 +44,12 @@ router.get('/payload/:customerId', (req, res) => {
                 checksum,
 
             "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": true,
-            "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true
+            "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
+
+            "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
+                "customerId": customerId,
+                "serverUrl": baseUrl
+            }
         };
 
         res.json(payload);
