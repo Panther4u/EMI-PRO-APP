@@ -13,6 +13,9 @@ interface DeviceContextType {
     addCustomer: (customer: any) => Promise<void>;
     toggleLock: (id: string, status: boolean, reason?: string) => Promise<void>;
     deleteCustomer: (id: string) => Promise<void>;
+    unclaimedDevices: any[];
+    refreshUnclaimed: () => Promise<void>;
+    claimDevice: (deviceId: string, customerId: string) => Promise<void>;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -20,6 +23,7 @@ const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Start with empty customers - will be loaded from backend
     const [customers, setCustomers] = useState<Customer[]>([]);
+    const [unclaimedDevices, setUnclaimedDevices] = useState<any[]>([]);
     const [isAppLocked, setIsAppLocked] = useState(false);
 
     // Save customers to localStorage whenever they change
@@ -40,6 +44,42 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             if (saved) {
                 setCustomers(JSON.parse(saved));
             }
+        }
+    };
+
+    const refreshUnclaimed = async () => {
+        try {
+            const response = await fetch(getApiUrl('/api/devices/unclaimed'));
+            if (response.ok) {
+                const data = await response.json();
+                setUnclaimedDevices(data);
+            }
+        } catch (error) {
+            console.warn('Failed to fetch unclaimed devices');
+        }
+    };
+
+    const claimDevice = async (deviceId: string, customerId: string) => {
+        try {
+            const response = await fetch(getApiUrl('/api/devices/claim'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deviceId, customerId }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Claim failed");
+            }
+
+            toast.success("Device successfully claimed!");
+            await refreshCustomers();
+            await refreshUnclaimed();
+
+        } catch (error) {
+            console.error("Claim error:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to claim device");
+            throw error;
         }
     };
 
@@ -152,6 +192,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // Poll every 3 seconds for real-time updates
         const interval = setInterval(() => {
             refreshCustomers();
+            refreshUnclaimed();
         }, 3000);
 
         return () => clearInterval(interval);
@@ -167,7 +208,11 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             updateCustomer,
             addCustomer,
             toggleLock,
-            deleteCustomer
+
+            deleteCustomer,
+            unclaimedDevices,
+            refreshUnclaimed,
+            claimDevice
         }}>
             {children}
         </DeviceContext.Provider>

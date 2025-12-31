@@ -19,11 +19,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Customers = () => {
-  const { customers, updateCustomer, deleteCustomer } = useDevice();
+  const { customers, updateCustomer, deleteCustomer, unclaimedDevices, claimDevice } = useDevice();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked' | 'enrolled'>('all');
+  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked' | 'enrolled' | 'unclaimed'>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -158,7 +158,17 @@ const Customers = () => {
             Active ({customers.filter(c => !c.isLocked).length})
           </Button>
         </div>
+        {/* UNCLAIMED DEVICES TAB */}
+        <Button
+          variant={filter === 'unclaimed' ? 'secondary' : 'outline'}
+          size="sm"
+          className="w-full rounded-xl h-9 border-dashed border-primary/50 text-foreground"
+          onClick={() => setFilter('unclaimed')}
+        >
+          Unclaimed Devices ({unclaimedDevices.length})
+        </Button>
       </div>
+
 
       {/* Customer Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -175,13 +185,63 @@ const Customers = () => {
         ))}
       </div>
 
-      {filteredCustomers.length === 0 && (
-        <div className="glass-card p-12 text-center">
-          <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-medium text-foreground">No customers found</p>
-          <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
-        </div>
-      )}
+      {/* UNCLAIMED DEVICES LIST */}
+      {
+        filter === 'unclaimed' && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">New / Unclaimed Devices</h2>
+            <p className="text-sm text-muted-foreground">These devices have reported to the server but do not match any Customer IMEI.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {unclaimedDevices.map((device: any) => (
+                <div key={device._id} className="glass-card p-4 border-l-4 border-l-orange-500">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-bold">{device.actualBrand} {device.model}</h3>
+                      <p className="text-xs text-muted-foreground">Android {device.androidVersion}</p>
+                    </div>
+                    <div className="bg-orange-100 text-orange-700 text-[10px] px-2 py-1 rounded-full font-bold">
+                      UNCLAIMED
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 my-3 bg-secondary/50 p-2 rounded text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">ID Type:</span>
+                      <span className="font-mono">{device.imei ? 'IMEI' : 'ANDROID_ID'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Value:</span>
+                      <span className="font-mono font-bold select-all">{device.imei || device.androidId}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => {
+                      const customerId = prompt("Enter Customer ID to assign this device to:");
+                      if (customerId) claimDevice(device._id, customerId);
+                    }}
+                  >
+                    Link to Customer
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      {
+        filteredCustomers.length === 0 && (
+          <div className="glass-card p-12 text-center">
+            <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-medium text-foreground">No customers found</p>
+            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+          </div>
+        )
+      }
 
       {/* Customer Details Modal */}
       <CustomerDetailsModal
@@ -209,7 +269,7 @@ const Customers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div >
   );
 };
 
