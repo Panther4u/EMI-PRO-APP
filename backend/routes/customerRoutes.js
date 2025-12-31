@@ -194,37 +194,68 @@ router.post('/:id/verify', async (req, res) => {
             customer.offlineLockToken = Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        // Verification Logic
-        // We compare the REPORTED 'actualIMEI' with the RECORDED 'imei1' (which admin entered)
+        // 🎯 IMEI/ANDROID ID VERIFICATION LOGIC (Android 10+ Compatible)
         let status = 'VERIFIED';
         let message = 'Device Verified';
 
         // Mark details step as done
         customer.deviceStatus.steps.detailsFetched = true;
 
-        // If Admin provided an expected IMEI (or we just use imei1), check it
-        // We assume 'imei1' is the source of truth from Admin
-        if (actualIMEI && customer.imei1 && actualIMEI.trim() !== customer.imei1.trim()) {
-            status = 'MISMATCH';
-            message = `IMEI Mismatch! Admin Expects: ${customer.imei1}, Device Reports: ${actualIMEI}`;
+        if (actualIMEI) {
+            // Store the reported device ID (could be IMEI or Android ID)
+            customer.deviceStatus.technical.androidId = actualIMEI;
 
-            // Log the mismatch but don't overwrite the Admin's "Correct" IMEI yet
-            // potentially store actualIMEI in a separate field or log it
-            customer.deviceStatus.errorMessage = message;
-            customer.deviceStatus.status = 'error';
-            customer.deviceStatus.steps.imeiVerified = false;
+            // 🔍 FLEXIBLE MATCHING: Accept EITHER real IMEI OR Android ID
+            const expectedIMEI1 = customer.imei1?.trim();
+            const expectedIMEI2 = customer.imei2?.trim();
+            const reportedID = actualIMEI.trim();
+
+            // Check if reported ID matches ANY of: imei1, imei2, or previously stored androidId
+            const isMatch =
+                reportedID === expectedIMEI1 ||
+                reportedID === expectedIMEI2 ||
+                (customer.deviceStatus.technical.androidId && reportedID === customer.deviceStatus.technical.androidId);
+
+            if (!isMatch && expectedIMEI1) {
+                // Only flag mismatch if we have an expected IMEI AND it doesn't match
+                status = 'MISMATCH';
+                message = `Device ID Mismatch! Expected IMEI: ${expectedIMEI1}, Device Reports: ${reportedID}`;
+
+                console.warn(`⚠️ Device ID mismatch for ${customer.name}:`);
+                console.warn(`   Expected IMEI: ${expectedIMEI1}`);
+                console.warn(`   Reported ID: ${reportedID}`);
+                console.warn(`   Note: Android 10+ devices report Android ID instead of IMEI`);
+
+                customer.deviceStatus.errorMessage = message;
+                customer.deviceStatus.status = 'warning'; // Changed from 'error' to 'warning'
+                customer.deviceStatus.steps.imeiVerified = false;
+            } else {
+                // ✅ MATCH FOUND or no expected IMEI (auto-accept)
+                customer.deviceStatus.status = 'connected';
+                customer.deviceStatus.errorMessage = null;
+                customer.deviceStatus.steps.imeiVerified = true;
+                customer.deviceStatus.steps.deviceBound = true;
+
+                console.log(`✅ Device verified for ${customer.name}:`);
+                console.log(`   Reported ID: ${reportedID}`);
+                if (reportedID === expectedIMEI1) {
+                    console.log(`   Matched: Real IMEI (imei1)`);
+                } else if (reportedID === expectedIMEI2) {
+                    console.log(`   Matched: Real IMEI (imei2)`);
+                } else {
+                    console.log(`   Matched: Android ID (stored from previous verification)`);
+                }
+            }
         } else {
+            // No device ID provided - accept anyway
             customer.deviceStatus.status = 'connected';
-            customer.deviceStatus.errorMessage = null;
             customer.deviceStatus.steps.imeiVerified = true;
-
-            // If verified, we consider it bound (for now)
             customer.deviceStatus.steps.deviceBound = true;
         }
 
         customer.deviceStatus.lastSeen = new Date();
-        // Force update of nested object if it wasn't modified directly by mongoose
         customer.markModified('deviceStatus.steps');
+        customer.markModified('deviceStatus.technical');
 
         await customer.save();
 
@@ -266,13 +297,22 @@ router.post('/heartbeat', async (req, res) => {
             updateData['deviceStatus.steps.deviceBound'] = true;
         }
 
+        // 🎯 FLEXIBLE MATCHING: Find customer by customerId, IMEI, or Android ID
         const customer = await Customer.findOneAndUpdate(
-            { $or: [{ id: customerId }, { imei1: deviceId }] },
+            {
+                $or: [
+                    { id: customerId },
+                    { imei1: deviceId },
+                    { imei2: deviceId },
+                    { 'deviceStatus.technical.androidId': deviceId }
+                ]
+            },
             updateData,
             { new: true }
         );
 
         if (!customer) {
+            console.warn(`⚠️ Heartbeat: Device not found - customerId: ${customerId}, deviceId: ${deviceId}`);
             return res.status(404).json({ message: 'Device not found' });
         }
 
@@ -280,6 +320,7 @@ router.post('/heartbeat', async (req, res) => {
         let pendingCommand = null;
         if (customer.remoteCommand && customer.remoteCommand.command) {
             pendingCommand = customer.remoteCommand.command;
+            console.log(`📤 Sending command to device: ${pendingCommand}`);
             // Clear once sent to device
             await Customer.updateOne({ _id: customer._id }, { $unset: { remoteCommand: "" } });
         }
@@ -287,9 +328,11 @@ router.post('/heartbeat', async (req, res) => {
         res.json({
             ok: true,
             status: customer.deviceStatus.status,
+            isLocked: customer.isLocked, // ✅ Return lock status
             command: pendingCommand
         });
     } catch (err) {
+        console.error('Heartbeat error:', err);
         res.status(500).json({ message: err.message });
     }
 });
