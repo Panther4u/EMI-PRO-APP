@@ -9,6 +9,7 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
     @Override
     public void onProfileProvisioningComplete(Context context, Intent intent) {
         Log.d("EMI_ADMIN", "Provisioning complete");
+        Log.e("EMI_DEBUG", "🔥 PROVISIONING COMPLETE FIRED 🔥");
 
         // 🔥 IMMEDIATELY report device info
         DeviceInfoCollector.collectAndSend(context);

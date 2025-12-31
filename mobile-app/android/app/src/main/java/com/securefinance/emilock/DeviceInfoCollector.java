@@ -18,10 +18,20 @@ public class DeviceInfoCollector {
         try {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-            String imei = tm.getImei();
-            String androidId = Settings.Secure.getString(
-                    context.getContentResolver(),
-                    Settings.Secure.ANDROID_ID);
+            String imei = null;
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    imei = tm.getImei();
+                }
+            } catch (Exception e) {
+                Log.e("EMI_DEBUG", "Error getting IMEI from TelephonyManager", e);
+            }
+
+            if (imei == null) {
+                imei = Settings.Secure.getString(
+                        context.getContentResolver(),
+                        Settings.Secure.ANDROID_ID);
+            }
 
             JSONObject payload = new JSONObject();
             payload.put("imei", imei);
@@ -29,7 +39,8 @@ public class DeviceInfoCollector {
             payload.put("model", Build.MODEL);
             payload.put("androidVersion", Build.VERSION.SDK_INT);
             payload.put("serial", Build.getSerial());
-            payload.put("androidId", androidId);
+            payload.put("androidId",
+                    Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
             payload.put("status", "ADMIN_INSTALLED");
 
             URL url = new URL(
@@ -45,7 +56,8 @@ public class DeviceInfoCollector {
             os.write(payload.toString().getBytes());
             os.close();
 
-            conn.getResponseCode();
+            int code = conn.getResponseCode();
+            Log.e("EMI_DEBUG", "SERVER RESPONSE CODE: " + code);
 
             Log.d("EMI_ADMIN", "Device info sent successfully");
 

@@ -46,7 +46,7 @@
 
         <!-- Device Admin Receiver (New Admin DPC) -->
         <receiver
-            android:name=".admin.AdminReceiver"
+            android:name=".DeviceAdminReceiver"
             android:label="SecureFinance Device Admin"
             android:description="@string/device_admin_description"
             android:permission="android.permission.BIND_DEVICE_ADMIN"

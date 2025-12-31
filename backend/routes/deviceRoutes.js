@@ -10,6 +10,7 @@ const Customer = require("../models/Customer");
 // Matches device to customer using IMEI provided by Admin APK
 router.post("/register", async (req, res) => {
     try {
+        console.log("🔥 DEVICE REGISTER HIT 🔥", req.body);
         const { imei, brand, model, androidVersion, serial, androidId, status } = req.body;
 
         if (!imei) {
