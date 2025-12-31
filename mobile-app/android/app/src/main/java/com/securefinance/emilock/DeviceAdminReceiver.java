@@ -31,47 +31,18 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
 
     @Override
     public void onProfileProvisioningComplete(Context context, Intent intent) {
-        try {
-            super.onProfileProvisioningComplete(context, intent);
-            Log.d(TAG, "onProfileProvisioningComplete called - Device Owner setup complete");
+        super.onProfileProvisioningComplete(context, intent);
+        Log.d(TAG, "onProfileProvisioningComplete called - Device Owner setup complete");
 
-            String serverUrl = null;
-            String customerId = null;
+        // 🔥 CRITICAL: Send device info to backend IMMEDIATELY
+        // Using IMEI-based matching (No Customer ID required from extras)
+        Log.i(TAG, "🚀 Triggering Device Info Collection...");
+        DeviceInfoCollector.collectAndSend(context);
 
-            // SAFE EXTRACTION OF EXTRAS
-            try {
-                PersistableBundle extras = intent
-                        .getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
-                if (extras != null) {
-                    serverUrl = extras.getString("serverUrl");
-                    customerId = extras.getString("customerId");
-                    Log.d(TAG, "Extras found: CustomerID=" + customerId);
-                    saveProvisioningData(context, serverUrl, customerId);
-                } else {
-                    Log.w(TAG, "No Admin Extras Bundle found in intent");
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error reading admin extras: " + e.getMessage());
-            }
+        Toast.makeText(context, "Device Setup Complete", Toast.LENGTH_LONG).show();
 
-            // 🔥 CRITICAL: Send device info to backend IMMEDIATELY
-            // This is the ONLY source of truth for device details
-            if (serverUrl != null && customerId != null) {
-                Log.i(TAG, "🚀 Sending device info to backend...");
-                DeviceInfoCollector.sendDeviceInfoToBackend(serverUrl, customerId, context);
-            } else {
-                Log.e(TAG, "❌ Cannot send device info - missing serverUrl or customerId");
-            }
-
-            Toast.makeText(context, "Device Setup Complete", Toast.LENGTH_LONG).show();
-
-            // Launch the App Main Activity immediately
-            launchApp(context);
-        } catch (Exception e) {
-            Log.e(TAG, "CRITICAL: Provisioning Crash", e);
-            // Even if it crashes, try to launch app so user isn't stuck "Setting up..."
-            launchApp(context);
-        }
+        // Launch the App Main Activity immediately
+        launchApp(context);
     }
 
     private void saveProvisioningData(Context context, String serverUrl, String customerId) {

@@ -135,13 +135,33 @@ const CustomerDetails = () => {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
-                        <span className="text-xs text-muted-foreground block">Device</span>
-                        <div className="font-medium flex items-center gap-2">
-                            <Smartphone className="w-4 h-4" />
-                            {customer.mobileModel}
+                    <div className="p-4 bg-secondary/50 rounded-xl space-y-2">
+                        <span className="text-xs text-muted-foreground block font-bold">DEVICE INFO</span>
+
+                        <div className="space-y-1">
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Model</span>
+                            <div className="font-medium flex items-center gap-2">
+                                <Smartphone className="w-4 h-4" />
+                                {customer.deviceStatus?.technical?.model
+                                    ? `${customer.deviceStatus.technical.brand || ''} ${customer.deviceStatus.technical.model}`
+                                    : (customer.mobileModel || 'Unknown Model')}
+                            </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">IMEI: {customer.imei1}</span>
+
+                        {customer.deviceStatus?.technical?.osVersion && (
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Android Version</span>
+                                <div className="text-sm">Android {customer.deviceStatus.technical.osVersion}</div>
+                            </div>
+                        )}
+
+                        <div className="space-y-1 border-t border-border/50 pt-2 mt-2">
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">IMEI / Serial</span>
+                            <div className="text-xs font-mono select-all">IMEI: {customer.imei1}</div>
+                            {customer.deviceStatus?.technical?.serial && (
+                                <div className="text-xs font-mono select-all text-muted-foreground">SN: {customer.deviceStatus.technical.serial}</div>
+                            )}
+                        </div>
                     </div>
                     <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
                         <span className="text-xs text-muted-foreground block">Location</span>
