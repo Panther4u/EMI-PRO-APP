@@ -45,11 +45,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Device Admin Receiver (New Admin DPC) -->
+        <!-- Device Admin Receiver (Primary Entry Point) -->
+        <!-- Device Admin Receiver (Primary Entry Point - EXACT NAME REQUIRED) -->
         <receiver
-            android:name=".DeviceAdminReceiver"
-            android:label="SecureFinance Device Admin"
-            android:description="@string/device_admin_description"
+            android:name="com.securefinance.emilock.DeviceAdminReceiver"
+            android:label="SecureFinance Admin"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="true">
             <meta-data
@@ -58,7 +58,7 @@
             <intent-filter>
                 <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 

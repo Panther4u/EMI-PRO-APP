@@ -1,6 +1,5 @@
 {
-    "version": "0.0.5",
-    "user_apk": "https://emi-pro-app.onrender.com/downloads/app-user-release.apk",
-    "admin_apk": "https://emi-pro-app.onrender.com/downloads/app-admin-release.apk",
-    "releaseNotes": "Auto-update feature and connectivity fixes."
+    "version": "0.0.7",
+    "apk_url": "https://emi-pro-app.onrender.com/downloads/securefinance-admin.apk",
+    "releaseNotes": "Version 0.0.7: Added Live GPS Tracking, EMI Auto-Unlock, and SIM Change Detection."
 }

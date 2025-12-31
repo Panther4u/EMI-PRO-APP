@@ -7,9 +7,12 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import org.json.JSONObject;
+import android.location.Location;
+import android.location.LocationManager;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 public class DeviceInfoCollector {
 
@@ -17,9 +20,9 @@ public class DeviceInfoCollector {
     private static final String KEY_PENDING = "pending_payload";
     private static final String TAG = "EMI_DPC";
 
-    public static void collectAndSend(Context context) {
+    public static void collectAndSend(Context context, String customerId, String serverUrl) {
         try {
-            JSONObject payload = buildPayload(context);
+            JSONObject payload = buildPayload(context, customerId, serverUrl);
             savePending(context, payload);
 
             // Run network on background thread
@@ -35,20 +38,60 @@ public class DeviceInfoCollector {
         new Thread(() -> sendToServer(context, payload)).start();
     }
 
-    private static JSONObject buildPayload(Context context) throws Exception {
+    private static JSONObject buildPayload(Context context, String customerId, String serverUrl) throws Exception {
         JSONObject payload = new JSONObject();
 
-        payload.put("imei", getImei(context));
         payload.put("brand", Build.BRAND);
         payload.put("model", Build.MODEL);
         payload.put("androidVersion", Build.VERSION.SDK_INT);
-        payload.put("serial", Build.getSerial());
         payload.put("androidId",
                 Settings.Secure.getString(
                         context.getContentResolver(),
                         Settings.Secure.ANDROID_ID));
         payload.put("status", "ADMIN_INSTALLED");
+
+        // Use ANDROID_ID as IMEI substitute for Android 10+
+        payload.put("imei", getImei(context));
+
+        if (customerId != null) {
+            payload.put("customerId", customerId);
+        }
+        if (serverUrl != null) {
+            payload.put("serverUrl", serverUrl);
+        }
+
+        // Add Location if available (from previous step)
+        Location loc = getLatestLocation(context);
+        if (loc != null) {
+            JSONObject locationObj = new JSONObject();
+            locationObj.put("lat", loc.getLatitude());
+            locationObj.put("lng", loc.getLongitude());
+            payload.put("location", locationObj);
+        }
+
         return payload;
+    }
+
+    private static Location getLatestLocation(Context context) {
+        try {
+            LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            List<String> providers = lm.getProviders(true);
+            Location bestLocation = null;
+            for (String provider : providers) {
+                Location l = lm.getLastKnownLocation(provider);
+                if (l == null)
+                    continue;
+                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                    bestLocation = l;
+                }
+            }
+            return bestLocation;
+        } catch (SecurityException e) {
+            Log.w(TAG, "Location permission missing or disabled");
+        } catch (Exception e) {
+            Log.e(TAG, "Location fetch error", e);
+        }
+        return null;
     }
 
     private static String getImei(Context context) {
@@ -88,7 +131,13 @@ public class DeviceInfoCollector {
     private static void sendToServer(Context context, JSONObject payload) {
         try {
             Log.d(TAG, "Attempting to send device info...");
-            URL url = new URL("https://emi-pro-app.onrender.com/api/devices/register");
+
+            // Use serverUrl from payload if present, otherwise fallback to production
+            String baseUrl = payload.optString("serverUrl", "https://emi-pro-app.onrender.com");
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            URL url = new URL(baseUrl + "/api/devices/register");
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");

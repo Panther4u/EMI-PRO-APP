@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Customers = () => {
-  const { customers, updateCustomer, deleteCustomer, unclaimedDevices, claimDevice } = useDevice();
+  const { customers, updateCustomer, deleteCustomer, unclaimedDevices, claimDevice, collectEmi } = useDevice();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,15 +42,15 @@ const Customers = () => {
     }
   }, [searchParams, navigate]);
 
-  const filteredCustomers = customers.filter(c => {
-    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.phoneNo.includes(searchQuery) ||
-      c.imei1.includes(searchQuery);
+  const filteredCustomers = (customers || []).filter(c => {
+    const matchesSearch = (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.phoneNo || '').includes(searchQuery) ||
+      (c.imei1 || '').includes(searchQuery);
 
     const matchesFilter = filter === 'all' ||
       (filter === 'locked' && c.isLocked) ||
       (filter === 'unlocked' && !c.isLocked) ||
-      (filter === 'enrolled' && c.isEnrolled);
+      (filter === 'enrolled' && (c.isEnrolled || c.deviceStatus?.status === 'ADMIN_INSTALLED'));
 
     return matchesSearch && matchesFilter;
   });
@@ -83,9 +83,9 @@ const Customers = () => {
     const customer = customers.find(c => c.id === id);
     if (!customer || customer.paidEmis >= customer.totalEmis) return;
 
-    await updateCustomer(id, {
-      paidEmis: customer.paidEmis + 1
-    });
+    if (window.confirm(`Confirm payment of ₹${customer.emiAmount} for ${customer.name}?`)) {
+      await collectEmi(id, customer.emiAmount);
+    }
   };
 
   const handleDeleteClick = (id: string) => {

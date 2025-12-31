@@ -2,6 +2,7 @@ import React from 'react';
 import { getProvisioningQRData } from '@/utils/provisioning';
 import { Link } from 'react-router-dom';
 import { Customer } from '@/types/customer';
+import { useDevice } from '@/context/DeviceContext';
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,7 @@ export const CustomerDetailsModal = ({
   onLockToggle,
   onCollectEmi
 }: CustomerDetailsModalProps) => {
+  const { sendRemoteCommand } = useDevice();
   const [qrData, setQrData] = React.useState<string>('');
   const [qrLoading, setQrLoading] = React.useState(false);
 
@@ -65,8 +67,8 @@ export const CustomerDetailsModal = ({
 
   if (!customer) return null;
 
-  const remainingEmis = customer.totalEmis - customer.paidEmis;
-  const progress = (customer.paidEmis / customer.totalEmis) * 100;
+  const remainingEmis = (customer.totalEmis || 0) - (customer.paidEmis || 0);
+  const progress = customer.totalEmis ? ((customer.paidEmis || 0) / customer.totalEmis) * 100 : 0;
 
   const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
     <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-0">
@@ -75,7 +77,7 @@ export const CustomerDetailsModal = ({
       </div>
       <div className="flex-1">
         <p className="text-xs text-muted-foreground mb-1">{label}</p>
-        <p className="font-medium text-foreground">{value}</p>
+        <p className="font-medium text-foreground">{value || '-'}</p>
       </div>
     </div>
   );
@@ -92,10 +94,10 @@ export const CustomerDetailsModal = ({
                   ? "bg-destructive/20 text-destructive"
                   : "bg-primary/20 text-primary"
               )}>
-                {customer.name.charAt(0)}
+                {customer.name?.charAt(0) || '?'}
               </div>
               <div>
-                <DialogTitle className="text-xl mb-1">{customer.name}</DialogTitle>
+                <DialogTitle className="text-xl mb-1">{customer.name || 'Unknown'}</DialogTitle>
                 <Badge
                   className={cn(
                     "px-3 py-1",
@@ -160,6 +162,48 @@ export const CustomerDetailsModal = ({
             <InfoRow icon={Hash} label="IMEI 2" value={customer.imei2 || 'Not Provided'} />
           </div>
 
+          {/* SIM Details */}
+          {customer.simDetails && (
+            <div className="glass-card p-4">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-primary" />
+                SIM Card Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <InfoRow icon={Building} label="Operator" value={customer.simDetails.operator || '-'} />
+                <InfoRow icon={Phone} label="Phone" value={customer.simDetails.phoneNumber || '-'} />
+                <InfoRow icon={Hash} label="Serial (ICCID)" value={customer.simDetails.serialNumber || '-'} />
+                <InfoRow icon={Hash} label="IMSI" value={customer.simDetails.imsi || '-'} />
+              </div>
+              {!customer.simDetails.isAuthorized && (
+                <div className="mt-3 bg-destructive/10 border border-destructive/20 rounded p-2 text-xs text-destructive font-bold text-center">
+                  ⚠️ UNAUTHORIZED SIM DETECTED
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SIM Change History */}
+          {customer.simChangeHistory && customer.simChangeHistory.length > 0 && (
+            <div className="glass-card p-4 border-orange-500/20 bg-orange-500/5">
+              <h3 className="font-semibold text-orange-600 mb-3 flex items-center gap-2">
+                <History className="w-4 h-4" />
+                SIM Change History
+              </h3>
+              <div className="space-y-2">
+                {customer.simChangeHistory.map((change: any, i: number) => (
+                  <div key={i} className="flex flex-col gap-1 bg-white/50 rounded-lg p-2 text-xs border border-orange-200">
+                    <div className="flex justify-between font-medium">
+                      <span>{change.operator || 'Unknown Network'}</span>
+                      <span>{change.detectedAt ? new Date(change.detectedAt).toLocaleDateString() : '-'}</span>
+                    </div>
+                    <div className="text-muted-foreground">Serial: {change.serialNumber || 'N/A'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Device Info (Live Verified) */}
           {customer.deviceStatus?.technical && (
             <div className="glass-card p-4 border-primary/20 bg-primary/5">
@@ -201,7 +245,7 @@ export const CustomerDetailsModal = ({
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">Payment Progress</span>
               <span className="text-sm font-medium text-foreground">
-                {customer.paidEmis} of {customer.totalEmis} EMIs paid
+                {customer.paidEmis || 0} of {customer.totalEmis || 0} EMIs paid
               </span>
             </div>
             <div className="h-3 bg-secondary rounded-full overflow-hidden">
@@ -210,7 +254,7 @@ export const CustomerDetailsModal = ({
                   "h-full rounded-full transition-all duration-500",
                   customer.isLocked ? "bg-destructive" : "bg-primary"
                 )}
-                style={{ width: `${progress}%` }}
+                style={{ width: `${Math.min(100, Math.max(0, ((customer.paidEmis || 0) / (customer.totalEmis || 1)) * 100))}%` }}
               />
             </div>
           </div>
@@ -218,20 +262,20 @@ export const CustomerDetailsModal = ({
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-secondary/50 rounded-lg p-3 text-center">
               <p className="text-[10px] text-muted-foreground mb-1">Loan</p>
-              <p className="text-sm font-bold text-foreground">₹{customer.totalAmount.toLocaleString()}</p>
+              <p className="text-sm font-bold text-foreground">₹{(customer.totalAmount || 0).toLocaleString()}</p>
             </div>
             <div className="bg-secondary/50 rounded-lg p-3 text-center">
               <p className="text-[10px] text-muted-foreground mb-1">EMI</p>
-              <p className="text-sm font-bold text-foreground">₹{customer.emiAmount.toLocaleString()}</p>
+              <p className="text-sm font-bold text-foreground">₹{(customer.emiAmount || 0).toLocaleString()}</p>
             </div>
             <div className="bg-secondary/50 rounded-lg p-3 text-center">
               <p className="text-[10px] text-muted-foreground mb-1">Date</p>
-              <p className="text-sm font-bold text-foreground">{customer.emiDate}th</p>
+              <p className="text-sm font-bold text-foreground">{customer.emiDate || '-'}{Number(customer.emiDate) ? 'th' : ''}</p>
             </div>
             <div className="bg-secondary/50 rounded-lg p-3 text-center">
               <p className="text-[10px] text-muted-foreground mb-1">Pending</p>
               <p className="text-sm font-bold text-destructive">
-                ₹{(remainingEmis * customer.emiAmount).toLocaleString()}
+                ₹{((remainingEmis || 0) * (customer.emiAmount || 0)).toLocaleString()}
               </p>
             </div>
           </div>
@@ -261,15 +305,30 @@ export const CustomerDetailsModal = ({
             Last Known Location
           </h3>
           <div className="bg-secondary/50 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-mono text-sm text-foreground">
-                  Lat: {customer.location.lat.toFixed(4)}, Lng: {customer.location.lng.toFixed(4)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Last updated: {format(new Date(customer.location.lastUpdated), 'PPpp')}
-                </p>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-mono text-sm text-foreground">
+                    Lat: {(customer.location?.lat || 0).toFixed(4)}, Lng: {(customer.location?.lng || 0).toFixed(4)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Updated: {customer.location?.lastUpdated ? (() => {
+                      try { return format(new Date(customer.location.lastUpdated), 'PPpp'); } catch (e) { return 'Invalid Date'; }
+                    })() : 'Never'}
+                  </p>
+                </div>
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs h-8"
+                onClick={() => window.open(`https://www.google.com/maps?q=${customer.location?.lat || 0},${customer.location?.lng || 0}`, '_blank')}
+                disabled={!customer.location?.lat && !customer.location?.lng}
+              >
+                <MapPin className="w-3 h-3 mr-2" />
+                View on Google Maps
+              </Button>
             </div>
           </div>
         </div>
@@ -303,7 +362,7 @@ export const CustomerDetailsModal = ({
 
         {/* Lock History */}
         {
-          customer.lockHistory.length > 0 && (
+          customer.lockHistory && customer.lockHistory.length > 0 && (
             <div className="glass-card p-4 mt-4">
               <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <History className="w-4 h-4 text-primary" />
@@ -327,7 +386,9 @@ export const CustomerDetailsModal = ({
                       <p className="text-xs text-muted-foreground">{event.reason}</p>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(event.timestamp), 'PPp')}
+                      {event.timestamp ? (() => {
+                        try { return format(new Date(event.timestamp), 'PPp'); } catch (e) { return '-'; }
+                      })() : '-'}
                     </p>
                   </div>
                 ))}
@@ -360,6 +421,19 @@ export const CustomerDetailsModal = ({
                 Lock Device
               </>
             )}
+          </Button>
+
+          <Button
+            variant="destructive"
+            className="flex-1 bg-red-900/80 hover:bg-red-900 border-red-800"
+            onClick={() => {
+              if (window.confirm("CRITICAL WARNING: This will FACTORY RESET the device and delete all data. This action cannot be undone. Are you sure?")) {
+                sendRemoteCommand(customer.id, 'wipe');
+                onClose();
+              }
+            }}
+          >
+            Wipe Data
           </Button>
         </div>
       </DialogContent >

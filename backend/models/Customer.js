@@ -14,11 +14,18 @@ const CustomerSchema = new mongoose.Schema({
     // SIM Tracking
     simDetails: {
         operator: { type: String },
-        serialNumber: { type: String },
+        serialNumber: { type: String }, // ICCID
         phoneNumber: { type: String },
         imsi: { type: String },
+        isAuthorized: { type: Boolean, default: true },
         lastUpdated: { type: Date }
     },
+    simChangeHistory: [{
+        serialNumber: { type: String },
+        operator: { type: String },
+        detectedAt: { type: Date },
+        ipAddress: { type: String }
+    }],
 
     // Offline Lock Tokens
     offlineLockToken: { type: String }, // 6-digit PIN for locking via SMS
@@ -39,9 +46,15 @@ const CustomerSchema = new mongoose.Schema({
     location: {
         lat: { type: Number },
         lng: { type: Number },
-        lastUpdated: { type: String },
+        lastUpdated: { type: Date },
         address: { type: String }
     },
+    emiSchedule: [{
+        dueDate: { type: Date },
+        amount: { type: Number },
+        status: { type: String, enum: ['PENDING', 'PAID', 'OVERDUE'], default: 'PENDING' },
+        paidAt: { type: Date }
+    }],
     createdAt: { type: String },
     lockHistory: [{
         id: { type: String },
@@ -81,6 +94,10 @@ const CustomerSchema = new mongoose.Schema({
             imeiVerified: { type: Boolean, default: false },
             deviceBound: { type: Boolean, default: false }
         }
+    },
+    remoteCommand: {
+        command: { type: String }, // e.g. "lock", "unlock", "wipe"
+        timestamp: { type: Date }
     }
 }, { timestamps: true });
 

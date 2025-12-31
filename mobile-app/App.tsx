@@ -54,20 +54,19 @@ export default function App() {
 
         try {
             console.log("Checking Admin status...");
-            // 1. FAST CHECK: Is this the Admin APK?
+            // 1. DPC / Device Owner Check
             const dlm = NativeModules.DeviceLockModule;
+            let currentPackage = '';
             if (dlm && dlm.getAppInfo) {
                 try {
                     const appInfo = await dlm.getAppInfo();
-                    if (appInfo?.packageName?.endsWith('.admin')) {
-                        console.log("Admin APK detected");
-                        setIsAdmin(true);
-                        setLoading(false); // Open immediately for Admin
-                        checkForUpdates(currentServerUrl);
-                        return;
-                    }
+                    currentPackage = appInfo?.packageName || '';
+                    console.log("Running as:", currentPackage);
+
+                    // Note: In single APK mode, we treat the 'admin' flavor 
+                    // as the DPC that runs on the customer's phone.
                 } catch (appInfoError) {
-                    console.warn("getAppInfo failed, continuing as user app:", appInfoError);
+                    console.warn("getAppInfo failed:", appInfoError);
                 }
             }
 
@@ -114,22 +113,63 @@ export default function App() {
     const syncStatus = async (cid: string, url: string, step?: string) => {
         if (!cid || !url || isAdmin) return;
         try {
-            const body: any = { status: 'online' };
+            // Try to get location
+            let location = null;
+            try {
+                const getCoords = () => new Promise((resolve, reject) => {
+                    (navigator as any).geolocation.getCurrentPosition(
+                        (pos: any) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        (err: any) => reject(err),
+                        { enableHighAccuracy: false, timeout: 5000 }
+                    );
+                });
+                location = await getCoords();
+            } catch (locErr) {
+                // Ignore location errors
+            }
+
+            const body: any = {
+                customerId: cid,
+                deviceId: cid, // fallback
+                status: 'online',
+                appInstalled: true,
+                location
+            };
             if (step) body.step = step;
 
-            const response = await fetch(`${url}/api/customers/${cid}/status`, {
+            // Use the heartbeat endpoint for real-time commands
+            const response = await fetch(`${url}/api/customers/heartbeat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+
             if (response.ok) {
                 const data = await response.json();
-                if (data.isLocked !== undefined) {
-                    setIsLocked(data.isLocked);
-                    await AsyncStorage.setItem('lock_status', data.isLocked ? 'locked' : 'unlocked');
 
-                    if (data.isLocked && DeviceLockModule && !isAdmin) {
-                        DeviceLockModule.lockDevice().catch(console.error);
+                // Handle Remote Command if present
+                if (data.command) {
+                    console.log("🚀 Received Remote Command:", data.command);
+                    if (data.command === 'lock') {
+                        setIsLocked(true);
+                        await AsyncStorage.setItem('lock_status', 'locked');
+                        if (DeviceLockModule) DeviceLockModule.lockNow().catch(console.error);
+                    } else if (data.command === 'unlock') {
+                        setIsLocked(false);
+                        await AsyncStorage.setItem('lock_status', 'unlocked');
+                    } else if (data.command === 'wipe') {
+                        // wipe logic (requires Device Owner)
+                        console.log("⚠️ Executing REMOTE WIPE...");
+                        if (DeviceLockModule) DeviceLockModule.wipeData().catch(console.error);
+                    }
+                }
+
+                // Support legacy isLocked flag too
+                if (data.isLocked !== undefined) {
+                    const newLockState = !!data.isLocked;
+                    if (newLockState !== isLocked) {
+                        setIsLocked(newLockState);
+                        await AsyncStorage.setItem('lock_status', newLockState ? 'locked' : 'unlocked');
                     }
                 }
             }

@@ -14,14 +14,17 @@ interface CustomerCardProps {
 }
 
 export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, onCollectEmi, onDelete }: CustomerCardProps) => {
-  const remainingEmis = customer.totalEmis - customer.paidEmis;
-  const progress = (customer.paidEmis / customer.totalEmis) * 100;
+  const remainingEmis = (customer.totalEmis || 0) - (customer.paidEmis || 0);
+  const progress = customer.totalEmis ? ((customer.paidEmis || 0) / customer.totalEmis) * 100 : 0;
 
   return (
-    <div className={cn(
-      "glass-card p-5 transition-all duration-300 hover:border-border",
-      customer.isLocked && "border-destructive/30 bg-destructive/5"
-    )}>
+    <div
+      className={cn(
+        "glass-card p-5 transition-all duration-300 hover:border-border cursor-pointer",
+        customer.isLocked && "border-destructive/30 bg-destructive/5"
+      )}
+      onClick={() => onViewDetails(customer)}
+    >
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -69,7 +72,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted-foreground">EMI Progress</span>
           <span className="text-sm font-medium text-foreground">
-            {customer.paidEmis}/{customer.totalEmis}
+            {customer.paidEmis || 0}/{customer.totalEmis || 0}
           </span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -78,7 +81,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
               "h-full rounded-full transition-all duration-500",
               customer.isLocked ? "bg-destructive" : "bg-primary"
             )}
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
           />
         </div>
       </div>
@@ -90,12 +93,12 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             <CreditCard className="w-3 h-3" />
             <span className="text-xs">Monthly EMI</span>
           </div>
-          <p className="font-semibold text-foreground">₹{customer.emiAmount.toLocaleString()}</p>
+          <p className="font-semibold text-foreground">₹{(customer.emiAmount || 0).toLocaleString()}</p>
         </div>
         <div className="bg-secondary/50 rounded-lg p-3">
           <div className="text-xs text-muted-foreground mb-1">Pending</div>
           <p className="font-semibold text-foreground">
-            ₹{(remainingEmis * customer.emiAmount).toLocaleString()}
+            ₹{((remainingEmis || 0) * (customer.emiAmount || 0)).toLocaleString()}
           </p>
         </div>
       </div>
@@ -112,7 +115,10 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             variant="glass"
             size="sm"
             className="w-full"
-            onClick={() => onViewDetails(customer)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(customer);
+            }}
           >
             View
           </Button>
@@ -120,7 +126,10 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => onEdit(customer.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(customer.id);
+            }}
           >
             <Pencil className="w-3 h-3 mr-1" />
             Edit
@@ -129,7 +138,10 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             variant="outline"
             size="sm"
             className="w-full border-destructive/20 text-destructive hover:bg-destructive hover:text-white"
-            onClick={() => onDelete(customer.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(customer.id);
+            }}
           >
             Delete
           </Button>
@@ -137,7 +149,10 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
         <Button
           variant={customer.isLocked ? "successOutline" : "danger"}
           size="sm"
-          onClick={() => onLockToggle(customer.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onLockToggle(customer.id);
+          }}
           className="gap-2 w-full"
         >
           {customer.isLocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
@@ -146,7 +161,10 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
         <Button
           className="w-full bg-green-600 hover:bg-green-700 text-white"
           size="sm"
-          onClick={() => onCollectEmi(customer.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCollectEmi(customer.id);
+          }}
           disabled={remainingEmis <= 0}
         >
           <CreditCard className="w-3 h-3 mr-2" />

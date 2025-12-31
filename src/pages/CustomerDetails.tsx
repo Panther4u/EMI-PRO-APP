@@ -48,8 +48,8 @@ const CustomerDetails = () => {
         );
     }
 
-    const remainingEmis = customer.totalEmis - customer.paidEmis;
-    const progress = (customer.paidEmis / customer.totalEmis) * 100;
+    const remainingEmis = (customer.totalEmis || 0) - (customer.paidEmis || 0);
+    const progress = customer.totalEmis ? ((customer.paidEmis || 0) / customer.totalEmis) * 100 : 0;
 
     const handleLockToggle = () => {
         toggleLock(customer.id, !customer.isLocked, 'Manual Admin Action');
@@ -277,12 +277,12 @@ const CustomerDetails = () => {
                 <div className="mb-6">
                     <div className="flex justify-between text-sm mb-2">
                         <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{customer.paidEmis} / {customer.totalEmis} Months</span>
+                        <span className="font-medium">{customer.paidEmis || 0} / {customer.totalEmis || 0} Months</span>
                     </div>
                     <div className="h-3 bg-secondary rounded-full overflow-hidden">
                         <div
                             className={cn("h-full transition-all duration-500", customer.isLocked ? "bg-destructive" : "bg-primary")}
-                            style={{ width: `${progress}%` }}
+                            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
                         />
                     </div>
                 </div>
@@ -290,15 +290,15 @@ const CustomerDetails = () => {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-3 border rounded-lg">
                         <p className="text-xs text-muted-foreground mb-1">Device Price</p>
-                        <p className="text-lg font-bold">₹{customer.totalAmount?.toLocaleString() || '0'}</p>
+                        <p className="text-lg font-bold">₹{(customer.totalAmount || 0).toLocaleString()}</p>
                     </div>
                     <div className="p-3 border rounded-lg">
                         <p className="text-xs text-muted-foreground mb-1">Monthly Amount</p>
-                        <p className="text-lg font-bold">₹{customer.emiAmount.toLocaleString()}</p>
+                        <p className="text-lg font-bold">₹{(customer.emiAmount || 0).toLocaleString()}</p>
                     </div>
                     <div className="p-3 border rounded-lg">
                         <p className="text-xs text-muted-foreground mb-1">Total Remaining</p>
-                        <p className="text-lg font-bold text-destructive">₹{(remainingEmis * customer.emiAmount).toLocaleString()}</p>
+                        <p className="text-lg font-bold text-destructive">₹{((remainingEmis || 0) * (customer.emiAmount || 0)).toLocaleString()}</p>
                     </div>
                     <div className="p-3 border rounded-lg">
                         <p className="text-xs text-muted-foreground mb-1">Next Due Date</p>

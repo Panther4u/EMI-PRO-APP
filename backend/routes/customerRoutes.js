@@ -5,9 +5,11 @@ const Customer = require('../models/Customer');
 // Get all customers
 router.get('/', async (req, res) => {
     try {
-        const customers = await Customer.find();
+        // Return newest customers first
+        const customers = await Customer.find().sort({ createdAt: -1 }).lean();
         res.json(customers);
     } catch (err) {
+        console.error('Error fetching customers:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -153,7 +155,39 @@ router.post('/:id/verify', async (req, res) => {
 
         // Update technical details
         if (modelDetails) customer.mobileModel = modelDetails;
-        if (simDetails) customer.simDetails = simDetails;
+        if (simDetails) {
+            // SIM Change Detection Logic
+            if (customer.simDetails && customer.simDetails.serialNumber) {
+                // Check if SIM changed (compare ICCID/Serial)
+                if (simDetails.serialNumber && simDetails.serialNumber !== customer.simDetails.serialNumber) {
+                    console.warn(`SIM Change Detected for ${customer.name}: ${customer.simDetails.serialNumber} -> ${simDetails.serialNumber}`);
+
+                    // Log to History
+                    customer.simChangeHistory.push({
+                        serialNumber: simDetails.serialNumber,
+                        operator: simDetails.operator,
+                        detectedAt: new Date(),
+                        ipAddress: req.ip
+                    });
+
+                    // Flag Status
+                    status = 'SIM_MISMATCH';
+                    message = 'Unauthorized SIM Card Detected';
+                    customer.deviceStatus.errorMessage = message;
+                    customer.deviceStatus.status = 'error';
+
+                    // OPTIONAL: Auto-Lock on SIM Change
+                    // customer.isLocked = true; 
+                    // customer.lockHistory.push({
+                    //    id: Date.now().toString(),
+                    //    action: 'locked',
+                    //    reason: 'SIM Change Detected',
+                    //    timestamp: new Date().toISOString()
+                    // });
+                }
+            }
+            customer.simDetails = simDetails; // Update to latest
+        }
 
         // Generate Token if missing (for Offline Lock)
         if (!customer.offlineLockToken) {
@@ -208,13 +242,19 @@ router.post('/:id/verify', async (req, res) => {
 // Heartbeat endpoint - User App sends status every few seconds
 router.post('/heartbeat', async (req, res) => {
     try {
-        const { deviceId, customerId, status, appInstalled, lastSeen } = req.body;
+        const { deviceId, customerId, status, appInstalled, lastSeen, location } = req.body;
 
         const updateData = {
             'deviceStatus.status': status || 'active',
             'deviceStatus.lastSeen': new Date(lastSeen || Date.now()),
             isEnrolled: appInstalled !== false
         };
+
+        if (location) {
+            updateData['location.lat'] = location.lat;
+            updateData['location.lng'] = location.lng;
+            updateData['location.lastUpdated'] = new Date();
+        }
 
         // Mark all steps as complete if app is installed and running
         if (appInstalled) {
@@ -236,7 +276,51 @@ router.post('/heartbeat', async (req, res) => {
             return res.status(404).json({ message: 'Device not found' });
         }
 
-        res.json({ ok: true, status: customer.deviceStatus.status });
+        // Check for pending commands
+        let pendingCommand = null;
+        if (customer.remoteCommand && customer.remoteCommand.command) {
+            pendingCommand = customer.remoteCommand.command;
+            // Clear once sent to device
+            await Customer.updateOne({ _id: customer._id }, { $unset: { remoteCommand: "" } });
+        }
+
+        res.json({
+            ok: true,
+            status: customer.deviceStatus.status,
+            command: pendingCommand
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Set remote command for a device
+router.post('/:id/command', async (req, res) => {
+    try {
+        const { command } = req.body;
+        if (!['lock', 'unlock', 'wipe', 'reset'].includes(command)) {
+            return res.status(400).json({ message: 'Invalid command' });
+        }
+
+        const updateData = {
+            remoteCommand: {
+                command,
+                timestamp: new Date()
+            }
+        };
+
+        // If the command is lock or unlock, also update the high-level state
+        if (command === 'lock') updateData.isLocked = true;
+        if (command === 'unlock') updateData.isLocked = false;
+
+        const customer = await Customer.findOneAndUpdate(
+            { id: req.params.id },
+            { $set: updateData },
+            { new: true }
+        );
+
+        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+        res.json({ success: true, message: `Command ${command} queued for device`, customer });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

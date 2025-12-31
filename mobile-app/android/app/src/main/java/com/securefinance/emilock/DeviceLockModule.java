@@ -107,6 +107,21 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void wipeData(Promise promise) {
+        try {
+            if (isDeviceOwner() && devicePolicyManager.isAdminActive(adminComponent)) {
+                // Wipe internal data (Factory Reset)
+                devicePolicyManager.wipeData(0);
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner or admin inactive");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    @ReactMethod
     public void getIMEI(Promise promise) {
         try {
             String deviceId = null;
@@ -153,6 +168,33 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
                 android.telephony.SubscriptionInfo info = subscriptionInfoList.get(0);
                 com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
                 map.putString("operator", info.getCarrierName().toString());
+                map.putString("subscriptionId", String.valueOf(info.getSubscriptionId()));
+
+                // ICCID is restricted in newer Android versions but accessible with carrier
+                // privileges or device owner
+                // We'll try to get it, or fallback to hash if needed.
+                // In earlier versions getIccId() exists. In Android 11+ unlikely without
+                // specific privileges.
+                // However, since we are Device Owner, we should have success or use getCardId()
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        try {
+                            // On Q+ access to IccId is restricted.
+                            // But let's try reading it if available or use subscription ID as proxy for now
+                            // if IccId fails
+                            // Actually SubscriptionInfo.getIccId() is deprecated/hidden in some versions.
+                            // We will try standard access:
+                            String iccId = info.getIccId();
+                            if (iccId != null)
+                                map.putString("serialNumber", iccId);
+                        } catch (SecurityException se) {
+                            // Fallback
+                        }
+                    } else {
+                        map.putString("serialNumber", info.getIccId());
+                    }
+                } catch (Exception e) {
+                }
 
                 // Try to get phone number safely
                 try {

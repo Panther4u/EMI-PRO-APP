@@ -29,10 +29,40 @@ router.post("/register", async (req, res) => {
                 status: "ADMIN_INSTALLED",
                 enrolledAt: new Date(),
                 lastSeen: new Date(),
-                customerId: req.body.customerId || "UNCLAIMED" // Keep compatibility
+                customerId: req.body.customerId || "UNCLAIMED"
             },
             { upsert: true, new: true }
         );
+
+        // 🔥 AUTO-LINK: If customerId is present, update the Customer record too
+        if (req.body.customerId && req.body.customerId !== "UNCLAIMED") {
+            console.log(`🔗 Auto-linking device ${androidId} to customer ${req.body.customerId}`);
+
+            const customerUpdate = {
+                "deviceStatus.status": "ADMIN_INSTALLED",
+                "deviceStatus.lastSeen": new Date(),
+                "deviceStatus.technical.brand": brand,
+                "deviceStatus.technical.model": model,
+                "deviceStatus.technical.osVersion": androidVersion,
+                "deviceStatus.technical.androidId": androidId,
+                "deviceStatus.steps.qrScanned": true,
+                "deviceStatus.steps.appInstalled": true,
+                "deviceStatus.steps.detailsFetched": true,
+                isEnrolled: true
+            };
+
+            // Capture location if provided
+            if (req.body.location) {
+                customerUpdate["location.lat"] = req.body.location.lat;
+                customerUpdate["location.lng"] = req.body.location.lng;
+                customerUpdate["location.lastUpdated"] = new Date().toISOString();
+            }
+
+            await Customer.findOneAndUpdate(
+                { id: req.body.customerId },
+                { $set: customerUpdate }
+            );
+        }
 
         console.log("✅ Device registered/updated:", device.androidId);
         res.json({ success: true, device });

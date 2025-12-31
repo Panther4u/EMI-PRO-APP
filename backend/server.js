@@ -53,10 +53,25 @@ app.get('/debug-files', (req, res) => {
     }
 });
 
+// Health Check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date() });
+});
+
+// Version Info
+app.get('/version', (req, res) => {
+    res.json({
+        apk: 'securefinance-admin.apk',
+        type: 'single-dpc',
+        version: '0.0.6'
+    });
+});
+
 // API Routes
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/devices', require('./routes/deviceRoutes'));
 app.use('/api/provisioning', require('./routes/provisioningRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
 
 // Serve frontend build (production)
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -69,11 +84,29 @@ app.get(/^(?!\/api|\/downloads).*$/, (req, res) => {
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
-        console.log('Connected to MongoDB Atlas');
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
+        console.log('✅ Connected to MongoDB Atlas');
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Server is running on port ${PORT}`);
         });
     })
     .catch(err => {
-        console.error('Could not connect to MongoDB Atlas', err);
+        console.error('❌ Could not connect to MongoDB Atlas', err);
     });
+
+// Re-connection event listeners
+mongoose.connection.on('disconnected', () => {
+    console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('❌ MongoDB error:', err);
+});
+
+// Process Error Handlers to prevent silent crashes
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});

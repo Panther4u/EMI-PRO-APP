@@ -3,6 +3,7 @@
     <uses-policies>
         <force-lock />
         <wipe-data />
+        <disable-keyguard-features />
     </uses-policies>
 </device-admin>
 

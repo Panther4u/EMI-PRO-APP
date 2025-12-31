@@ -8,8 +8,8 @@ router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
 
-        // Dynamic determination of APK Path (assuming standard deployment)
-        const apkFileName = 'app-admin-release.apk';
+        // 🔥 SINGLE APK RULE: The APK installed by QR is our combined Admin + User app.
+        const apkFileName = 'securefinance-admin.apk';
         const apkPath = path.join(__dirname, '../public', apkFileName);
 
         // Determine Base URL dynamically or from ENV
@@ -24,14 +24,15 @@ router.get('/payload/:customerId', (req, res) => {
         const fs = require('fs');
         if (!fs.existsSync(apkPath)) {
             console.error(`❌ APK NOT FOUND: ${apkPath}`);
-            console.error(`   Files in public/:`, fs.readdirSync(path.join(__dirname, '../public')));
-            throw new Error(`APK file not found at ${apkPath}`);
+            const publicFiles = fs.readdirSync(path.join(__dirname, '../public'));
+            console.error(`   Files in public/:`, publicFiles);
+            throw new Error(`APK file not found: ${apkFileName}. Build it first!`);
         }
 
         // Calculate Checksum
         const checksum = getApkChecksum(apkPath);
 
-        // Construct Android Enterprise Provisioning Payload
+        // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
                 "com.securefinance.emilock.admin/com.securefinance.emilock.DeviceAdminReceiver",

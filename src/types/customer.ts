@@ -42,6 +42,7 @@ export interface Customer {
       model?: string;
       osVersion?: string;
       androidId?: string;
+      serial?: string;
     };
     steps?: {
       qrScanned?: boolean;
@@ -57,7 +58,14 @@ export interface Customer {
     serialNumber?: string;
     phoneNumber?: string;
     imsi?: string;
+    isAuthorized?: boolean;
   };
+  simChangeHistory?: {
+    serialNumber?: string;
+    operator?: string;
+    detectedAt?: string;
+    ipAddress?: string;
+  }[];
   offlineLockToken?: string;
   offlineUnlockToken?: string;
   expectedIMEI?: string;

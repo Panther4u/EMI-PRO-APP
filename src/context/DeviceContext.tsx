@@ -16,6 +16,8 @@ interface DeviceContextType {
     unclaimedDevices: any[];
     refreshUnclaimed: () => Promise<void>;
     claimDevice: (deviceId: string, customerId: string) => Promise<void>;
+    sendRemoteCommand: (id: string, command: 'lock' | 'unlock' | 'wipe' | 'reset') => Promise<void>;
+    collectEmi: (id: string, amount: number) => Promise<void>;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -137,10 +139,61 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     };
 
+    const sendRemoteCommand = async (id: string, command: 'lock' | 'unlock' | 'wipe' | 'reset') => {
+        try {
+            const response = await fetch(getApiUrl(`/api/customers/${id}/command`), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || 'Failed to send command');
+            }
+
+            toast.success(`Command '${command}' sent to device queue`);
+            await refreshCustomers();
+        } catch (error) {
+            console.error('Remote command failed:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to send command');
+        }
+    };
+
+    const collectEmi = async (id: string, amount: number) => {
+        try {
+            const response = await fetch(getApiUrl('/api/payments/pay-emi'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customerId: id, amount }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || 'Failed to process payment');
+            }
+
+            const data = await response.json();
+            toast.success(data.message || 'Payment recorded successfully');
+
+            // If the backend says it's unlocked, let's notify the user specifically
+            if (data.isLocked === false) {
+                toast.success("Device Auto-Unlocked due to payment!");
+            }
+
+            await refreshCustomers();
+        } catch (error) {
+            console.error('Payment failed:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to record payment');
+        }
+    };
+
     const toggleLock = async (id: string, status: boolean, reason: string = 'Manual override') => {
         const customer = customers.find(c => c.id === id);
         if (!customer) return;
 
+        // 1. Optimistic UI update
+        // We calculate what history would look like
         const newHistory = {
             id: Date.now().toString(),
             action: status ? 'locked' : 'unlocked' as const,
@@ -150,13 +203,8 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         const updatedLockHistory = [...customer.lockHistory, newHistory];
 
-        // Optimistic update handled by updateCustomer
-        await updateCustomer(id, {
-            isLocked: status,
-            lockHistory: updatedLockHistory as any
-        });
-
-        toast.success(`Device ${status ? 'Locked' : 'Unlocked'} Successfully`);
+        // 2. Call the new command API instead of just patching DB
+        await sendRemoteCommand(id, status ? 'lock' : 'unlock');
     };
 
     const deleteCustomer = async (id: string) => {
@@ -212,7 +260,9 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             deleteCustomer,
             unclaimedDevices,
             refreshUnclaimed,
-            claimDevice
+            claimDevice,
+            sendRemoteCommand,
+            collectEmi
         }}>
             {children}
         </DeviceContext.Provider>
