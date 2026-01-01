@@ -603,13 +603,8 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
 
                 // Status Bar
                 boolean statusBarDisabled = false;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    try {
-                        statusBarDisabled = devicePolicyManager.getStatusBarDisabled(adminComponent);
-                    } catch (Exception e) {
-                        // Ignore
-                    }
-                }
+                // getStatusBarDisabled() is not available in all Android versions
+                // We track this via our own state instead
                 status.putBoolean("statusBarDisabled", statusBarDisabled);
             } else {
                 // Not device owner - report limited info
@@ -719,7 +714,8 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
                         simStateStr = "READY";
                         simReady = true;
                         break;
-                    case android.telephony.TelephonyManager.SIM_STATE_LOCKED:
+                    case android.telephony.TelephonyManager.SIM_STATE_PIN_REQUIRED:
+                    case android.telephony.TelephonyManager.SIM_STATE_PUK_REQUIRED:
                         simStateStr = "LOCKED";
                         break;
                     case android.telephony.TelephonyManager.SIM_STATE_UNKNOWN:

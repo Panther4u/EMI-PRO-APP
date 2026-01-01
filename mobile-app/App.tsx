@@ -11,6 +11,7 @@ import LockedScreen from './src/screens/LockedScreen';
 import PermissionsScreen from './src/screens/PermissionsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import AdminScreen from './src/screens/AdminScreen';
+import BackgroundScreen from './src/screens/BackgroundScreen';
 
 const Stack = createStackNavigator();
 const { DeviceLockModule } = NativeModules;
@@ -458,9 +459,8 @@ export default function App() {
                 ) : isLocked ? (
                     <Stack.Screen name="Locked" component={LockedScreen} />
                 ) : (
-                    <Stack.Screen name="Home">
-                        {props => <HomeScreen {...props} setIsLocked={setIsLocked} />}
-                    </Stack.Screen>
+                    // User APK when unlocked - minimize to background
+                    <Stack.Screen name="Background" component={BackgroundScreen} />
                 )}
                 <Stack.Screen name="Settings" component={SettingsScreen} />
             </Stack.Navigator>

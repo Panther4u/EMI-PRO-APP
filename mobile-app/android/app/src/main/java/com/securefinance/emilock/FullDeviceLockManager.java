@@ -509,6 +509,20 @@ public class FullDeviceLockManager {
     }
 
     /**
+     * Check if kiosk mode is active
+     */
+    public boolean isKioskModeActive() {
+        if (!isDeviceOwner())
+            return false;
+        try {
+            String[] packages = dpm.getLockTaskPackages(adminComponent);
+            return packages != null && packages.length > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
      * Acquire wake lock to keep device awake
      */
     public void acquireWakeLock() {
