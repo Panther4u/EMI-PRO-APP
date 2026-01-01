@@ -149,7 +149,10 @@ export default function App() {
                             }));
                         }
 
-                        setIsEnrolled(true);
+                        // Only set enrolled if we actually have the customer ID
+                        if (provisioningData.customerId) {
+                            setIsEnrolled(true);
+                        }
 
                         // Don't set locked state here - wait for backend response
 
