@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CURRENT_VERSION = '1.0.0';
-const VERSION_CODE = 1;
-const VERSION_CHECK_URL = 'https://raw.githubusercontent.com/Panther4u/EMI-PRO-APP/main/admin-apk/version.json';
 const CHECK_INTERVAL = 24 * 60 * 60 * 1000; // Check once per day
 
 interface VersionInfo {
@@ -15,7 +12,12 @@ interface VersionInfo {
     minAndroidVersion: string;
 }
 
-export default function AutoUpdateChecker() {
+interface Props {
+    checkUrl: string;
+    currentVersionCode: number;
+}
+
+export default function AutoUpdateChecker({ checkUrl, currentVersionCode }: Props) {
     const [updateAvailable, setUpdateAvailable] = useState(false);
     const [newVersion, setNewVersion] = useState<VersionInfo | null>(null);
     const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function AutoUpdateChecker() {
     const checkForUpdates = async () => {
         try {
             // Check if we've checked recently
-            const lastCheck = await AsyncStorage.getItem('last_update_check');
+            const lastCheck = await AsyncStorage.getItem(`last_update_check_${checkUrl}`);
             const now = Date.now();
 
             if (lastCheck && (now - parseInt(lastCheck)) < CHECK_INTERVAL) {
@@ -39,7 +41,7 @@ export default function AutoUpdateChecker() {
             }
 
             setLoading(true);
-            const response = await fetch(VERSION_CHECK_URL);
+            const response = await fetch(checkUrl);
 
             if (!response.ok) {
                 console.log('Failed to check for updates');
@@ -49,7 +51,7 @@ export default function AutoUpdateChecker() {
             const versionInfo: VersionInfo = await response.json();
 
             // Compare version codes
-            if (versionInfo.versionCode > VERSION_CODE) {
+            if (versionInfo.versionCode > currentVersionCode) {
                 setNewVersion(versionInfo);
                 setUpdateAvailable(true);
 
@@ -65,7 +67,7 @@ export default function AutoUpdateChecker() {
             }
 
             // Save last check time
-            await AsyncStorage.setItem('last_update_check', now.toString());
+            await AsyncStorage.setItem(`last_update_check_${checkUrl}`, now.toString());
 
         } catch (error) {
             console.error('Update check failed:', error);

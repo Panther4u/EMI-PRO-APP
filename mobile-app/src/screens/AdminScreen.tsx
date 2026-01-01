@@ -29,8 +29,11 @@ export default function AdminScreen() {
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-            {/* Auto-update checker */}
-            <AutoUpdateChecker />
+            {/* Auto-update checker for Admin APK */}
+            <AutoUpdateChecker
+                checkUrl="https://raw.githubusercontent.com/Panther4u/EMI-PRO-APP/main/admin-apk/version.json"
+                currentVersionCode={1}
+            />
 
             <WebView
                 source={{ uri }}

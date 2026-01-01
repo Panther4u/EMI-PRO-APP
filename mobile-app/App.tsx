@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NativeModules, Alert, Linking, AppState } from 'react-native';
+import { NativeModules, Alert, Linking, AppState, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APP_VERSION } from './src/config';
 
@@ -12,6 +12,7 @@ import PermissionsScreen from './src/screens/PermissionsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import AdminScreen from './src/screens/AdminScreen';
 import BackgroundScreen from './src/screens/BackgroundScreen';
+import AutoUpdateChecker from './src/components/AutoUpdateChecker';
 
 const Stack = createStackNavigator();
 const { DeviceLockModule } = NativeModules;
@@ -447,23 +448,33 @@ export default function App() {
     if (loading) return null;
 
     return (
-        <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                {isAdmin ? (
-                    <Stack.Screen name="AdminDashboard" component={AdminScreen} />
-                ) : !isEnrolled ? (
-                    <>
-                        <Stack.Screen name="Setup" component={SetupScreen} />
-                        <Stack.Screen name="Permissions" component={PermissionsScreen} />
-                    </>
-                ) : isLocked ? (
-                    <Stack.Screen name="Locked" component={LockedScreen} />
-                ) : (
-                    // User APK when unlocked - minimize to background
-                    <Stack.Screen name="Background" component={BackgroundScreen} />
-                )}
-                <Stack.Screen name="Settings" component={SettingsScreen} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <View style={{ flex: 1 }}>
+            {/* Auto-update checker for User APK */}
+            {!isAdmin && (
+                <AutoUpdateChecker
+                    checkUrl="https://emi-pro-app.onrender.com/downloads/user-version.json"
+                    currentVersionCode={1}
+                />
+            )}
+
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    {isAdmin ? (
+                        <Stack.Screen name="AdminDashboard" component={AdminScreen} />
+                    ) : !isEnrolled ? (
+                        <>
+                            <Stack.Screen name="Setup" component={SetupScreen} />
+                            <Stack.Screen name="Permissions" component={PermissionsScreen} />
+                        </>
+                    ) : isLocked ? (
+                        <Stack.Screen name="Locked" component={LockedScreen} />
+                    ) : (
+                        // User APK when unlocked - minimize to background
+                        <Stack.Screen name="Background" component={BackgroundScreen} />
+                    )}
+                    <Stack.Screen name="Settings" component={SettingsScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </View>
     );
 }
