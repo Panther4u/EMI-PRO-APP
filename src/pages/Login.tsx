@@ -123,7 +123,7 @@ const Login = () => {
 
     if (mode === 'passkey') {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+            <div className="h-full bg-background flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-[400px] space-y-8 animate-in fade-in zoom-in duration-500">
                     <div className="text-center space-y-4">
                         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary shadow-2xl shadow-primary/20">
@@ -161,7 +161,7 @@ const Login = () => {
 
     if (mode === 'set-pin') {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+            <div className="h-full bg-background flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-[400px] space-y-8 animate-in fade-in zoom-in duration-500">
                     <div className="text-center space-y-4">
                         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-success shadow-2xl shadow-success/20">
@@ -206,7 +206,7 @@ const Login = () => {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="h-full bg-background flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-[400px] space-y-8 animate-in fade-in zoom-in duration-500">
                 <div className="text-center space-y-4">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary shadow-2xl shadow-primary/20">
