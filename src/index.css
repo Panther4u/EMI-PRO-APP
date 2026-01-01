@@ -101,8 +101,6 @@
   }
 
   html {
-    font-size: 14px;
-    /* Reduced base font size */
     -ms-overflow-style: none;
     scrollbar-width: none;
   }

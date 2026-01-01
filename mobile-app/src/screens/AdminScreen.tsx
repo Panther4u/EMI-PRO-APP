@@ -30,47 +30,20 @@ export default function AdminScreen() {
         }
     };
 
-    // Auto-scale to fit screen - same UI, just scaled
+    // Simplified script - just ensure it fills screen
     const injectedJavaScript = `
         (function() {
             // Add meta viewport
             if (!document.querySelector('meta[name="viewport"]')) {
                 var meta = document.createElement('meta');
                 meta.name = 'viewport';
-                meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
+                meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
                 document.head.appendChild(meta);
             }
 
-            // Add auto-scaling CSS
+            // Ensure basics but don't break scroll
             var style = document.createElement('style');
-            style.textContent = \`
-                /* Make everything fit screen height and width */
-                html, body {
-                    height: 100% !important;
-                    width: 100% !important;
-                    overflow: hidden !important;
-                    -webkit-text-size-adjust: none !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-                
-                #root {
-                    height: 100% !important;
-                    width: 100% !important;
-                }
-
-                /* Remove fixed header heights for flex stability */
-                header, [role="banner"] {
-                    height: auto !important;
-                    min-height: auto !important;
-                }
-
-                /* Ensure full height for main containers */
-                .page-container, main {
-                    height: 100% !important;
-                    overflow-y: auto !important;
-                }
-            \`;
+            style.textContent = 'html, body, #root { height: 100%; width: 100%; margin: 0; padding: 0; }';
             document.head.appendChild(style);
         })();
         true;
@@ -93,7 +66,7 @@ export default function AdminScreen() {
                     cacheEnabled={false}
                     cacheMode="LOAD_NO_CACHE"
                     injectedJavaScript={injectedJavaScript}
-                    scalesPageToFit={true}
+                    scalesPageToFit={false}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                     onLoadStart={(syntheticEvent) => {

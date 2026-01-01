@@ -7,15 +7,18 @@ interface MobileFrameProps {
 
 export default function MobileFrame({ children }: MobileFrameProps) {
     // Detect if we are in the mobile app WebView
-    const isWebView = window.navigator.userAgent.includes('wv') || window.location.pathname.startsWith('/mobile');
+    const isWebView = window.navigator.userAgent.includes('wv') ||
+        window.navigator.userAgent.includes('MobileApp') ||
+        window.location.pathname.startsWith('/mobile');
 
     if (isWebView) {
-        return <div className="h-full w-full bg-background overflow-hidden flex flex-col">{children}</div>;
+        // Raw web view - no extra frames or overflow restrictions
+        return <div className="min-h-screen w-full bg-background flex flex-col">{children}</div>;
     }
 
     return (
         <div className="min-h-screen h-full w-full bg-[#f0f2f5] flex items-center justify-center p-0 md:p-4">
-            {/* Mobile Device Frame */}
+            {/* Mobile Device Frame for Desktop View */}
             <div className={cn(
                 "w-full h-full md:w-[400px] md:h-[850px] bg-background md:rounded-[40px] shadow-2xl overflow-hidden relative border-0 md:border-[8px] md:border-gray-900",
                 "flex flex-col h-full"
