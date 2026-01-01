@@ -8,8 +8,9 @@ router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
 
-        // 🔥 SINGLE APK RULE: The APK installed by QR is our combined Admin + User app.
-        const apkFileName = 'app-admin-release.apk';
+        // 🎯 USER APK: The APK installed by QR is the USER app (for customer devices)
+        // Admin APK is separate and only for admin dashboard access
+        const apkFileName = 'app-user-release.apk';
         const apkPath = path.join(__dirname, '../public', apkFileName);
 
         // Determine Base URL dynamically or from ENV
@@ -35,7 +36,7 @@ router.get('/payload/:customerId', (req, res) => {
         // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
-                "com.securefinance.emilock.admin/com.securefinance.emilock.DeviceAdminReceiver",
+                "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
 
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
                 downloadUrl,

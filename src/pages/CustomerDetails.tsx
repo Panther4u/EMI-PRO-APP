@@ -3,29 +3,52 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import {
     ArrowLeft, Shield, Lock, Unlock, Smartphone,
-    MapPin, Clock, Trash2, RotateCcw, Copy
+    MapPin, Clock, Trash2, RotateCcw, Copy, CheckCircle2,
+    Circle, Loader2, Wifi, Battery, Signal, HardDrive,
+    AlertCircle, QrCode, Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
+import { getApiUrl } from '@/config/api';
 
 export default function CustomerDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { customers, deleteCustomer, toggleLock } = useDevice();
     const [customer, setCustomer] = useState<any>(null);
+    const [deviceInfo, setDeviceInfo] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [showQRModal, setShowQRModal] = useState(false);
-    const [activeTab, setActiveTab] = useState<'fresh' | 'used' | 'ios'>('fresh');
+    const [qrData, setQrData] = useState<string>('');
+
+    const fetchDeviceInfo = async (customerId: string) => {
+        try {
+            const response = await fetch(getApiUrl(`/api/devices?customerId=${customerId}`));
+            if (response.ok) {
+                const devices = await response.json();
+                if (devices && devices.length > 0) {
+                    setDeviceInfo(devices[0]);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch device info:', error);
+        }
+    };
 
     useEffect(() => {
         if (customers && id) {
             const found = customers.find((c: any) => c.id === id);
             setCustomer(found);
+
+            // Fetch device info from backend
+            if (found) {
+                fetchDeviceInfo(id);
+            }
         }
-    }, [customers, id]);
+    }, [customers, id, fetchDeviceInfo]);
 
     const handleLockToggle = async () => {
         if (!customer) return;
@@ -52,162 +75,321 @@ export default function CustomerDetails() {
         }
     };
 
+    const copyToClipboard = (text: string, label: string) => {
+        navigator.clipboard.writeText(text);
+        toast.success(`${label} copied to clipboard`);
+    };
+
+    const fetchQRData = async () => {
+        if (!customer?.id) return;
+        try {
+            const response = await fetch(getApiUrl(`/api/provisioning/payload/${customer.id}`));
+            if (response.ok) {
+                const payload = await response.json();
+                setQrData(JSON.stringify(payload));
+            } else {
+                toast.error('Failed to generate QR code');
+            }
+        } catch (error) {
+            console.error('Failed to fetch QR data:', error);
+            toast.error('Failed to generate QR code');
+        }
+    };
+
+    // Fetch QR data when modal opens
+    useEffect(() => {
+        if (showQRModal && !qrData) {
+            fetchQRData();
+        }
+    }, [showQRModal, qrData, fetchQRData]); // Added fetchQRData to dependency array
+
     if (!customer) return <div className="p-10 text-center text-slate-400">Loading details...</div>;
+
+    // Provisioning Steps
+    const provisioningSteps = [
+        { id: 'qrScanned', label: 'QR Code Scanned', completed: customer.deviceStatus?.steps?.qrScanned },
+        { id: 'appInstalled', label: 'Admin App Installed', completed: customer.deviceStatus?.steps?.appInstalled },
+        { id: 'appLaunched', label: 'App Launched', completed: customer.deviceStatus?.steps?.appLaunched },
+        { id: 'permissionsGranted', label: 'Permissions Granted', completed: customer.deviceStatus?.steps?.permissionsGranted },
+        { id: 'detailsFetched', label: 'Device Details Fetched', completed: customer.deviceStatus?.steps?.detailsFetched },
+        { id: 'imeiVerified', label: 'IMEI Verified', completed: customer.deviceStatus?.steps?.imeiVerified },
+        { id: 'deviceBound', label: 'Device Bound', completed: customer.deviceStatus?.steps?.deviceBound },
+    ];
+
+    const completedSteps = provisioningSteps.filter(s => s.completed).length;
+    const totalSteps = provisioningSteps.length;
+    const progress = (completedSteps / totalSteps) * 100;
 
     return (
         <div className="flex flex-col h-full bg-slate-50">
-            {/* Header with quick back */}
-            <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center z-20">
-                <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
-                    <ArrowLeft className="w-5 h-5" />
+            {/* Header */}
+            <div className="bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button onClick={() => navigate(-1)} className="w-10 h-10 -ml-2 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors">
+                    <ArrowLeft className="w-5 h-5 text-slate-700" />
                 </button>
-                <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
-                    <RotateCcw className="w-5 h-5" />
-                </button>
+                <div className="flex-1">
+                    <h1 className="text-lg font-bold text-slate-900">{customer.name}</h1>
+                    <p className="text-xs text-slate-400">{customer.phoneNo}</p>
+                </div>
+                <Badge variant={customer.isLocked ? "destructive" : "default"} className="rounded-full">
+                    {customer.isLocked ? 'Locked' : 'Active'}
+                </Badge>
             </div>
 
-            {/* Hero Control Section */}
-            <div className={cn(
-                "min-h-[380px] w-full relative flex flex-col items-center justify-center pt-20 pb-10 px-6 transition-colors duration-500",
-                customer.isLocked ? "bg-red-500" : "bg-primary"
-            )}>
-                {/* Background Ambient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-24">
 
-                <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-24 h-24 rounded-[32px] bg-white/20 backdrop-blur-lg border border-white/30 flex items-center justify-center shadow-2xl mb-6">
-                        {customer.isLocked ? (
-                            <Lock className="w-10 h-10 text-white fill-white/20" />
-                        ) : (
-                            <Unlock className="w-10 h-10 text-white fill-white/20" />
-                        )}
-                    </div>
-
-                    <h1 className="text-3xl font-black text-white tracking-tight text-center mb-1">{customer.name}</h1>
-                    <p className="text-white/80 font-medium mb-8 text-sm">{customer.modelName || 'Android Device'}</p>
-
-                    {/* Big Toggle Button */}
-                    <button
-                        onClick={handleLockToggle}
-                        disabled={loading}
-                        className="h-14 px-8 bg-white rounded-full shadow-xl flex items-center gap-3 active:scale-95 transition-transform"
-                    >
-                        <span className={cn("font-bold uppercase tracking-widest text-sm", customer.isLocked ? "text-red-500" : "text-primary")}>
-                            {loading ? "Processing..." : (customer.isLocked ? "Tap to Unlock" : "Tap to Lock")}
-                        </span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Details Sheet */}
-            <div className="flex-1 -mt-8 bg-slate-50 rounded-t-[32px] relative z-10 p-6 space-y-6 pb-24">
-
-                {/* Status Bar */}
-                <div className="flex gap-4">
-                    <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-1">
-                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">EMI Status</p>
-                        <p className="text-lg font-black text-emerald-500">Paid 6/12</p>
-                    </div>
-                    <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-1">
-                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Last Sync</p>
-                        <p className="text-sm font-bold text-slate-700">2m ago</p>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm space-y-4">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Device Info</h3>
-
-                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                        <span className="text-xs font-bold text-slate-500">IMEI</span>
-                        <span className="text-xs font-mono font-bold text-slate-700">{customer.imei1 || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                        <span className="text-xs font-bold text-slate-500">Phone</span>
-                        <span className="text-xs font-bold text-slate-700">{customer.phoneNo}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                        <span className="text-xs font-bold text-slate-500">Installed</span>
-                        <span className="text-xs font-bold text-emerald-600">Yes</span>
-                    </div>
-                </div>
-
-                {/* Setup Device Action */}
-                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm flex items-center justify-between group cursor-pointer" onClick={() => setShowQRModal(true)}>
-                    <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">Setup Device</h3>
-                        <p className="text-xs text-slate-400">View generic & specialized QR codes</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <QRCodeSVG value="SETUP" size={20} className="opacity-50" />
-                    </div>
-                </div>
-
-                {/* QR Modal Overlay */}
-                {showQRModal && (
-                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-                        <div className="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 space-y-6 p-6">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-lg font-black text-slate-900">Device Setup</h2>
-                                <button onClick={() => setShowQRModal(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200">
-                                    <span className="text-slate-500 font-bold">✕</span>
-                                </button>
+                {/* Lock/Unlock Control */}
+                <div className={cn(
+                    "rounded-[28px] p-6 text-white relative overflow-hidden",
+                    customer.isLocked ? "bg-gradient-to-br from-red-500 to-red-600" : "bg-gradient-to-br from-primary to-blue-600"
+                )}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-10 translate-x-10"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                {customer.isLocked ? <Lock className="w-8 h-8" /> : <Unlock className="w-8 h-8" />}
                             </div>
-
-                            {/* Tabs */}
-                            <div className="flex bg-slate-100 p-1 rounded-xl">
-                                {['fresh', 'used', 'ios'].map((tab) => (
-                                    <button
-                                        key={tab}
-                                        onClick={() => setActiveTab(tab as any)}
-                                        className={cn(
-                                            "flex-1 py-2 rounded-lg text-xs font-bold transition-all capitalize",
-                                            activeTab === tab ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-600"
-                                        )}
-                                    >
-                                        {tab === 'fresh' ? 'Fresh' : tab === 'used' ? 'Used' : 'iOS'}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex flex-col items-center text-center space-y-4 py-4">
-                                <div className="p-4 bg-white rounded-[24px] border-2 border-slate-100 shadow-sm relative">
-                                    <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-primary -mt-1 -ml-1 rounded-tl-lg"></div>
-                                    <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-primary -mt-1 -mr-1 rounded-tr-lg"></div>
-                                    <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-primary -mb-1 -ml-1 rounded-bl-lg"></div>
-                                    <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-primary -mb-1 -mr-1 rounded-br-lg"></div>
-
-                                    <QRCodeSVG
-                                        value={
-                                            activeTab === 'fresh' ? JSON.stringify({
-                                                "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.securefinance.emilock/com.securefinance.emilock.AdminReceiver",
-                                                "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": "https://emi-pro.onrender.com/downloads/app-admin.apk",
-                                                "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-                                                    "customerId": customer.id,
-                                                    "serverUrl": "https://emi-pro-app.onrender.com"
-                                                }
-                                            }) :
-                                                activeTab === 'used' ? "https://emi-pro.onrender.com/downloads/app-admin-release.apk" :
-                                                    "https://apps.apple.com/app-placeholder"
-                                        }
-                                        size={180}
-                                    />
-                                </div>
-
-                                <div className="space-y-1">
-                                    <h3 className="font-bold text-slate-800">
-                                        {activeTab === 'fresh' ? 'Factory Reset Provisioning' : activeTab === 'used' ? 'Direct App Install' : 'iOS Enrollment'}
-                                    </h3>
-                                    <p className="text-xs text-slate-400 max-w-[200px] mx-auto">
-                                        {activeTab === 'fresh' ? 'Tap screen 6 times on welcome screen to scan.' :
-                                            activeTab === 'used' ? 'Scan to download Admin APK directly.' :
-                                                'Scan to download iOS management profile.'}
-                                    </p>
-                                </div>
+                            <div>
+                                <h3 className="text-2xl font-black">Device {customer.isLocked ? 'Locked' : 'Unlocked'}</h3>
+                                <p className="text-white/80 text-sm">Tap button to toggle</p>
                             </div>
                         </div>
+                        <Button
+                            onClick={handleLockToggle}
+                            disabled={loading}
+                            className="w-full h-12 bg-white text-slate-900 hover:bg-white/90 rounded-xl font-bold"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                            {loading ? "Processing..." : (customer.isLocked ? "Unlock Device" : "Lock Device")}
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Provisioning Progress */}
+                <div className="bg-white rounded-[28px] p-6 border border-slate-100 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Setup Progress</h3>
+                        <span className="text-xs font-bold text-primary">{completedSteps}/{totalSteps} Steps</span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-gradient-to-r from-primary to-blue-500 transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+
+                    {/* Steps List */}
+                    <div className="space-y-2">
+                        {provisioningSteps.map((step, index) => (
+                            <div key={step.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                                {step.completed ? (
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                                ) : (
+                                    <Circle className="w-5 h-5 text-slate-300 flex-shrink-0" />
+                                )}
+                                <span className={cn(
+                                    "text-sm font-medium flex-1",
+                                    step.completed ? "text-slate-700" : "text-slate-400"
+                                )}>
+                                    {step.label}
+                                </span>
+                                {!step.completed && index === completedSteps && (
+                                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Device Technical Info */}
+                {(deviceInfo || customer.deviceStatus?.technical) && (
+                    <div className="bg-white rounded-[28px] p-6 border border-slate-100 shadow-sm space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                            <Smartphone className="w-4 h-4" /> Device Information
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Brand */}
+                            <InfoCard
+                                label="Brand"
+                                value={deviceInfo?.brand || customer.deviceStatus?.technical?.brand || customer.brand || 'N/A'}
+                                icon={<Smartphone className="w-4 h-4" />}
+                            />
+
+                            {/* Model */}
+                            <InfoCard
+                                label="Model"
+                                value={deviceInfo?.model || customer.deviceStatus?.technical?.model || customer.modelName || 'N/A'}
+                                icon={<Smartphone className="w-4 h-4" />}
+                            />
+
+                            {/* Android Version */}
+                            <InfoCard
+                                label="Android"
+                                value={deviceInfo?.osVersion || customer.deviceStatus?.technical?.osVersion || 'N/A'}
+                                icon={<Shield className="w-4 h-4" />}
+                            />
+
+                            {/* SDK Level */}
+                            <InfoCard
+                                label="SDK Level"
+                                value={deviceInfo?.sdkLevel || 'N/A'}
+                                icon={<Shield className="w-4 h-4" />}
+                            />
+
+                            {/* Battery */}
+                            {deviceInfo?.batteryLevel && (
+                                <InfoCard
+                                    label="Battery"
+                                    value={`${deviceInfo.batteryLevel}%`}
+                                    icon={<Battery className="w-4 h-4" />}
+                                />
+                            )}
+
+                            {/* Network */}
+                            {deviceInfo?.networkType && (
+                                <InfoCard
+                                    label="Network"
+                                    value={deviceInfo.networkType}
+                                    icon={<Signal className="w-4 h-4" />}
+                                />
+                            )}
+                        </div>
+
+                        {/* IMEI Section */}
+                        <div className="pt-4 border-t border-slate-100 space-y-3">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Device IDs</h4>
+
+                            {/* IMEI 1 */}
+                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                <span className="text-xs font-bold text-slate-500">IMEI 1</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono font-bold text-slate-700">
+                                        {deviceInfo?.imei1 || customer.imei1 || 'N/A'}
+                                    </span>
+                                    {(deviceInfo?.imei1 || customer.imei1) && (
+                                        <button
+                                            onClick={() => copyToClipboard(deviceInfo?.imei1 || customer.imei1, 'IMEI 1')}
+                                            className="p-1 hover:bg-slate-200 rounded"
+                                        >
+                                            <Copy className="w-3 h-3 text-slate-400" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* IMEI 2 */}
+                            {(deviceInfo?.imei2 || customer.imei2) && (
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span className="text-xs font-bold text-slate-500">IMEI 2</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-mono font-bold text-slate-700">
+                                            {deviceInfo?.imei2 || customer.imei2}
+                                        </span>
+                                        <button
+                                            onClick={() => copyToClipboard(deviceInfo?.imei2 || customer.imei2, 'IMEI 2')}
+                                            className="p-1 hover:bg-slate-200 rounded"
+                                        >
+                                            <Copy className="w-3 h-3 text-slate-400" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Android ID */}
+                            {(deviceInfo?.androidId || customer.deviceStatus?.technical?.androidId) && (
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span className="text-xs font-bold text-slate-500">Android ID</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-mono font-bold text-slate-700">
+                                            {(deviceInfo?.androidId || customer.deviceStatus?.technical?.androidId).substring(0, 16)}...
+                                        </span>
+                                        <button
+                                            onClick={() => copyToClipboard(deviceInfo?.androidId || customer.deviceStatus?.technical?.androidId, 'Android ID')}
+                                            className="p-1 hover:bg-slate-200 rounded"
+                                        >
+                                            <Copy className="w-3 h-3 text-slate-400" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* SIM Info */}
+                        {(deviceInfo?.sim1 || deviceInfo?.sim2) && (
+                            <div className="pt-4 border-t border-slate-100 space-y-3">
+                                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                    <Smartphone className="w-3 h-3" /> SIM Cards
+                                </h4>
+
+                                {deviceInfo?.sim1?.isActive && (
+                                    <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-500">SIM 1</span>
+                                            <Badge variant="outline" className="text-[10px] h-5">Active</Badge>
+                                        </div>
+                                        <p className="text-xs text-slate-600">{deviceInfo.sim1.operator || 'Unknown'}</p>
+                                        {deviceInfo.sim1.phoneNumber && (
+                                            <p className="text-xs font-mono text-slate-500">{deviceInfo.sim1.phoneNumber}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {deviceInfo?.sim2?.isActive && (
+                                    <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-500">SIM 2</span>
+                                            <Badge variant="outline" className="text-[10px] h-5">Active</Badge>
+                                        </div>
+                                        <p className="text-xs text-slate-600">{deviceInfo.sim2.operator || 'Unknown'}</p>
+                                        {deviceInfo.sim2.phoneNumber && (
+                                            <p className="text-xs font-mono text-slate-500">{deviceInfo.sim2.phoneNumber}</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Storage Info */}
+                        {deviceInfo?.totalStorage && (
+                            <div className="pt-4 border-t border-slate-100">
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <div className="flex items-center gap-2">
+                                        <HardDrive className="w-4 h-4 text-slate-400" />
+                                        <span className="text-xs font-bold text-slate-500">Storage</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-700">
+                                        {deviceInfo.availableStorage} / {deviceInfo.totalStorage}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
+
+                {/* Last Seen */}
+                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Clock className="w-5 h-5 text-slate-400" />
+                        <div>
+                            <p className="text-xs font-bold text-slate-500">Last Seen</p>
+                            <p className="text-sm font-bold text-slate-700">
+                                {deviceInfo?.lastSeenAt ? new Date(deviceInfo.lastSeenAt).toLocaleString() : 'Never'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* QR Code Button */}
+                <Button
+                    variant="outline"
+                    onClick={() => setShowQRModal(true)}
+                    className="w-full h-12 rounded-xl border-2 border-dashed"
+                >
+                    <QrCode className="w-4 h-4 mr-2" /> View Setup QR Code
+                </Button>
 
                 {/* Danger Zone */}
                 <Button
@@ -215,10 +397,58 @@ export default function CustomerDetails() {
                     onClick={handleDelete}
                     className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 h-12 rounded-xl"
                 >
-                    <Trash2 className="w-4 h-4 mr-2" /> Delete Device Logic
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete Device
                 </Button>
 
             </div>
+
+            {/* QR Modal */}
+            {showQRModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowQRModal(false)}>
+                    <div className="bg-white w-full max-w-sm rounded-[32px] p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-lg font-black">Setup QR Code</h2>
+                            <button onClick={() => setShowQRModal(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <span className="text-slate-500 font-bold">✕</span>
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col items-center p-6 bg-slate-50 rounded-2xl">
+                            {qrData ? (
+                                <QRCodeSVG
+                                    value={qrData}
+                                    size={200}
+                                    level="H"
+                                />
+                            ) : (
+                                <div className="w-[200px] h-[200px] flex items-center justify-center">
+                                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                </div>
+                            )}
+                            <p className="text-xs text-slate-500 mt-4 text-center">
+                                Scan during factory reset setup (tap 6 times on welcome screen)
+                            </p>
+                        </div>
+
+                        <Button variant="outline" className="w-full" onClick={() => window.open(`https://emi-pro-app.onrender.com/downloads/app-admin-release.apk`)}>
+                            <Download className="w-4 h-4 mr-2" /> Download APK Directly
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Helper Component
+function InfoCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+    return (
+        <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 text-slate-400">
+                {icon}
+                <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+            </div>
+            <p className="text-sm font-bold text-slate-700">{value}</p>
         </div>
     );
 }

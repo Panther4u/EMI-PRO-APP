@@ -99,7 +99,7 @@ export default function App() {
             const dlm = NativeModules.DeviceLockModule;
             let currentPackage = '';
             let deviceIsOwner = false;
-            let deviceIsLocked = true; // Default to locked for safety
+            let deviceIsLocked = false; // Default to UNLOCKED for User APK
 
             // 1. Get app info and device owner status
             let isAdminLocal = false; // Local variable for immediate logic usage
@@ -109,11 +109,12 @@ export default function App() {
                     const appInfo = await dlm.getAppInfo();
                     currentPackage = appInfo?.packageName || '';
                     deviceIsOwner = appInfo?.isDeviceOwner || false;
-                    deviceIsLocked = appInfo?.isLocked ?? false; // Default to false to avoid accidental lock
+                    // Don't use native lock status for User APK - only use backend status
+                    // deviceIsLocked = appInfo?.isLocked ?? false;
 
                     console.log("📱 Package:", currentPackage);
                     console.log("👑 Device Owner:", deviceIsOwner);
-                    console.log("🔒 Locked:", deviceIsLocked);
+                    // console.log("🔒 Locked:", deviceIsLocked); // This will now always be false by default
 
                     // Detect Admin App
                     if (currentPackage.endsWith('.admin') || currentPackage.includes('.admin')) {
@@ -145,10 +146,7 @@ export default function App() {
 
                         setIsEnrolled(true);
 
-                        // Only set locked if NOT admin
-                        if (!isAdminLocal) {
-                            setIsLocked(deviceIsLocked);
-                        }
+                        // Don't set locked state here - wait for backend response
 
                         // Start lock service
                         if (dlm.startLockService) {
@@ -175,30 +173,34 @@ export default function App() {
                 }
             }
 
-            // 3. Check stored enrollment data
+            // 3. Check stored enrollment data and get lock status from BACKEND
             const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
-            const lockStatus = await AsyncStorage.getItem('lock_status');
+            let backendLockStatus = false;
 
             if (enrollmentDataStr) {
                 setIsEnrolled(true);
                 const enrollmentData = JSON.parse(enrollmentDataStr);
                 currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
 
-                // Sync with backend
-                await syncStatus(enrollmentData.customerId, currentServerUrl);
+                // Sync with backend and GET LOCK STATUS
+                const syncResponse = await syncStatus(enrollmentData.customerId, currentServerUrl);
+                if (syncResponse && typeof syncResponse.isLocked === 'boolean') {
+                    backendLockStatus = syncResponse.isLocked;
+                    console.log(`🔒 Backend Lock Status: ${backendLockStatus}`);
+                }
 
                 // Verify device
                 verifyDevice(enrollmentData.customerId, currentServerUrl);
             }
 
-            // Get lock status - prioritize native module over AsyncStorage
-            const storedLockStatus = lockStatus === 'locked';
-
-            // FINAL LOCK STATE DECISION
+            // FINAL LOCK STATE DECISION - Only use backend status for User APK
             if (!isAdminLocal) {
-                const shouldBeLocked = deviceIsLocked || storedLockStatus;
-                console.log(`🔒 Final Lock Decision: ${shouldBeLocked} (Admin: ${isAdminLocal})`);
+                const shouldBeLocked = backendLockStatus; // ONLY use backend status
+                console.log(`🔒 Final Lock Decision: ${shouldBeLocked} (Source: Backend)`);
                 setIsLocked(shouldBeLocked);
+
+                // Save to AsyncStorage
+                await AsyncStorage.setItem('lock_status', shouldBeLocked ? 'locked' : 'unlocked');
 
                 // 4. ENABLE KIOSK MODE IF DEVICE IS LOCKED (Skip for Admin App)
                 if (shouldBeLocked && DeviceLockModule && DeviceLockModule.startKioskMode) {
@@ -225,7 +227,7 @@ export default function App() {
     };
 
     const syncStatus = async (cid: string, url: string, step?: string) => {
-        if (!cid || !url || isAdmin) return;
+        if (!cid || !url || isAdmin) return null;
         try {
             let location = null;
             try {
@@ -340,10 +342,14 @@ export default function App() {
                         }
                     }
                 }
+
+                // Return the response data so caller can access isLocked
+                return data;
             }
         } catch (err) {
             console.warn('Sync failed:', err);
         }
+        return null;
     };
 
     const verifyDevice = async (cid: string, url: string) => {
