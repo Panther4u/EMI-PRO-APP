@@ -149,10 +149,10 @@ export default function App() {
                             }));
                         }
 
-                        // Only set enrolled if we actually have the customer ID
-                        if (provisioningData.customerId) {
-                            setIsEnrolled(true);
-                        }
+                        // ⚠️ Automatic Enrollment Disabled by User Request
+                        // We do NOT set setIsEnrolled(true) here.
+                        // We wait for the user to manually scan the QR code in SetupScreen.
+                        console.log("⚠️ Automatic enrollment disabled. Waiting for manual scan.");
 
                         // Don't set locked state here - wait for backend response
 
