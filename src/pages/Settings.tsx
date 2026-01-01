@@ -1,325 +1,88 @@
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { useDevice } from '@/context/DeviceContext';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import { getApiUrl } from '@/config/api';
-import {
-  Shield,
-  Bell,
-  User,
-  Lock,
-  Database,
-  Smartphone,
-  Mail,
-  Key,
-  CheckCircle,
-  Trash2,
-  AlertTriangle
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { LogOut, User, Bell, ChevronRight, ShieldCheck, FileText, HelpCircle } from 'lucide-react';
 
-const Settings = () => {
-  const { currentAdmin, updateAdmin } = useAuth();
-  const { refreshCustomers } = useDevice();
-  const [newPin, setNewPin] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
+export default function Settings() {
+    const { logout, user } = useAuth();
+    const navigate = useNavigate();
 
-  const handleUpdatePin = () => {
-    if (newPin.length !== 6 || !/^\d+$/.test(newPin)) {
-      toast.error('PIN must be 6 digits');
-      return;
-    }
-
-    if (!currentAdmin) {
-      toast.error('Admin session not found');
-      return;
-    }
-
-    updateAdmin(currentAdmin.id, { pin: newPin });
-    toast.success('Admin PIN updated successfully');
-    setNewPin('');
-    setIsUpdating(false);
-  };
-
-  const handleResetAllData = async () => {
-    if (!isResetting) {
-      setIsResetting(true);
-      return;
-    }
-
-    try {
-      // Clear backend database
-      const response = await fetch(getApiUrl('/api/customers/danger/delete-all'), {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        // Clear localStorage
-        localStorage.removeItem('customers');
-
-        toast.success('All data cleared successfully! Refreshing...');
-
-        // Reload the page to reset state
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        throw new Error('Failed to clear backend data');
-      }
-    } catch (error) {
-      console.error('Reset error:', error);
-      // Even if backend fails, clear localStorage
-      localStorage.removeItem('customers');
-      toast.success('Local data cleared. Page will refresh...');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    }
-  };
-
-  return (
-    <div className="space-y-4 max-w-4xl pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-foreground mb-1">Settings</h1>
-        <p className="text-xs text-muted-foreground">Manage your admin preferences and system configuration</p>
-      </div>
-
-      {/* Admin Credentials Management */}
-      <div className="glass-card p-4 border-primary/20 bg-primary/5">
-        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Key className="w-4 h-4 text-primary" />
-          Admin Credentials
-        </h2>
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Current Admin PIN</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={currentAdmin?.pin ? "••••••" : "Not Set"}
-                  disabled
-                  className="bg-secondary/30 border-border/50 h-9 font-mono tracking-widest text-base"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9"
-                  onClick={() => setIsUpdating(!isUpdating)}
-                >
-                  Change
-                </Button>
-              </div>
+    return (
+        <div className="flex flex-col h-full bg-slate-50">
+            <div className="px-6 pt-12 pb-6 border-b border-slate-100 bg-white sticky top-0 z-30">
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Settings</h1>
             </div>
 
-            {isUpdating && (
-              <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-300">
-                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">New 6-Digit PIN</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="password"
-                    maxLength={6}
-                    value={newPin}
-                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter new 6-digit PIN"
-                    className="bg-background border-primary/30 h-9 font-mono tracking-widest text-base"
-                  />
-                  <Button size="sm" className="h-9" onClick={handleUpdatePin}>Update</Button>
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-24">
+
+                {/* Profile Card */}
+                <div className="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4">
+                    <div className="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white font-black text-lg">
+                        {user?.name?.[0] || 'A'}
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="font-bold text-slate-900 text-lg">{user?.name || 'Administrator'}</h3>
+                        <p className="text-sm font-medium text-slate-400">Super Admin Access</p>
+                    </div>
                 </div>
-              </div>
-            )}
-          </div>
-          <p className="text-[10px] text-muted-foreground italic">
-            * This PIN is required to access the Admin Portal and perform sensitive actions.
-          </p>
-        </div>
-      </div>
 
-      {/* Profile Settings */}
-      <div className="glass-card p-4">
-        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-          <User className="w-4 h-4 text-primary" />
-          Admin Profile
-        </h2>
-        <div className="grid grid-cols-1 gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs">Full Name</Label>
-            <Input defaultValue="Admin User" className="bg-secondary/50 border-border/50 h-9 text-sm" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Email Address</Label>
-            <Input defaultValue="admin@securefinance.com" className="bg-secondary/50 border-border/50 h-9 text-sm" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Phone Number</Label>
-            <Input defaultValue="+91 98765 43210" className="bg-secondary/50 border-border/50 h-9 text-sm" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Role</Label>
-            <Input defaultValue="Super Admin" disabled className="bg-secondary/50 border-border/50 h-9 text-sm" />
-          </div>
-        </div>
-        <Button size="sm" className="mt-4 h-9">Save Changes</Button>
-      </div>
+                {/* Settings Groups */}
+                <div className="space-y-6">
+                    <div className="space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-2">General</p>
+                        <div className="bg-white rounded-[24px] border border-slate-100 overflow-hidden shadow-sm">
+                            {[
+                                { icon: User, label: 'Profile Settings' },
+                                { icon: Bell, label: 'Notifications', badge: '2' },
+                                { icon: ShieldCheck, label: 'Security & Privacy' }
+                            ].map((item, i) => (
+                                <button key={i} className="w-full flex items-center p-4 hover:bg-slate-50 active:bg-slate-100 transition-colors border-b border-slate-50 last:border-0">
+                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center mr-3">
+                                        <item.icon className="w-4 h-4 text-slate-600" />
+                                    </div>
+                                    <span className="flex-1 text-left text-sm font-bold text-slate-700">{item.label}</span>
+                                    {item.badge && (
+                                        <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold mr-2">{item.badge}</span>
+                                    )}
+                                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-      {/* Security Settings */}
-      <div className="glass-card p-4">
-        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-primary" />
-          Security
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Key className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-sm text-foreground">Two-Factor Auth</p>
-                <p className="text-[10px] text-muted-foreground">Add extra security layer</p>
-              </div>
-            </div>
-            <Switch />
-          </div>
-          <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Lock className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-sm text-foreground">Auto Lock Timeout</p>
-                <p className="text-[10px] text-muted-foreground">Lock after inactivity</p>
-              </div>
-            </div>
-            <Switch defaultChecked />
-          </div>
-        </div>
-      </div>
+                    <div className="space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-2">Support</p>
+                        <div className="bg-white rounded-[24px] border border-slate-100 overflow-hidden shadow-sm">
+                            {[
+                                { icon: FileText, label: 'Terms & Conditions' },
+                                { icon: HelpCircle, label: 'Help & Support' }
+                            ].map((item, i) => (
+                                <button key={i} className="w-full flex items-center p-4 hover:bg-slate-50 active:bg-slate-100 transition-colors border-b border-slate-50 last:border-0">
+                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center mr-3">
+                                        <item.icon className="w-4 h-4 text-slate-600" />
+                                    </div>
+                                    <span className="flex-1 text-left text-sm font-bold text-slate-700">{item.label}</span>
+                                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
-      {/* Notification Settings */}
-      <div className="glass-card p-4">
-        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-primary" />
-          Notifications
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Mail className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-sm text-foreground">Email Notifications</p>
-                <p className="text-[10px] text-muted-foreground">Receive alerts via email</p>
-              </div>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-sm text-foreground">Push Notifications</p>
-                <p className="text-[10px] text-muted-foreground">Instant mobile alerts</p>
-              </div>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Database className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-sm text-foreground">EMI Reminders</p>
-                <p className="text-[10px] text-muted-foreground">Alert before due dates</p>
-              </div>
-            </div>
-            <Switch defaultChecked />
-          </div>
-        </div>
-      </div>
-
-      {/* System Info */}
-      <div className="glass-card p-4">
-        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Database className="w-4 h-4 text-primary" />
-          System Information
-        </h2>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-secondary/30 rounded-lg p-2.5">
-            <p className="text-[10px] text-muted-foreground mb-0.5">Version</p>
-            <p className="font-mono text-xs text-foreground">v1.0.0</p>
-          </div>
-          <div className="bg-secondary/30 rounded-lg p-2.5">
-            <p className="text-[10px] text-muted-foreground mb-0.5">Last Backup</p>
-            <p className="font-mono text-xs text-foreground">2024-01-15</p>
-          </div>
-          <div className="bg-secondary/30 rounded-lg p-2.5">
-            <p className="text-[10px] text-muted-foreground mb-0.5">Database</p>
-            <p className="text-success text-xs font-medium">Connected</p>
-          </div>
-          <div className="bg-secondary/30 rounded-lg p-2.5">
-            <p className="text-[10px] text-muted-foreground mb-0.5">Sessions</p>
-            <p className="font-mono text-xs text-foreground">1</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Danger Zone - Reset All Data */}
-      <div className="glass-card p-4 border-destructive/30 bg-destructive/5">
-        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-destructive" />
-          Danger Zone
-        </h2>
-        <div className="space-y-3">
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-            <div className="flex items-start gap-3 mb-3">
-              <Trash2 className="w-4 h-4 text-destructive mt-0.5" />
-              <div className="flex-1">
-                <p className="font-medium text-sm text-foreground">Reset All Data</p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Permanently delete all customer records and data. Cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            {isResetting && (
-              <div className="bg-destructive/20 border border-destructive/30 rounded-lg p-3 mb-3 animate-in slide-in-from-top-2 duration-300">
-                <p className="text-xs font-semibold text-destructive flex items-center gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Are you absolutely sure?
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Click "Confirm Reset" again to permanently delete.
-                </p>
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Button
-                variant={isResetting ? "destructive" : "outline"}
-                size="sm"
-                onClick={handleResetAllData}
-                className={cn("h-8 text-xs", isResetting ? "border-destructive" : "border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground")}
-              >
-                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                {isResetting ? "Confirm Reset" : "Reset Data"}
-              </Button>
-
-              {isResetting && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={() => setIsResetting(false)}
+                <button
+                    onClick={logout}
+                    className="w-full h-14 rounded-2xl bg-red-50 text-red-600 font-bold flex items-center justify-center gap-2 hover:bg-red-100 transition-colors"
                 >
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+                    <LogOut className="w-5 h-5" />
+                    Log Out Account
+                </button>
 
-export default Settings;
+                <div className="text-center pt-4">
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                        App Version 2.4.0 (Build 502)
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    );
+}

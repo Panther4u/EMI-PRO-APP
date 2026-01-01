@@ -1,159 +1,117 @@
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
-import { DeviceProvider } from "./context/DeviceContext";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { Sidebar } from "./components/Sidebar";
-import { useState } from "react";
-import { Menu, Shield } from "lucide-react";
-import Dashboard from "./pages/Dashboard";
-import Customers from "./pages/Customers";
-import CustomerDetails from "./pages/CustomerDetails";
-import EditCustomer from "./pages/EditCustomer";
-import GenerateQR from "./pages/GenerateQR";
-import LockControl from "./pages/LockControl";
-import LocationTrack from "./pages/Location";
-import Settings from "./pages/Settings";
-import MobileSimulator from "./pages/MobileSimulator";
-import AndroidSetup from "./pages/AndroidSetup";
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import AddCustomer from "./pages/AddCustomer";
-import DevicesPage from "./pages/Devices";
-import MobileFrame from "./components/MobileFrame";
-import MobileDashboard from "./pages/MobileDashboard";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
+import {
+    LayoutGrid,
+    Users,
+    PlusCircle,
+    Settings as SettingsIcon,
+    LogOut,
+    ChevronLeft
+} from 'lucide-react';
+
+// Pages - Lazy loaded or direct import
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Customers from './pages/Customers';
+import AddCustomer from './pages/AddCustomer';
+import CustomerDetails from './pages/CustomerDetails';
+import Settings from './pages/Settings';
+
+// Contexts (Assuming these exist or I will create simple versions/wrappers if needed)
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { DeviceProvider } from './context/DeviceContext';
+import { TooltipProvider } from './components/ui/tooltip';
 
 const queryClient = new QueryClient();
 
-// Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated, isAdminLocked } = useAuth();
+// --- Components for Layout ---
+
+const BottomNav = () => {
     const location = useLocation();
+    const navigate = useNavigate();
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
+    if (location.pathname === '/login') return null;
 
-    // Lock check for admins
-    if (isAdminLocked && location.pathname !== '/login') {
-        // We'll let them stay but the Layout will block content
-    }
-
-    return <>{children}</>;
-};
-
-// Admin Layout with Sidebar
-const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { isAdminLocked } = useAuth();
-    const isBlocked = isAdminLocked;
+    const tabs = [
+        { path: '/', icon: LayoutGrid, label: 'Home' },
+        { path: '/customers', icon: Users, label: 'Fleet' },
+        { path: '/add-customer', icon: PlusCircle, label: 'Add' },
+        { path: '/settings', icon: SettingsIcon, label: 'Settings' },
+    ];
 
     return (
-        <div className="flex flex-col h-full bg-background overflow-hidden relative selection:bg-primary/20 transition-colors duration-300">
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-            <main className="flex-1 flex flex-col overflow-hidden relative w-full h-full">
-                {/* Modern Mobile Header - Clean & Premium */}
-                <header className="h-[64px] border-b border-border/40 flex items-center px-5 bg-background/80 backdrop-blur-xl z-40 flex-shrink-0 sticky top-0">
-                    <button
-                        onClick={() => setSidebarOpen(true)}
-                        className="p-2.5 -ml-2.5 hover:bg-secondary rounded-2xl transition-all duration-300 active:scale-90 group"
-                    >
-                        <div className="flex flex-col gap-1 w-5">
-                            <span className="h-0.5 w-full bg-foreground rounded-full transition-transform group-hover:bg-primary"></span>
-                            <span className="h-0.5 w-2/3 bg-foreground rounded-full transition-transform group-hover:bg-primary"></span>
-                            <span className="h-0.5 w-full bg-foreground rounded-full transition-transform group-hover:bg-primary"></span>
-                        </div>
-                    </button>
-                    <Link to="/" className="ml-4 flex items-center gap-2.5 hover:opacity-85 transition-all active:scale-95">
-                        <div className="w-9 h-9 rounded-[12px] bg-primary flex items-center justify-center shadow-[0_4px_12px_rgba(37,99,235,0.25)] ring-1 ring-white/20">
-                            <Shield className="w-5 h-5 text-primary-foreground" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-extrabold text-foreground text-[15px] leading-tight tracking-tight uppercase">SecureFinance</span>
-                            <span className="text-[10px] text-muted-foreground font-bold tracking-[0.1em] uppercase leading-none opacity-80">Admin Center</span>
-                        </div>
-                    </Link>
-                </header>
-
-                {/* Content Area - Smooth & Spacious */}
-                <div className="flex-1 overflow-y-auto w-full animate-in fade-in slide-in-from-bottom-2 duration-500 no-scrollbar relative bg-slate-50/30">
-                    <div className="max-w-2xl mx-auto w-full p-4 pb-24 min-h-full">
-                        {children}
-                    </div>
-
-                    {/* Premium Lock Overlay */}
-                    {isBlocked && (
-                        <div className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-2xl flex items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-500">
-                            <div className="max-w-xs space-y-8">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-destructive/20 rounded-full blur-[40px] animate-pulse"></div>
-                                    <div className="w-24 h-24 bg-destructive/10 rounded-[32px] flex items-center justify-center mx-auto ring-1 ring-destructive/20 relative">
-                                        <Shield className="w-12 h-12 text-destructive" />
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase">Service Suspended</h2>
-                                    <p className="text-[15px] text-muted-foreground font-medium leading-relaxed px-4">
-                                        Your administrative access has been temporarily restricted.
-                                    </p>
-                                </div>
-                                <div className="bg-secondary/60 p-6 rounded-[28px] border border-border/80 shadow-sm backdrop-blur-md">
-                                    <p className="text-[11px] uppercase tracking-[0.2em] font-black text-muted-foreground mb-2">Technical Support</p>
-                                    <a href="tel:9876543219" className="text-2xl font-black tracking-tighter text-primary hover:text-primary/80 transition-colors">9876543219</a>
-                                </div>
+        <div className="fixed bottom-0 left-0 right-0 h-[80px] bg-white/90 backdrop-blur-xl border-t border-slate-200 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-around items-center h-full px-2 pb-2">
+                {tabs.map((tab) => {
+                    const isActive = location.pathname === tab.path || (tab.path !== '/' && location.pathname.startsWith(tab.path));
+                    return (
+                        <button
+                            key={tab.path}
+                            onClick={() => navigate(tab.path)}
+                            className={`flex flex-col items-center justify-center w-full h-full gap-1.5 transition-all duration-300 ${isActive ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <div className={`p-2 rounded-2xl transition-all duration-300 ${isActive ? 'bg-primary/10 translate-y-[-4px]' : ''}`}>
+                                <tab.icon size={22} className={isActive ? 'stroke-[2.5px]' : 'stroke-2'} />
                             </div>
-                        </div>
-                    )}
-                </div>
-            </main>
+                            <span className={`text-[10px] font-bold tracking-wide uppercase ${isActive ? 'opacity-100' : 'opacity-60'}`}>{tab.label}</span>
+                        </button>
+                    )
+                })}
+            </div>
         </div>
     );
 };
 
-const AppRoutes = () => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    // Simple check - in a real app useAuth().isAuthenticated
+    const { isAuthenticated } = useAuth(); // Assuming useAuth exists
+    return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+};
+
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
     return (
-        <MobileFrame>
-            <Routes>
-                {/* Public Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/android-setup" element={<AndroidSetup />} />
-                <Route path="/mobile-simulator/:imei?" element={<MobileSimulator />} />
-
-                {/* Protected Admin Routes */}
-                <Route path="/" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
-                <Route path="/mobile" element={<ProtectedRoute><MobileDashboard /></ProtectedRoute>} />
-                <Route path="/customers" element={<ProtectedRoute><AdminLayout><Customers /></AdminLayout></ProtectedRoute>} />
-                <Route path="/customers/:id" element={<ProtectedRoute><AdminLayout><CustomerDetails /></AdminLayout></ProtectedRoute>} />
-                <Route path="/customers/:id/edit" element={<ProtectedRoute><AdminLayout><EditCustomer /></AdminLayout></ProtectedRoute>} />
-                <Route path="/add-customer" element={<ProtectedRoute><AdminLayout><AddCustomer /></AdminLayout></ProtectedRoute>} />
-                <Route path="/devices" element={<ProtectedRoute><AdminLayout><DevicesPage /></AdminLayout></ProtectedRoute>} />
-                <Route path="/generate-qr" element={<ProtectedRoute><AdminLayout><GenerateQR /></AdminLayout></ProtectedRoute>} />
-                <Route path="/lock-control" element={<ProtectedRoute><AdminLayout><LockControl /></AdminLayout></ProtectedRoute>} />
-                <Route path="/location" element={<ProtectedRoute><AdminLayout><LocationTrack /></AdminLayout></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><AdminLayout><Settings /></AdminLayout></ProtectedRoute>} />
-
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-            </Routes>
-        </MobileFrame>
+        <div className="min-h-screen bg-slate-50 flex flex-col font-sans pb-[90px] animate-in fade-in duration-500">
+            <div className="flex-1 w-full max-w-md mx-auto bg-white min-h-screen shadow-2xl overflow-hidden relative">
+                {children}
+                <BottomNav />
+            </div>
+        </div>
     );
 };
 
-const App = () => (
-    <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
+// --- Main App Component ---
+
+export default function App() {
+    return (
+        <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <DeviceProvider>
-                    <Toaster />
-                    <BrowserRouter>
-                        <AppRoutes />
-                    </BrowserRouter>
+                    <TooltipProvider>
+                        <BrowserRouter>
+                            <AppLayout>
+                                <Routes>
+                                    <Route path="/login" element={<Login />} />
+
+                                    <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                                    <Route path="/mobile" element={<Navigate to="/" replace />} /> {/* Redirect legacy mobile route */}
+
+                                    <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                                    <Route path="/customers/:id" element={<ProtectedRoute><CustomerDetails /></ProtectedRoute>} />
+
+                                    <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
+
+                                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
+                                    <Route path="*" element={<Navigate to="/" replace />} />
+                                </Routes>
+                            </AppLayout>
+                            <Toaster position="top-center" />
+                        </BrowserRouter>
+                    </TooltipProvider>
                 </DeviceProvider>
             </AuthProvider>
-        </TooltipProvider>
-    </QueryClientProvider>
-);
-
-export default App;
+        </QueryClientProvider>
+    );
+}

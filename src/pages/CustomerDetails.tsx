@@ -1,469 +1,158 @@
-import { QRCodeSVG } from 'qrcode.react';
-import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '@/config/api';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
+import {
+    ArrowLeft, Shield, Lock, Unlock, smartphone,
+    MapPin, Clock, Trash2, RotateCcw, Copy
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MapPin, Phone, CreditCard, Smartphone, Calendar, Shield, AlertTriangle, QrCode, Lock, Unlock, Check, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { QRCodeSVG } from 'qrcode.react';
 
-const CustomerDetails = () => {
+export default function CustomerDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { toast } = useToast();
-    const { customers, toggleLock, deleteCustomer, refreshCustomers } = useDevice();
-    const customer = customers.find(c => c.id === id);
-    const [qrPayload, setQrPayload] = useState<string>('');
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    // Poll for status updates every 5 seconds
-    useEffect(() => {
-        if (!customer) return;
-
-        const interval = setInterval(() => {
-            refreshCustomers();
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [customer?.id]);
+    const { customers, deleteCustomer, toggleLock } = useDevice();
+    const [customer, setCustomer] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (customer?.id) {
-            fetch(`${API_BASE_URL}/api/provisioning/payload/${customer.id}`)
-                .then(res => res.json())
-                .then(data => setQrPayload(JSON.stringify(data)))
-                .catch(err => console.error("Failed to load QR payload", err));
+        if (customers && id) {
+            const found = customers.find((c: any) => c.id === id);
+            setCustomer(found);
         }
-    }, [customer?.id]);
+    }, [customers, id]);
 
-    if (!customer) {
-        return (
-            <div className="p-6 text-center">
-                <h2 className="text-xl font-bold mb-4">Customer Not Found</h2>
-                <Button onClick={() => navigate(-1)}>Go Back</Button>
-            </div>
-        );
-    }
-
-    const remainingEmis = (customer.totalEmis || 0) - (customer.paidEmis || 0);
-    const progress = customer.totalEmis ? ((customer.paidEmis || 0) / customer.totalEmis) * 100 : 0;
-
-    const handleLockToggle = () => {
-        toggleLock(customer.id, !customer.isLocked, 'Manual Admin Action');
+    const handleLockToggle = async () => {
+        if (!customer) return;
+        try {
+            setLoading(true);
+            const newState = !customer.isLocked;
+            await toggleLock(customer.id, newState, `Manual ${newState ? 'Lock' : 'Unlock'}`);
+            toast.success(`Device ${newState ? 'Locked' : 'Unlocked'}`);
+        } catch (e) {
+            toast.error('Action failed');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDelete = async () => {
-        if (window.confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
-            await deleteCustomer(customer.id);
+        if (!confirm('Are you sure you want to remove this device permanently?')) return;
+        try {
+            await deleteCustomer(id!);
+            toast.success('Device removed');
             navigate('/customers');
+        } catch (e) {
+            toast.error('Delete failed');
         }
     };
 
-    const handleRefreshDeviceDetails = async () => {
-        setIsRefreshing(true);
-        try {
-            await refreshCustomers();
-            toast({
-                title: 'Device Details Refreshed',
-                description: 'Latest device information has been loaded from the backend.',
-            });
-        } catch (error) {
-            console.error('Error refreshing device details:', error);
-            toast({
-                title: 'Refresh Failed',
-                description: 'Could not fetch latest device details. Please try again.',
-                variant: 'destructive',
-            });
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
+    if (!customer) return <div className="p-10 text-center text-slate-400">Loading details...</div>;
 
     return (
-        <div className="space-y-6 pb-20">
-            {/* ... Header and Profile Card ... */}
-
-            {/* Header */}
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="-ml-2">
+        <div className="flex flex-col h-full bg-slate-50">
+            {/* Header with quick back */}
+            <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center z-20">
+                <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
                     <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <div>
-                    <h1 className="text-xl font-bold text-foreground">Customer Details</h1>
-                    <p className="text-xs text-muted-foreground">ID: {customer.id}</p>
-                </div>
+                </button>
+                <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
+                    <RotateCcw className="w-5 h-5" />
+                </button>
             </div>
 
-            {/* Profile Card */}
-            <div className="glass-card p-6">
-                <div className="flex items-start justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className={cn(
-                            "w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold",
-                            customer.isLocked ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary"
-                        )}>
-                            {customer.name.charAt(0)}
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold text-foreground">{customer.name}</h2>
-                            <div className="flex items-center gap-2 text-muted-foreground text-sm mt-1">
-                                <Phone className="w-3 h-3" />
-                                {customer.phoneNo}
-                            </div>
-                        </div>
-                    </div>
-                    <Badge variant="outline" className={customer.isLocked ? "status-locked" : "status-unlocked"}>
-                        {customer.isLocked ? 'Locked' : 'Active'}
-                    </Badge>
-                </div>
+            {/* Hero Control Section */}
+            <div className={cn(
+                "min-h-[380px] w-full relative flex flex-col items-center justify-center pt-20 pb-10 px-6 transition-colors duration-500",
+                customer.isLocked ? "bg-red-500" : "bg-primary"
+            )}>
+                {/* Background Ambient */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
 
-                {/* Verification Alert */}
-                {customer.deviceStatus?.errorMessage && customer.deviceStatus.errorMessage.includes('Mismatch') && (
-                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-start gap-3 mb-6">
-                        <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
-                        <div>
-                            <h3 className="font-bold text-destructive">Device Verification Failed</h3>
-                            <p className="text-sm text-foreground/80">{customer.deviceStatus.errorMessage}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                The device using this account does not match the registered IMEI.
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {customer.deviceStatus?.status !== 'removed' ? (
-                        <div className="p-4 bg-secondary/50 rounded-xl space-y-2">
-                            <span className="text-xs text-muted-foreground block font-bold">DEVICE INFO</span>
-
-                            <div className="space-y-1">
-                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Model</span>
-                                <div className="font-medium flex items-center gap-2">
-                                    <Smartphone className="w-4 h-4" />
-                                    {customer.deviceStatus?.technical?.model
-                                        ? `${customer.deviceStatus.technical.brand || ''} ${customer.deviceStatus.technical.model}`
-                                        : (customer.mobileModel || 'Unknown Model')}
-                                </div>
-                            </div>
-
-                            {customer.deviceStatus?.technical?.osVersion && (
-                                <div className="space-y-1">
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Android Version</span>
-                                    <div className="text-sm">Android {customer.deviceStatus.technical.osVersion}</div>
-                                </div>
-                            )}
-
-                            <div className="space-y-1 border-t border-border/50 pt-2 mt-2">
-                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">IMEI / Serial</span>
-                                <div className="text-xs font-mono select-all">IMEI: {customer.imei1}</div>
-                                {customer.deviceStatus?.technical?.serial && (
-                                    <div className="text-xs font-mono select-all text-muted-foreground">SN: {customer.deviceStatus.technical.serial}</div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="p-4 bg-destructive/5 rounded-xl space-y-2 border border-destructive/20 border-dashed">
-                            <span className="text-xs text-destructive font-bold flex items-center gap-2">
-                                <Smartphone className="w-4 h-4" />
-                                DEVICE REMOVED
-                            </span>
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground">Device has been unlinked.</p>
-                                <p className="text-[10px] text-muted-foreground">Original IMEI: <span className="font-mono">{customer.imei1}</span></p>
-                            </div>
-                        </div>
-                    )}
-                    <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
-                        <span className="text-xs text-muted-foreground block">Location</span>
-                        <div className="font-medium flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            {customer.address}
-                        </div>
-                    </div>
-
-                    {/* SIM Details Card */}
-                    <div className="p-4 bg-secondary/50 rounded-xl space-y-1">
-                        <span className="text-xs text-muted-foreground block">Active SIM</span>
-                        <div className="font-medium flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px]">S</div>
-                            {customer.simDetails?.operator || 'Unknown Network'}
-                        </div>
-                        {customer.simDetails?.phoneNumber && (
-                            <span className="text-xs text-muted-foreground block">Num: {customer.simDetails.phoneNumber}</span>
-                        )}
-                        {customer.simDetails?.imsi && (
-                            <span className="text-xs text-muted-foreground block">IMSI: {customer.simDetails.imsi.substring(0, 5)}...</span>
+                <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-24 h-24 rounded-[32px] bg-white/20 backdrop-blur-lg border border-white/30 flex items-center justify-center shadow-2xl mb-6">
+                        {customer.isLocked ? (
+                            <Lock className="w-10 h-10 text-white fill-white/20" />
+                        ) : (
+                            <Unlock className="w-10 h-10 text-white fill-white/20" />
                         )}
                     </div>
 
-                    {/* Offline Lock Card */}
-                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-1">
-                        <span className="text-xs text-primary font-bold block mb-1">OFFLINE LOCK</span>
-                        <p className="text-xs text-muted-foreground mb-2">Send SMS to device number to lock instantly without internet.</p>
-                        <div className="bg-white p-2 rounded border border-border flex items-center justify-between">
-                            <code className="text-sm font-bold text-primary">LOCK {customer.offlineLockToken || '...'}</code>
-                            <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => {
-                                navigator.clipboard.writeText(`LOCK ${customer.offlineLockToken}`);
-                            }}>Copy</Button>
-                        </div>
-                    </div>
-                </div>
+                    <h1 className="text-3xl font-black text-white tracking-tight text-center mb-1">{customer.name}</h1>
+                    <p className="text-white/80 font-medium mb-8 text-sm">{customer.modelName || 'Android Device'}</p>
 
-                {/* Refresh Device Details */}
-                <div className="mt-4 pt-4 border-t border-border/50">
-                    <Button
-                        variant="outline"
-                        className="w-full gap-2"
-                        onClick={handleRefreshDeviceDetails}
-                        disabled={isRefreshing}
+                    {/* Big Toggle Button */}
+                    <button
+                        onClick={handleLockToggle}
+                        disabled={loading}
+                        className="h-14 px-8 bg-white rounded-full shadow-xl flex items-center gap-3 active:scale-95 transition-transform"
                     >
-                        <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
-                        {isRefreshing ? 'Refreshing...' : 'Refresh Device Details'}
-                    </Button>
-                    <p className="text-xs text-muted-foreground text-center mt-2">
-                        Fetch latest device information from backend
-                    </p>
-                </div>
-
-                {/* Device Actions */}
-                <div className="mt-6 pt-6 border-t border-border/50">
-                    <h3 className="font-semibold mb-4 text-sm">Device Controls</h3>
-                    <div className="flex gap-3">
-                        <Button
-                            className={cn("flex-1 gap-2", customer.isLocked ? "bg-success hover:bg-success/90 text-white" : "bg-destructive hover:bg-destructive/90 text-white")}
-                            onClick={handleLockToggle}
-                        >
-                            {customer.isLocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                            {customer.isLocked ? 'Unlock Device' : 'Lock Device'}
-                        </Button>
-                        <Button className="flex-1" variant="outline" onClick={() => navigate(`/customers/${id}/edit`)}>Edit Details</Button>
-                        <Button
-                            className="flex-shrink-0 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white border-destructive/20"
-                            variant="outline"
-                            onClick={handleDelete}
-                        >
-                            Delete
-                        </Button>
-                    </div>
+                        <span className={cn("font-bold uppercase tracking-widest text-sm", customer.isLocked ? "text-red-500" : "text-primary")}>
+                            {loading ? "Processing..." : (customer.isLocked ? "Tap to Unlock" : "Tap to Lock")}
+                        </span>
+                    </button>
                 </div>
             </div>
 
-            {/* QR Code Section */}
+            {/* Details Sheet */}
+            <div className="flex-1 -mt-8 bg-slate-50 rounded-t-[32px] relative z-10 p-6 space-y-6 pb-24">
 
-            {/* QR Code Section */}
-            <div className="glass-card p-6 flex flex-col items-center text-center">
-                <h3 className="font-semibold mb-4 flex items-center gap-2 self-start">
-                    <QrCode className="w-4 h-4 text-primary" />
-                    Device QR Code
-                </h3>
-                <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
-                    {/* Debug: Log QR data */}
-                    {(() => {
-                        if (!qrPayload) return <p className="text-sm text-muted-foreground p-4">Loading QR...</p>;
-                        return (
-                            <div className="bg-white p-2 rounded-xl">
-                                <QRCodeSVG
-                                    value={qrPayload}
-                                    size={320}
-                                    level="L"
-                                    bgColor="#FFFFFF"
-                                    fgColor="#000000"
-                                    includeMargin={true}
-                                />
-                            </div>
-                        );
-                    })()}
+                {/* Status Bar */}
+                <div className="flex gap-4">
+                    <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-1">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">EMI Status</p>
+                        <p className="text-lg font-black text-emerald-500">Paid 6/12</p>
+                    </div>
+                    <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-1">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Last Sync</p>
+                        <p className="text-sm font-bold text-slate-700">2m ago</p>
+                    </div>
                 </div>
-                <p className="text-sm text-muted-foreground">Scan to configure mobile client</p>
+
+                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm space-y-4">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Device Info</h3>
+
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <span className="text-xs font-bold text-slate-500">IMEI</span>
+                        <span className="text-xs font-mono font-bold text-slate-700">{customer.imei1 || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <span className="text-xs font-bold text-slate-500">Phone</span>
+                        <span className="text-xs font-bold text-slate-700">{customer.phoneNo}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <span className="text-xs font-bold text-slate-500">Installed</span>
+                        <span className="text-xs font-bold text-emerald-600">Yes</span>
+                    </div>
+                </div>
+
+                {/* QR Code Mini */}
+                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div className="space-y-1">
+                        <h3 className="text-sm font-bold text-slate-900">Device QR Backup</h3>
+                        <p className="text-xs text-slate-400">Scan to re-enroll device</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-slate-100">
+                        <QRCodeSVG value={JSON.stringify({
+                            customerId: customer.id,
+                            serverUrl: 'https://emi-pro-app.onrender.com'
+                        })} size={48} />
+                    </div>
+                </div>
+
+                {/* Danger Zone */}
+                <Button
+                    variant="ghost"
+                    onClick={handleDelete}
+                    className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 h-12 rounded-xl"
+                >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete Device Logic
+                </Button>
+
             </div>
-
-            {/* EMI Status */}
-            <div className="glass-card p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-primary" />
-                    EMI Status
-                </h3>
-
-                <div className="mb-6">
-                    <div className="flex justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{customer.paidEmis || 0} / {customer.totalEmis || 0} Months</span>
-                    </div>
-                    <div className="h-3 bg-secondary rounded-full overflow-hidden">
-                        <div
-                            className={cn("h-full transition-all duration-500", customer.isLocked ? "bg-destructive" : "bg-primary")}
-                            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Device Price</p>
-                        <p className="text-lg font-bold">₹{(customer.totalAmount || 0).toLocaleString()}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Monthly Amount</p>
-                        <p className="text-lg font-bold">₹{(customer.emiAmount || 0).toLocaleString()}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Total Remaining</p>
-                        <p className="text-lg font-bold text-destructive">₹{((remainingEmis || 0) * (customer.emiAmount || 0)).toLocaleString()}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Next Due Date</p>
-                        <p className="font-medium flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {customer.emiDate}th of Month
-                        </p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Finance Provider</p>
-                        <p className="font-medium">{customer.financeName}</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Lock History */}
-            <div className="glass-card p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-primary" />
-                    Lock History
-                </h3>
-                <div className="space-y-4">
-                    {customer.lockHistory.length > 0 ? (
-                        customer.lockHistory.slice().reverse().map((event) => (
-                            <div key={event.id} className="flex items-start gap-3 text-sm pb-4 border-b border-border/50 last:border-0 last:pb-0">
-                                <div className={cn(
-                                    "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
-                                    event.action === 'locked' ? "bg-destructive" : "bg-success"
-                                )} />
-                                <div>
-                                    <p className="font-medium">Device {event.action === 'locked' ? 'Locked' : 'Unlocked'}</p>
-                                    <p className="text-xs text-muted-foreground">{format(new Date(event.timestamp), 'PPpp')}</p>
-                                    <p className="text-xs mt-1 bg-secondary/50 p-1.5 rounded text-muted-foreground">{event.reason}</p>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-sm text-muted-foreground">No lock history available.</p>
-                    )}
-                </div>
-            </div>
-            {/* Onboarding Process Status - LIVE */}
-            <div className="glass-card p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-primary" />
-                    Device Onboarding Status
-                </h3>
-                <div className="space-y-4">
-                    {/* Step 1: QR Scanned */}
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-                            customer.deviceStatus?.steps?.qrScanned ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
-                        )}>
-                            {customer.deviceStatus?.steps?.qrScanned ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
-                        </div>
-                        <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.qrScanned && "text-muted-foreground")}>QR Scanned</p>
-                            <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.qrScanned ? "Device successfully scanned the setup QR." : "Waiting for scan..."}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Step 2: App Installed */}
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-                            customer.deviceStatus?.steps?.appInstalled ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
-                        )}>
-                            {customer.deviceStatus?.steps?.appInstalled ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
-                        </div>
-                        <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.appInstalled && "text-muted-foreground")}>App Installed</p>
-                            <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.appInstalled ? "Client application installed on device." : "Waiting for installation..."}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Step 3: App Launched */}
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-                            customer.deviceStatus?.steps?.appLaunched ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
-                        )}>
-                            {customer.deviceStatus?.steps?.appLaunched ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
-                        </div>
-                        <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.appLaunched && "text-muted-foreground")}>App Launched</p>
-                            <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.appLaunched ? "Mobile app started successfully." : "Waiting for FIRST launch..."}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Step 4: Details Fetched */}
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-                            customer.deviceStatus?.steps?.detailsFetched ? "bg-success/20 text-success" : "bg-secondary text-muted-foreground"
-                        )}>
-                            {customer.deviceStatus?.steps?.detailsFetched ? <Check className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
-                        </div>
-                        <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.detailsFetched && "text-muted-foreground")}>Device Details Fetched</p>
-                            <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.detailsFetched ? "IMEI, SIM, and Model info received." : "Waiting for device report..."}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Step 4: Verified */}
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-                            customer.deviceStatus?.steps?.imeiVerified ? "bg-success/20 text-success" :
-                                (customer.deviceStatus?.status === 'error' ? "bg-destructive/20 text-destructive" : "bg-secondary text-muted-foreground")
-                        )}>
-                            {customer.deviceStatus?.steps?.imeiVerified ? <Check className="w-4 h-4" /> :
-                                (customer.deviceStatus?.status === 'error' ? <AlertTriangle className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />)}
-                        </div>
-                        <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.imeiVerified && "text-muted-foreground")}>IMEI Verified</p>
-                            <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.imeiVerified ? "Device matches Admin records." :
-                                    (customer.deviceStatus?.status === 'error' ? "Verification FAILED: IMEI Mismatch!" : "Verifying identity...")}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Step 5: Final Binding */}
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-                            customer.deviceStatus?.steps?.deviceBound ? "bg-indigo-100 text-indigo-600" : "bg-secondary text-muted-foreground"
-                        )}>
-                            {customer.deviceStatus?.steps?.deviceBound ? <Shield className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-current" />}
-                        </div>
-                        <div className="flex-1">
-                            <p className={cn("text-sm font-medium", !customer.deviceStatus?.steps?.deviceBound && "text-muted-foreground")}>Device Bound (Active)</p>
-                            <p className="text-xs text-muted-foreground">
-                                {customer.deviceStatus?.steps?.deviceBound ? "Device is fully secured and active." : "Waiting for verification..."}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
         </div>
     );
-};
-
-export default CustomerDetails;
+}
