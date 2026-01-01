@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer');
+const Device = require('../models/Device');
 
 // Get all customers
 router.get('/', async (req, res) => {
@@ -356,11 +357,12 @@ router.post('/:id/command', async (req, res) => {
     try {
         const { command, params } = req.body;
 
-        // Valid commands list
+        // Valid commands list - 'remove' marks device as removed but KEEPS customer data
         const validCommands = [
             'lock', 'unlock', 'wipe', 'reset',
             'setWallpaper', 'setPin', 'alarm', 'stopAlarm',
-            'setLockInfo', 'grantPermissions', 'applyRestrictions'
+            'setLockInfo', 'grantPermissions', 'applyRestrictions',
+            'remove' // Marks device as removed, preserves customer data
         ];
 
         if (!validCommands.includes(command)) {
@@ -403,6 +405,39 @@ router.post('/:id/command', async (req, res) => {
                 reason: params?.reason || 'Remote unlock by admin',
                 timestamp: new Date().toISOString()
             };
+        }
+
+        // Handle 'remove' command - marks device as removed but KEEPS customer data
+        if (command === 'remove') {
+            updateData['deviceStatus.status'] = 'removed';
+            updateData['deviceStatus.errorMessage'] = 'Device removed by admin';
+
+            // Add to lock history
+            updateData.$push = updateData.$push || {};
+            updateData.$push.lockHistory = {
+                id: Date.now().toString(),
+                action: 'device_removed',
+                reason: params?.reason || 'Removed by admin',
+                timestamp: new Date().toISOString()
+            };
+
+            // ALSO UPDATE DEVICE MODEL
+            // Find any device assigned to this customer and mark as REMOVED
+            const device = await Device.findOne({ assignedCustomerId: req.params.id, state: { $ne: 'REMOVED' } });
+            if (device) {
+                device.state = 'REMOVED';
+                device.removedAt = new Date();
+                device.removalReason = params?.reason || 'Removed via Dashboard';
+                device.stateHistory.push({
+                    state: 'REMOVED',
+                    reason: 'Removed via Dashboard (Customer Action)',
+                    changedAt: new Date()
+                });
+                await device.save();
+                console.log(`📱 Device ${device.deviceId} synced to REMOVED status`);
+            }
+
+            console.log(`🗑️ Device ${req.params.id} marked as REMOVED (customer data preserved)`);
         }
 
         // Handle setLockInfo - update the lock message and support phone
