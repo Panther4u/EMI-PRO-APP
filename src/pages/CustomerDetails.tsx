@@ -92,8 +92,8 @@ const CustomerDetails = () => {
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground">Customer Details</h1>
-                    <p className="text-sm text-muted-foreground">ID: {customer.id}</p>
+                    <h1 className="text-xl font-bold text-foreground">Customer Details</h1>
+                    <p className="text-xs text-muted-foreground">ID: {customer.id}</p>
                 </div>
             </div>
 
@@ -448,9 +448,7 @@ const CustomerDetails = () => {
                 </div>
             </div>
 
-            <div className="flex gap-3">
-                <Button className="flex-1" variant="outline" onClick={() => navigate(`/customers/${id}/edit`)}>Edit Details</Button>
-            </div>
+
         </div>
     );
 };

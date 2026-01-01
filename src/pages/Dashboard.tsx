@@ -39,38 +39,38 @@ const DeviceTypeCard = ({
   <button
     onClick={onClick}
     className={cn(
-      "p-6 rounded-2xl border-2 transition-all text-left w-full group hover:scale-[1.02] active:scale-[0.98]",
-      "hover:shadow-lg",
-      color === 'green' && 'border-green-500/30 hover:border-green-500 bg-gradient-to-br from-green-500/10 to-green-600/5',
-      color === 'blue' && 'border-blue-500/30 hover:border-blue-500 bg-gradient-to-br from-blue-500/10 to-blue-600/5',
-      color === 'gray' && 'border-gray-500/30 hover:border-gray-500 bg-gradient-to-br from-gray-500/10 to-gray-600/5',
+      "p-4 rounded-xl border transition-all text-left w-full group hover:scale-[1.01] active:scale-[0.98]",
+      "hover:shadow-md",
+      color === 'green' && 'border-green-500/30 bg-green-500/5',
+      color === 'blue' && 'border-blue-500/30 bg-blue-500/5',
+      color === 'gray' && 'border-gray-500/30 bg-gray-500/5',
     )}
   >
-    <div className="flex items-start gap-4">
+    <div className="flex items-start gap-3">
       <div className={cn(
-        "w-14 h-14 rounded-xl flex items-center justify-center",
+        "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
         color === 'green' && 'bg-green-500/20',
         color === 'blue' && 'bg-blue-500/20',
         color === 'gray' && 'bg-gray-500/20',
       )}>
         <Icon className={cn(
-          "w-7 h-7",
+          "w-5 h-5",
           color === 'green' && 'text-green-500',
           color === 'blue' && 'text-blue-500',
           color === 'gray' && 'text-gray-500',
         )} />
       </div>
-      <div className="flex-1">
-        <h3 className="font-bold text-lg text-foreground">{title}</h3>
-        <p className="text-sm text-muted-foreground mt-1">{description}</p>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-sm text-foreground truncate">{title}</h3>
+        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-tight">{description}</p>
         <p className={cn(
-          "text-xs font-semibold mt-2",
+          "text-[10px] font-bold mt-1.5 uppercase tracking-wider",
           color === 'green' && 'text-green-500',
           color === 'blue' && 'text-blue-500',
           color === 'gray' && 'text-gray-500',
         )}>{subtitle}</p>
       </div>
-      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform mt-3" />
     </div>
   </button>
 );
@@ -90,17 +90,17 @@ const DeviceCard = ({
   onView: () => void;
 }) => (
   <div className={cn(
-    "p-4 rounded-xl border transition-all",
+    "p-3 rounded-xl border transition-all cursor-pointer hover:border-primary/40 active:scale-[0.99]",
     customer.isLocked
       ? "bg-red-500/5 border-red-500/20"
-      : customer.deviceStatus?.status === 'REMOVED'
+      : customer.deviceStatus?.status === 'REMOVED' || customer.deviceStatus?.status === 'removed'
         ? "bg-gray-500/5 border-gray-500/20 opacity-60"
-        : "bg-card border-border hover:border-primary/30"
-  )}>
+        : "bg-card border-border"
+  )} onClick={onView}>
     <div className="flex items-center gap-3">
       {/* Avatar */}
       <div className={cn(
-        "w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0 overflow-hidden",
+        "w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 overflow-hidden",
         customer.isLocked ? "bg-red-500/20 text-red-500" : "bg-primary/20 text-primary"
       )}>
         {customer.photoUrl ? (
@@ -112,40 +112,39 @@ const DeviceCard = ({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h4 className="font-semibold text-foreground truncate">{customer.name}</h4>
+        <div className="flex items-center gap-1.5">
+          <h4 className="font-semibold text-sm text-foreground truncate">{customer.name}</h4>
           <Badge className={cn(
-            "text-[10px]",
+            "text-[9px] px-1.5 py-0 h-4 uppercase tracking-wider",
             customer.isLocked ? "bg-red-500" :
-              customer.deviceStatus?.status === 'REMOVED' ? "bg-gray-500" : "bg-green-500"
+              (customer.deviceStatus?.status === 'REMOVED' || customer.deviceStatus?.status === 'removed') ? "bg-gray-500" : "bg-green-500"
           )}>
             {customer.isLocked ? 'Locked' :
-              customer.deviceStatus?.status === 'REMOVED' ? 'Removed' : 'Active'}
+              (customer.deviceStatus?.status === 'REMOVED' || customer.deviceStatus?.status === 'removed') ? 'Removed' : 'Active'}
           </Badge>
         </div>
-        <p className="text-xs text-muted-foreground truncate">{customer.phoneNo}</p>
-        <p className="text-xs text-muted-foreground truncate">
-          {customer.mobileModel || customer.imei1}
+        <p className="text-[11px] text-muted-foreground truncate">{customer.phoneNo}</p>
+        <p className="text-[10px] text-muted-foreground truncate opacity-70 font-mono">
+          {customer.mobileModel || customer.imei1 || 'No Device'}
         </p>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-1">
+      <div className="flex gap-1" onClick={e => e.stopPropagation()}>
         {customer.isLocked ? (
-          <Button size="icon" variant="outline" onClick={onUnlock} className="h-8 w-8" title="Unlock">
-            <Lock className="w-3 h-3 text-green-500" />
+          <Button size="icon" variant="outline" onClick={onUnlock} className="h-7 w-7 rounded-lg hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/50" title="Unlock">
+            <Lock className="w-3.5 h-3.5 text-green-500" />
           </Button>
         ) : (
-          <Button size="icon" variant="outline" onClick={onLock} className="h-8 w-8" title="Lock">
-            <Lock className="w-3 h-3 text-red-500" />
+          <Button size="icon" variant="outline" onClick={onLock} className="h-7 w-7 rounded-lg hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50" title="Lock">
+            <Lock className="w-3.5 h-3.5 text-red-500" />
           </Button>
         )}
-        <Button size="icon" variant="outline" onClick={onRemove} className="h-8 w-8" title="Remove">
-          <Trash2 className="w-3 h-3 text-gray-500" />
-        </Button>
-        <Button size="icon" variant="ghost" onClick={onView} className="h-8 w-8" title="View">
-          <ChevronRight className="w-4 h-4" />
-        </Button>
+        {(customer.deviceStatus?.status !== 'REMOVED' && customer.deviceStatus?.status !== 'removed') && (
+          <Button size="icon" variant="outline" onClick={onRemove} className="h-7 w-7 rounded-lg hover:bg-gray-500/10 hover:text-gray-500 hover:border-gray-500/50" title="Remove">
+            <Trash2 className="w-3.5 h-3.5 text-gray-500" />
+          </Button>
+        )}
       </div>
     </div>
   </div>
@@ -159,23 +158,28 @@ const Dashboard = () => {
   // Filter state
   const [filter, setFilter] = useState<'all' | 'active' | 'locked' | 'removed'>('all');
 
-  // Calculate counts
-  const activeDevices = customers.filter(c => !c.isLocked && c.deviceStatus?.status !== 'REMOVED').length;
-  const lockedDevices = customers.filter(c => c.isLocked).length;
-  const removedDevices = customers.filter(c => c.deviceStatus?.status === 'REMOVED').length;
+  // Calculate counts - Use explicit string check to valid TypeScript enum complaints if needed, or simply loose check
+  // Using explicit casts or string conversions to handle potential type mismatches safely
+  const activeDevices = (customers || []).filter(c => !c.isLocked && (c.deviceStatus?.status as string) !== 'REMOVED').length;
+  const lockedDevices = (customers || []).filter(c => c.isLocked).length;
+  // Handle 'REMOVED' case-insensitively just in case
+  const removedDevices = (customers || []).filter(c => (c.deviceStatus?.status as string) === 'REMOVED' || (c.deviceStatus?.status as string) === 'removed').length;
 
   // Filtered customers
-  const filteredCustomers = customers.filter(c => {
+  const filteredCustomers = (customers || []).filter(c => {
+    const status = c.deviceStatus?.status as string;
+    const isRemoved = status === 'REMOVED' || status === 'removed';
+
     if (filter === 'all') return true;
-    if (filter === 'active') return !c.isLocked && c.deviceStatus?.status !== 'REMOVED';
+    if (filter === 'active') return !c.isLocked && !isRemoved;
     if (filter === 'locked') return c.isLocked;
-    if (filter === 'removed') return c.deviceStatus?.status === 'REMOVED';
+    if (filter === 'removed') return isRemoved;
     return true;
   });
 
   const handleLock = async (customerId: string) => {
     try {
-      await toggleLock(customerId);
+      await toggleLock(customerId, true, 'Locked via Dashboard');
       toast.success('Device locked');
     } catch (e) {
       toast.error('Failed to lock device');
@@ -184,7 +188,7 @@ const Dashboard = () => {
 
   const handleUnlock = async (customerId: string) => {
     try {
-      await toggleLock(customerId);
+      await toggleLock(customerId, false, 'Unlocked via Dashboard');
       toast.success('Device unlocked');
     } catch (e) {
       toast.error('Failed to unlock device');
@@ -214,39 +218,39 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-4 pb-20">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Select device type to add new customer</p>
+          <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-xs text-muted-foreground">Manage your devices</p>
         </div>
-        <Button variant="outline" size="sm" onClick={refreshCustomers}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={refreshCustomers} className="h-8 text-xs">
+          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
           Refresh
         </Button>
       </div>
 
       {/* Device Type Selection - Main CTA */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Generate Device QR</CardTitle>
-          <CardDescription>Select device type to add new customer</CardDescription>
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent shadow-sm">
+        <CardHeader className="pb-3 pt-4 px-4">
+          <CardTitle className="text-sm font-bold">Generate Device QR</CardTitle>
+          <CardDescription className="text-xs">Tap below to add new device</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2 px-4 pb-4">
           <DeviceTypeCard
-            title="Fresh Android Device"
-            description="Factory reset device. Scan QR on welcome screen (tap 6 times)."
-            subtitle="Recommended for new devices"
+            title="Fresh Android"
+            description="Factory reset → Tap 6 times → Scan"
+            subtitle="New Devices"
             icon={Smartphone}
             color="green"
             onClick={() => goToAddCustomer('ANDROID_NEW')}
           />
 
           <DeviceTypeCard
-            title="Used Android Device"
-            description="Already in use. Install APK manually, then scan QR in app."
-            subtitle="For devices with existing data"
+            title="Used Android"
+            description="Install APK → Open → Scan"
+            subtitle="Existing Data"
             icon={Tablet}
             color="blue"
             onClick={() => goToAddCustomer('ANDROID_EXISTING')}
@@ -254,8 +258,8 @@ const Dashboard = () => {
 
           <DeviceTypeCard
             title="iPhone / iPad"
-            description="iOS device. Limited control via App Store installation."
-            subtitle="Requires Serial Number"
+            description="Install App → Scan"
+            subtitle="iOS Devices"
             icon={Apple}
             color="gray"
             onClick={() => goToAddCustomer('IOS')}
@@ -263,78 +267,78 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-3">
+      {/* Stats Cards - 2x2 Grid for Mobile */}
+      <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => setFilter('all')}
           className={cn(
-            "p-4 rounded-xl border text-center transition-all",
-            filter === 'all' ? "border-primary bg-primary/5" : "border-border"
+            "p-3 rounded-xl border text-center transition-all",
+            filter === 'all' ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card"
           )}
         >
-          <p className="text-2xl font-bold text-foreground">{customers.length}</p>
-          <p className="text-xs text-muted-foreground">Total</p>
+          <p className="text-xl font-bold text-foreground">{customers.length}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Total</p>
         </button>
         <button
           onClick={() => setFilter('active')}
           className={cn(
-            "p-4 rounded-xl border text-center transition-all",
-            filter === 'active' ? "border-green-500 bg-green-500/5" : "border-border"
+            "p-3 rounded-xl border text-center transition-all",
+            filter === 'active' ? "border-green-500 bg-green-500/5 shadow-sm" : "border-border bg-card"
           )}
         >
-          <p className="text-2xl font-bold text-green-500">{activeDevices}</p>
-          <p className="text-xs text-muted-foreground">Active</p>
+          <p className="text-xl font-bold text-green-600">{activeDevices}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Active</p>
         </button>
         <button
           onClick={() => setFilter('locked')}
           className={cn(
-            "p-4 rounded-xl border text-center transition-all",
-            filter === 'locked' ? "border-red-500 bg-red-500/5" : "border-border"
+            "p-3 rounded-xl border text-center transition-all",
+            filter === 'locked' ? "border-red-500 bg-red-500/5 shadow-sm" : "border-border bg-card"
           )}
         >
-          <p className="text-2xl font-bold text-red-500">{lockedDevices}</p>
-          <p className="text-xs text-muted-foreground">Locked</p>
+          <p className="text-xl font-bold text-red-600">{lockedDevices}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Locked</p>
         </button>
         <button
           onClick={() => setFilter('removed')}
           className={cn(
-            "p-4 rounded-xl border text-center transition-all",
-            filter === 'removed' ? "border-gray-500 bg-gray-500/5" : "border-border"
+            "p-3 rounded-xl border text-center transition-all",
+            filter === 'removed' ? "border-gray-500 bg-gray-500/5 shadow-sm" : "border-border bg-card"
           )}
         >
-          <p className="text-2xl font-bold text-gray-500">{removedDevices}</p>
-          <p className="text-xs text-muted-foreground">Removed</p>
+          <p className="text-xl font-bold text-gray-500">{removedDevices}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Removed</p>
         </button>
       </div>
 
       {/* Device List Section */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-4">
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader className="pb-3 pt-4 px-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-sm font-bold">
+              <Smartphone className="w-4 h-4 text-primary" />
               Devices
             </CardTitle>
-            <Badge variant="outline">{filteredCustomers.length}</Badge>
+            <Badge variant="outline" className="text-xs h-5 px-1.5">{filteredCustomers.length}</Badge>
           </div>
-          <CardDescription>
+          <CardDescription className="text-xs">
             {filter === 'all' && 'All registered devices'}
             {filter === 'active' && 'Active devices only'}
             {filter === 'locked' && 'Locked devices only'}
             {filter === 'removed' && 'Removed devices only'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4">
           {filteredCustomers.length === 0 ? (
             <div className="text-center py-8">
-              <Smartphone className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <p className="text-sm text-muted-foreground">No devices found</p>
-              <Button className="mt-4" onClick={() => goToAddCustomer('ANDROID_NEW')}>
+              <Smartphone className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" />
+              <p className="text-xs text-muted-foreground">No devices found</p>
+              <Button className="mt-3 h-8 text-xs" onClick={() => goToAddCustomer('ANDROID_NEW')}>
                 Add First Device
               </Button>
             </div>
           ) : (
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
               {filteredCustomers.map((customer) => (
                 <DeviceCard
                   key={customer.id}
@@ -351,40 +355,40 @@ const Dashboard = () => {
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-muted-foreground">Collection Status</span>
-              <TrendingUp className="w-4 h-4 text-green-500" />
+      <div className="grid grid-cols-2 gap-2">
+        <Card className="border-border/50 shadow-sm">
+          <CardContent className="pt-4 px-4 pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-muted-foreground font-semibold">Collection</span>
+              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-xs text-muted-foreground">Collected</span>
-                <span className="font-bold text-green-500">₹{stats.collectedAmount.toLocaleString()}</span>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] text-muted-foreground">Collected</span>
+                <span className="font-bold text-sm text-green-500">₹{stats.collectedAmount.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-xs text-muted-foreground">Pending</span>
-                <span className="font-bold text-yellow-500">₹{stats.totalEmiValue.toLocaleString()}</span>
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] text-muted-foreground">Pending</span>
+                <span className="font-bold text-sm text-yellow-500">₹{stats.totalEmiValue.toLocaleString()}</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-muted-foreground">Alerts</span>
-              <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        <Card className="border-border/50 shadow-sm">
+          <CardContent className="pt-4 px-4 pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-muted-foreground font-semibold">Alerts</span>
+              <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-xs text-muted-foreground">Locked</span>
-                <span className="font-bold text-red-500">{lockedDevices}</span>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] text-muted-foreground">Locked</span>
+                <span className="font-bold text-sm text-red-500">{lockedDevices}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-xs text-muted-foreground">Overdue</span>
-                <span className="font-bold text-yellow-500">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] text-muted-foreground">Overdue</span>
+                <span className="font-bold text-sm text-yellow-500">
                   {customers.filter(c => c.paidEmis < c.totalEmis && c.isLocked).length}
                 </span>
               </div>
