@@ -84,7 +84,10 @@ export default function App() {
                             { text: "Later", style: "cancel" },
                             {
                                 text: "Update Now",
-                                onPress: () => Linking.openURL(data.admin_apk)
+                                onPress: () => {
+                                    const apkUrl = isAdmin ? data.admin_apk : (data.user_apk || data.admin_apk);
+                                    Linking.openURL(apkUrl)
+                                }
                             }
                         ]
                     );
@@ -142,11 +145,9 @@ export default function App() {
                         console.log("✅ Device is provisioned");
 
                         if (provisioningData.customerId) {
-                            await AsyncStorage.setItem('enrollment_data', JSON.stringify({
-                                customerId: provisioningData.customerId,
-                                serverUrl: provisioningData.serverUrl || currentServerUrl,
-                                enrolledAt: new Date().toISOString()
-                            }));
+                            // ⚠️ DISABLED: Do not save to storage automatically.
+                            // We want user to scan manually.
+                            console.log("⚠️ Provisioning ID found but ignored for auto-enrollment.");
                         }
 
                         // ⚠️ Automatic Enrollment Disabled by User Request
