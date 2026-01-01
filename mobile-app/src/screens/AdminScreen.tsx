@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, Alert, Linking, Platform } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-const CURRENT_VERSION = '1.0.0'; // Update this when releasing new APK
+const CURRENT_VERSION = '1.0.0';
 const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
 
 export default function AdminScreen() {
     const [showWebView, setShowWebView] = useState(true);
-    const uri = 'https://emi-pro-app.onrender.com/';
+    const uri = 'https://emi-pro-app.onrender.com/mobile'; // Mobile-optimized dashboard
 
     useEffect(() => {
         checkForUpdates();
@@ -22,31 +22,67 @@ export default function AdminScreen() {
                 const downloadUrl = data.downloadUrl;
 
                 if (latestVersion && latestVersion !== CURRENT_VERSION) {
-                    Alert.alert(
-                        'Update Available',
-                        `A new version (${latestVersion}) of the Admin app is available. Current version: ${CURRENT_VERSION}`,
-                        [
-                            {
-                                text: 'Later',
-                                style: 'cancel'
-                            },
-                            {
-                                text: 'Update Now',
-                                onPress: () => {
-                                    if (downloadUrl) {
-                                        Linking.openURL(downloadUrl);
-                                    }
-                                }
-                            }
-                        ]
-                    );
+                    // Update notification handled by app
                 }
             }
         } catch (error) {
             console.log('Version check failed:', error);
-            // Silently fail - don't block the app
         }
     };
+
+    // Inject CSS for mobile responsiveness
+    const injectedJavaScript = `
+        (function() {
+            // Add meta viewport if not present
+            if (!document.querySelector('meta[name="viewport"]')) {
+                var meta = document.createElement('meta');
+                meta.name = 'viewport';
+                meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                document.head.appendChild(meta);
+            }
+
+            // Add mobile-optimized styles
+            var style = document.createElement('style');
+            style.textContent = \`
+                * {
+                    -webkit-tap-highlight-color: transparent;
+                    -webkit-touch-callout: none;
+                }
+                
+                body {
+                    font-size: 16px !important;
+                    -webkit-text-size-adjust: 100%;
+                    touch-action: manipulation;
+                }
+                
+                /* Ensure all text is readable on mobile */
+                h1 { font-size: 1.75rem !important; }
+                h2 { font-size: 1.5rem !important; }
+                h3 { font-size: 1.25rem !important; }
+                p, span, div { font-size: 0.875rem !important; }
+                
+                /* Make buttons touch-friendly */
+                button, a {
+                    min-height: 44px !important;
+                    min-width: 44px !important;
+                }
+                
+                /* Responsive images */
+                img {
+                    max-width: 100% !important;
+                    height: auto !important;
+                }
+                
+                /* Remove horizontal scroll */
+                html, body {
+                    overflow-x: hidden !important;
+                    max-width: 100vw !important;
+                }
+            \`;
+            document.head.appendChild(style);
+        })();
+        true;
+    `;
 
     return (
         <View style={{ flex: 1 }}>
@@ -64,6 +100,10 @@ export default function AdminScreen() {
                     domStorageEnabled={true}
                     cacheEnabled={false}
                     cacheMode="LOAD_NO_CACHE"
+                    injectedJavaScript={injectedJavaScript}
+                    scalesPageToFit={true}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
                     onLoadStart={(syntheticEvent) => {
                         const { nativeEvent } = syntheticEvent;
                         console.log('WebView loading:', nativeEvent.url);
