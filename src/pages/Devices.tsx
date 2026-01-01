@@ -189,8 +189,8 @@ export default function DevicesPage() {
     };
 
     const DeviceCard = ({ device }: { device: Device }) => {
-        const config = stateConfig[device.state];
-        const Icon = config.icon;
+        const config = stateConfig[device.state] || stateConfig.PENDING;
+        const Icon = config?.icon || Clock;
 
         return (
             <Card className={cn(

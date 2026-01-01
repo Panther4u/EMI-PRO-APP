@@ -51,13 +51,15 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const refreshUnclaimed = async () => {
         try {
-            const response = await fetch(getApiUrl('/api/devices/unclaimed'));
+            // Use existing devices endpoint with UNASSIGNED filter
+            const response = await fetch(getApiUrl('/api/devices?state=UNASSIGNED'));
             if (response.ok) {
                 const data = await response.json();
-                setUnclaimedDevices(data);
+                setUnclaimedDevices(Array.isArray(data) ? data : []);
             }
         } catch (error) {
-            console.warn('Failed to fetch unclaimed devices');
+            // Silently fail - unclaimed devices are optional
+            setUnclaimedDevices([]);
         }
     };
 
