@@ -107,6 +107,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const addCustomer = async (customerData: Omit<Customer, 'createdAt' | 'lockHistory'>) => {
         const newCustomer: Customer = {
             ...customerData,
+            id: customerData.id || `CUS-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique ID
             createdAt: new Date().toISOString(),
             lockHistory: [],
             isLocked: false,
@@ -129,7 +130,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                throw new Error(errorData.error || `Failed to add customer: ${response.status}`);
+                throw new Error(errorData.error || errorData.message || `Failed to add customer: ${response.status}`);
             }
 
             toast.success('Customer registered successfully');

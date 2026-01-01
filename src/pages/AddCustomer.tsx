@@ -44,8 +44,22 @@ export default function AddCustomer() {
         e.preventDefault();
         setLoading(true);
         try {
+            // Validation
             if (!formData.name || !formData.phoneNo) {
-                toast.error('Name, Phone are required');
+                toast.error('Name and Phone are required');
+                setLoading(false);
+                return;
+            }
+
+            if (!formData.imei1) {
+                toast.error('IMEI 1 is required for device verification');
+                setLoading(false);
+                return;
+            }
+
+            if (formData.imei1.length < 15) {
+                toast.error('IMEI must be 15 digits');
+                setLoading(false);
                 return;
             }
 
@@ -59,17 +73,19 @@ export default function AddCustomer() {
 
             const payload = {
                 ...formData,
-                deviceStatus: { status: 'ACTIVE' },
+                deviceStatus: { status: 'pending' }, // Valid enum: pending, installing, connected, online, offline, error, warning, ADMIN_INSTALLED
                 adminId: currentAdmin?.id,
                 user: newCustomerUser
             };
 
             await addCustomer(payload);
-            toast.success('Device Provisioned Successfully');
+            toast.success('✅ Device Provisioned Successfully!');
             navigate('/customers');
         } catch (err) {
-            toast.error('Failed to add customer');
-            console.error(err);
+            // Show specific error message from backend
+            const errorMessage = err instanceof Error ? err.message : 'Failed to add customer';
+            toast.error(errorMessage);
+            console.error('Add customer error:', err);
         } finally {
             setLoading(false);
         }

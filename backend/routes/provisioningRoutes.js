@@ -9,7 +9,7 @@ router.get('/payload/:customerId', (req, res) => {
         const { customerId } = req.params;
 
         // 🔥 SINGLE APK RULE: The APK installed by QR is our combined Admin + User app.
-        const apkFileName = 'securefinance-admin.apk';
+        const apkFileName = 'app-admin-release.apk';
         const apkPath = path.join(__dirname, '../public', apkFileName);
 
         // Determine Base URL dynamically or from ENV
