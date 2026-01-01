@@ -43,19 +43,53 @@ const DeviceSchema = new mongoose.Schema({
     brand: { type: String },
     model: { type: String },
     osVersion: { type: String },
+    sdkLevel: { type: String },
+    serialNumber: { type: String },
+
+    // IMEI
     imei1: { type: String },
     imei2: { type: String },
     androidId: { type: String },
 
     // SIM Info
+    sim1: {
+        operator: { type: String },
+        iccid: { type: String },
+        phoneNumber: { type: String },
+        isActive: { type: Boolean, default: false }
+    },
+    sim2: {
+        operator: { type: String },
+        iccid: { type: String },
+        phoneNumber: { type: String },
+        isActive: { type: Boolean, default: false }
+    },
+    isDualSim: { type: Boolean, default: false },
+
+    // Legacy SIM fields (for backward compatibility)
     simOperator: { type: String },
     simIccid: { type: String },
+
+    // Network Info
+    networkType: { type: String },      // WiFi, 4G, 5G, etc.
+    networkOperator: { type: String },
+    isConnected: { type: Boolean, default: false },
+
+    // Battery Info
+    batteryLevel: { type: Number },
+    isCharging: { type: Boolean, default: false },
+
+    // Storage Info
+    totalStorage: { type: String },
+    availableStorage: { type: String },
 
     // Tracking
     lastSeenAt: { type: Date },
     lastLocation: {
         lat: { type: Number },
-        lng: { type: Number }
+        lng: { type: Number },
+        accuracy: { type: Number },
+        timestamp: { type: Date }
     },
 
     // QR Type used for enrollment
@@ -74,7 +108,7 @@ const DeviceSchema = new mongoose.Schema({
         state: { type: String },
         changedAt: { type: Date, default: Date.now },
         reason: { type: String },
-        changedBy: { type: String } // admin user who changed
+        changedBy: { type: String }
     }],
 
     // Removal Info
@@ -86,5 +120,7 @@ const DeviceSchema = new mongoose.Schema({
 // Index for faster queries
 DeviceSchema.index({ state: 1 });
 DeviceSchema.index({ platform: 1 });
+DeviceSchema.index({ imei1: 1 });
+DeviceSchema.index({ androidId: 1 });
 
 module.exports = mongoose.model('Device', DeviceSchema);

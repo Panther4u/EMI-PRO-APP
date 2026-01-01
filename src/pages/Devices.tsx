@@ -10,28 +10,21 @@ import {
     Unlock,
     Trash2,
     Search,
-    Filter,
     Plus,
     RefreshCw,
-    MapPin,
     Clock,
     User,
-    AlertTriangle,
     CheckCircle,
     XCircle,
-    MoreVertical
+    ChevronRight,
+    Battery,
+    Wifi
 } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { API_BASE_URL } from '@/config/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import DeviceDetailsModal from '@/components/DeviceDetailsModal';
 
 interface Device {
     _id: string;
@@ -42,6 +35,8 @@ interface Device {
     brand: string;
     model: string;
     osVersion: string;
+    batteryLevel?: number;
+    networkType?: string;
     lastSeenAt: string;
     customer?: {
         name: string;
@@ -63,7 +58,7 @@ interface DeviceStats {
     UNASSIGNED: number;
 }
 
-const stateConfig = {
+const stateConfig: Record<string, { label: string; color: string; icon: any; textColor: string }> = {
     ACTIVE: { label: 'Active', color: 'bg-green-500', icon: CheckCircle, textColor: 'text-green-500' },
     LOCKED: { label: 'Locked', color: 'bg-red-500', icon: Lock, textColor: 'text-red-500' },
     REMOVED: { label: 'Removed', color: 'bg-gray-500', icon: XCircle, textColor: 'text-gray-500' },
@@ -79,6 +74,10 @@ export default function DevicesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterState, setFilterState] = useState<string | null>(null);
 
+    // Modal state
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+
     useEffect(() => {
         fetchDevices();
         fetchStats();
@@ -91,7 +90,7 @@ export default function DevicesPage() {
 
             const res = await fetch(`${API_BASE_URL}/api/devices?${params}`);
             const data = await res.json();
-            setDevices(data);
+            setDevices(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Failed to fetch devices:', err);
             toast.error('Failed to load devices');
@@ -110,58 +109,26 @@ export default function DevicesPage() {
         }
     };
 
-    const handleLock = async (deviceId: string) => {
-        try {
-            await fetch(`${API_BASE_URL}/api/devices/${deviceId}/lock`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason: 'Locked by admin' })
-            });
-            toast.success('Device locked');
-            fetchDevices();
-            fetchStats();
-        } catch (err) {
-            toast.error('Failed to lock device');
-        }
+    const openDeviceDetails = (deviceId: string) => {
+        setSelectedDeviceId(deviceId);
+        setModalOpen(true);
     };
 
-    const handleUnlock = async (deviceId: string) => {
-        try {
-            await fetch(`${API_BASE_URL}/api/devices/${deviceId}/unlock`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason: 'Unlocked by admin' })
-            });
-            toast.success('Device unlocked');
-            fetchDevices();
-            fetchStats();
-        } catch (err) {
-            toast.error('Failed to unlock device');
-        }
+    const closeModal = () => {
+        setModalOpen(false);
+        setSelectedDeviceId(null);
     };
 
-    const handleRemove = async (deviceId: string) => {
-        if (!confirm('Remove this device? It will need a new QR to be used again.')) return;
-
-        try {
-            await fetch(`${API_BASE_URL}/api/devices/${deviceId}/remove`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason: 'Removed by admin' })
-            });
-            toast.success('Device removed');
-            fetchDevices();
-            fetchStats();
-        } catch (err) {
-            toast.error('Failed to remove device');
-        }
+    const handleRefresh = () => {
+        fetchDevices();
+        fetchStats();
     };
 
     const filteredDevices = devices.filter(device => {
         if (!searchQuery) return true;
         const search = searchQuery.toLowerCase();
         return (
-            device.deviceId.toLowerCase().includes(search) ||
+            device.deviceId?.toLowerCase().includes(search) ||
             device.brand?.toLowerCase().includes(search) ||
             device.model?.toLowerCase().includes(search) ||
             device.customer?.name?.toLowerCase().includes(search) ||
@@ -171,72 +138,75 @@ export default function DevicesPage() {
 
     const StatCard = ({ label, value, state }: { label: string; value: number; state: string | null }) => {
         const isActive = filterState === state;
-        const config = state ? stateConfig[state as keyof typeof stateConfig] : null;
+        const config = state ? stateConfig[state] : null;
 
         return (
             <button
                 onClick={() => setFilterState(isActive ? null : state)}
                 className={cn(
-                    "flex-1 p-4 rounded-xl border-2 transition-all text-left",
+                    "flex-1 p-3 rounded-xl border-2 transition-all text-center",
                     isActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
                     config?.textColor
                 )}
             >
-                <p className="text-2xl font-bold">{value}</p>
-                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="text-xl font-bold">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
             </button>
         );
     };
 
     const DeviceCard = ({ device }: { device: Device }) => {
         const config = stateConfig[device.state] || stateConfig.PENDING;
-        const Icon = config?.icon || Clock;
 
         return (
-            <Card className={cn(
-                "border-border/50 hover:border-primary/30 transition-all",
-                device.state === 'REMOVED' && "opacity-60"
-            )}>
+            <Card
+                className={cn(
+                    "border-border/50 hover:border-primary/30 transition-all cursor-pointer",
+                    device.state === 'REMOVED' && "opacity-60"
+                )}
+                onClick={() => openDeviceDetails(device.deviceId)}
+            >
                 <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                        {/* Customer Photo or Device Icon */}
+                    <div className="flex items-start gap-3">
+                        {/* Avatar/Icon */}
                         <div className={cn(
-                            "w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0",
+                            "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
                             device.customer?.photoUrl ? "" : "bg-secondary"
                         )}>
                             {device.customer?.photoUrl ? (
                                 <img
                                     src={device.customer.photoUrl}
                                     alt={device.customer.name}
-                                    className="w-full h-full object-cover rounded-xl"
+                                    className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <Smartphone className="w-6 h-6 text-muted-foreground" />
+                                <Smartphone className="w-5 h-5 text-muted-foreground" />
                             )}
                         </div>
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-semibold text-foreground truncate">
-                                    {device.customer?.name || device.model || 'Unknown Device'}
+                                <h4 className="font-semibold text-foreground truncate text-sm">
+                                    {device.customer?.name || device.model || device.brand || 'Unknown'}
                                 </h4>
-                                <Badge className={cn("text-xs", config.color, "text-white")}>
+                                <Badge className={cn("text-[10px]", config.color, "text-white")}>
                                     {config.label}
                                 </Badge>
                             </div>
 
-                            <p className="text-sm text-muted-foreground truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                                 {device.brand} {device.model}
                             </p>
 
                             {device.customer && (
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                     📱 {device.customer.phoneNo}
                                 </p>
                             )}
 
-                            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                            {/* Quick stats */}
+                            <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {device.lastSeenAt
@@ -244,53 +214,23 @@ export default function DevicesPage() {
                                         : 'Never'
                                     }
                                 </span>
-                                <span className={cn(
-                                    "px-2 py-0.5 rounded text-[10px] font-medium",
-                                    device.platform === 'ios' ? "bg-gray-100 text-gray-600" : "bg-green-100 text-green-600"
-                                )}>
-                                    {device.platform?.toUpperCase()}
-                                </span>
+                                {device.batteryLevel !== undefined && (
+                                    <span className="flex items-center gap-1">
+                                        <Battery className="w-3 h-3" />
+                                        {device.batteryLevel}%
+                                    </span>
+                                )}
+                                {device.networkType && (
+                                    <span className="flex items-center gap-1">
+                                        <Wifi className="w-3 h-3" />
+                                        {device.networkType}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        {/* Actions */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="flex-shrink-0">
-                                    <MoreVertical className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {device.state === 'ACTIVE' && (
-                                    <DropdownMenuItem onClick={() => handleLock(device.deviceId)}>
-                                        <Lock className="w-4 h-4 mr-2 text-red-500" />
-                                        Lock Device
-                                    </DropdownMenuItem>
-                                )}
-                                {device.state === 'LOCKED' && (
-                                    <DropdownMenuItem onClick={() => handleUnlock(device.deviceId)}>
-                                        <Unlock className="w-4 h-4 mr-2 text-green-500" />
-                                        Unlock Device
-                                    </DropdownMenuItem>
-                                )}
-                                {device.customer && (
-                                    <DropdownMenuItem onClick={() => navigate(`/customers/${device.assignedCustomerId}`)}>
-                                        <User className="w-4 h-4 mr-2" />
-                                        View Customer
-                                    </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                {device.state !== 'REMOVED' && (
-                                    <DropdownMenuItem
-                                        onClick={() => handleRemove(device.deviceId)}
-                                        className="text-red-500"
-                                    >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Remove Device
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {/* Arrow */}
+                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                     </div>
                 </CardContent>
             </Card>
@@ -298,31 +238,30 @@ export default function DevicesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen bg-background p-4">
+            <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div className="flex items-center justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Devices</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Manage all enrolled devices
+                        <h1 className="text-xl font-bold text-foreground">Devices</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Click any device to view details
                         </p>
                     </div>
-                    <div className="flex gap-3">
-                        <Button variant="outline" onClick={() => { fetchDevices(); fetchStats(); }}>
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Refresh
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={handleRefresh}>
+                            <RefreshCw className="w-4 h-4" />
                         </Button>
-                        <Button onClick={() => navigate('/add-customer')}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Customer
+                        <Button size="sm" onClick={() => navigate('/add-customer')}>
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add
                         </Button>
                     </div>
                 </div>
 
                 {/* Stats */}
                 {stats && (
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
                         <StatCard label="Total" value={stats.total} state={null} />
                         <StatCard label="Active" value={stats.ACTIVE} state="ACTIVE" />
                         <StatCard label="Locked" value={stats.LOCKED} state="LOCKED" />
@@ -332,12 +271,12 @@ export default function DevicesPage() {
                     </div>
                 )}
 
-                {/* Search & Filter */}
-                <div className="flex gap-3 mb-6">
+                {/* Search */}
+                <div className="flex gap-2 mb-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search by name, phone, model..."
+                            placeholder="Search devices..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-10"
@@ -346,20 +285,20 @@ export default function DevicesPage() {
                     {filterState && (
                         <Button
                             variant="ghost"
+                            size="sm"
                             onClick={() => setFilterState(null)}
-                            className="text-muted-foreground"
                         >
-                            Clear Filter
+                            Clear
                         </Button>
                     )}
                 </div>
 
-                {/* Device Grid */}
+                {/* Device List */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4].map(i => (
                             <Card key={i} className="animate-pulse">
-                                <CardContent className="p-4 h-32" />
+                                <CardContent className="p-4 h-24" />
                             </Card>
                         ))}
                     </div>
@@ -369,9 +308,9 @@ export default function DevicesPage() {
                         <h3 className="text-lg font-semibold text-foreground mb-2">No devices found</h3>
                         <p className="text-sm text-muted-foreground mb-4">
                             {filterState
-                                ? `No devices with "${filterState}" status`
+                                ? `No "${filterState}" devices`
                                 : searchQuery
-                                    ? 'No devices match your search'
+                                    ? 'No matches'
                                     : 'Add a customer to get started'
                             }
                         </p>
@@ -381,13 +320,21 @@ export default function DevicesPage() {
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-3">
                         {filteredDevices.map(device => (
                             <DeviceCard key={device._id} device={device} />
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Device Details Modal */}
+            <DeviceDetailsModal
+                deviceId={selectedDeviceId}
+                isOpen={modalOpen}
+                onClose={closeModal}
+                onRefresh={handleRefresh}
+            />
         </div>
     );
 }

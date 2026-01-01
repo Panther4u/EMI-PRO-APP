@@ -96,8 +96,13 @@ router.get('/:id', async (req, res) => {
 router.post('/register', async (req, res) => {
     try {
         const {
-            deviceId, platform, brand, model, osVersion,
-            imei1, imei2, androidId, simOperator, simIccid,
+            deviceId, platform, brand, model, osVersion, sdkLevel, serialNumber,
+            imei1, imei2, androidId,
+            sim1, sim2, isDualSim, simOperator, simIccid,
+            networkType, networkOperator, isConnected,
+            batteryLevel, isCharging,
+            totalStorage, availableStorage,
+            location,
             enrollmentToken, customerId
         } = req.body;
 
@@ -109,15 +114,46 @@ router.post('/register', async (req, res) => {
         let device = await Device.findOne({ deviceId });
 
         if (device) {
-            // Update existing device
+            // Update existing device with all new data
             device.brand = brand || device.brand;
             device.model = model || device.model;
             device.osVersion = osVersion || device.osVersion;
+            device.sdkLevel = sdkLevel || device.sdkLevel;
+            device.serialNumber = serialNumber || device.serialNumber;
             device.imei1 = imei1 || device.imei1;
             device.imei2 = imei2 || device.imei2;
             device.androidId = androidId || device.androidId;
+
+            // SIM info
+            if (sim1) device.sim1 = sim1;
+            if (sim2) device.sim2 = sim2;
+            device.isDualSim = isDualSim ?? device.isDualSim;
             device.simOperator = simOperator || device.simOperator;
             device.simIccid = simIccid || device.simIccid;
+
+            // Network
+            device.networkType = networkType || device.networkType;
+            device.networkOperator = networkOperator || device.networkOperator;
+            device.isConnected = isConnected ?? true;
+
+            // Battery
+            if (batteryLevel !== undefined) device.batteryLevel = batteryLevel;
+            if (isCharging !== undefined) device.isCharging = isCharging;
+
+            // Storage
+            device.totalStorage = totalStorage || device.totalStorage;
+            device.availableStorage = availableStorage || device.availableStorage;
+
+            // Location
+            if (location) {
+                device.lastLocation = {
+                    lat: location.lat,
+                    lng: location.lng,
+                    accuracy: location.accuracy,
+                    timestamp: new Date()
+                };
+            }
+
             device.lastSeenAt = new Date();
 
             // If device was PENDING and now reporting, mark as ACTIVE
@@ -133,18 +169,36 @@ router.post('/register', async (req, res) => {
             await device.save();
             console.log(`📱 Device updated: ${deviceId}`);
         } else {
-            // Create new device
+            // Create new device with all data
             device = new Device({
                 deviceId,
                 platform: platform || 'android',
                 brand,
                 model,
                 osVersion,
+                sdkLevel,
+                serialNumber,
                 imei1,
                 imei2,
                 androidId,
+                sim1,
+                sim2,
+                isDualSim,
                 simOperator,
                 simIccid,
+                networkType,
+                networkOperator,
+                isConnected: isConnected ?? true,
+                batteryLevel,
+                isCharging,
+                totalStorage,
+                availableStorage,
+                lastLocation: location ? {
+                    lat: location.lat,
+                    lng: location.lng,
+                    accuracy: location.accuracy,
+                    timestamp: new Date()
+                } : undefined,
                 state: customerId ? 'ACTIVE' : 'UNASSIGNED',
                 assignedCustomerId: customerId || null,
                 lastSeenAt: new Date(),
@@ -170,7 +224,11 @@ router.post('/register', async (req, res) => {
                         'deviceStatus.technical.brand': brand,
                         'deviceStatus.technical.model': model,
                         'deviceStatus.technical.osVersion': osVersion,
-                        'deviceStatus.technical.androidId': androidId
+                        'deviceStatus.technical.androidId': androidId,
+                        'deviceStatus.technical.imei1': imei1,
+                        'deviceStatus.technical.imei2': imei2,
+                        'deviceStatus.technical.batteryLevel': batteryLevel,
+                        'deviceStatus.technical.networkType': networkType
                     }
                 }
             );
