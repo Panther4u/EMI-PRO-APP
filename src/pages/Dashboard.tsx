@@ -157,6 +157,13 @@ const Dashboard = () => {
 
   // Filter state
   const [filter, setFilter] = useState<'all' | 'active' | 'locked' | 'removed'>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshCustomers();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   // Calculate counts - Use explicit string check to valid TypeScript enum complaints if needed, or simply loose check
   // Using explicit casts or string conversions to handle potential type mismatches safely
@@ -225,8 +232,8 @@ const Dashboard = () => {
           <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
           <p className="text-xs text-muted-foreground">Manage your devices</p>
         </div>
-        <Button variant="outline" size="sm" onClick={refreshCustomers} className="h-8 text-xs">
-          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+        <Button variant="outline" size="sm" onClick={handleRefresh} className="h-8 text-xs">
+          <RefreshCw className={cn("w-3.5 h-3.5 mr-1.5", isRefreshing && "animate-spin")} />
           Refresh
         </Button>
       </div>

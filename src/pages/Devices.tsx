@@ -77,6 +77,7 @@ export default function DevicesPage() {
     // Modal state
     const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         fetchDevices();
@@ -119,9 +120,10 @@ export default function DevicesPage() {
         setSelectedDeviceId(null);
     };
 
-    const handleRefresh = () => {
-        fetchDevices();
-        fetchStats();
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await Promise.all([fetchDevices(), fetchStats()]);
+        setTimeout(() => setIsRefreshing(false), 500);
     };
 
     const handleCleanup = async () => {
@@ -303,7 +305,7 @@ export default function DevicesPage() {
                     <div className="flex gap-2">
 
                         <Button variant="outline" size="sm" onClick={handleRefresh}>
-                            <RefreshCw className="w-4 h-4" />
+                            <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
                         </Button>
                         <Button size="sm" onClick={() => navigate('/add-customer')}>
                             <Plus className="w-4 h-4 mr-1" />
