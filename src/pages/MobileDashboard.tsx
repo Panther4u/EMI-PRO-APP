@@ -50,7 +50,7 @@ export default function MobileDashboard() {
     return (
         <div className="h-full bg-gray-50 flex flex-col">
             {/* Header matches App.tsx */}
-            <header className="py-3 border-b border-border/50 flex items-center px-4 bg-white/80 backdrop-blur-md z-30 flex-shrink-0">
+            <header className="h-14 border-b border-border/50 flex items-center px-4 bg-white/80 backdrop-blur-md z-30 flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" className="p-2 -ml-2 hover:bg-secondary rounded-xl transition-all duration-200">
                         <Menu className="w-5 h-5 text-foreground" />
@@ -65,7 +65,7 @@ export default function MobileDashboard() {
             </header>
 
             {/* Content */}
-            <div className="p-2 pb-20">
+            <div className="p-4 pb-20">
                 {/* Title */}
                 <div className="flex items-center justify-between mb-6">
                     <div>

@@ -92,14 +92,6 @@
     @apply border-border;
   }
 
-  html,
-  body,
-  #root {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
   html {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -107,12 +99,6 @@
 
   html::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Global utility for consistent padding */
-  .page-container {
-    padding: 0.5rem !important;
-    /* p-2 equivalent */
   }
 
   body {

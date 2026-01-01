@@ -56,7 +56,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
             <main className="flex-1 flex flex-col overflow-hidden relative w-full">
                 {/* Mobile Header */}
-                <header className="py-3 border-b border-border/50 flex items-center px-4 bg-card/50 backdrop-blur-md z-30 flex-shrink-0">
+                <header className="h-14 border-b border-border/50 flex items-center px-4 bg-card/50 backdrop-blur-md z-30 flex-shrink-0">
                     <button
                         onClick={() => setSidebarOpen(true)}
                         className="p-2 -ml-2 hover:bg-secondary rounded-xl transition-all duration-200 active:scale-95"
@@ -71,7 +71,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </Link>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-2 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
+                <div className="flex-1 overflow-y-auto p-4 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
                     {children}
 
                     {/* Lock Overlay */}
