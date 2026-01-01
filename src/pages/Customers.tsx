@@ -187,7 +187,7 @@ const Customers = () => {
               <p className="text-xs text-muted-foreground">Devices reported but not matched.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
               {unclaimedDevices.map((device: any) => (
                 <div key={device._id} className="glass-card p-3 border-l-4 border-l-orange-500">
                   <div className="flex justify-between items-start mb-2">
