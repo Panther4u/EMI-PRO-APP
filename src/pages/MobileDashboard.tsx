@@ -48,7 +48,7 @@ export default function MobileDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen h-full bg-gray-50">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-10">
                 <div className="flex items-center justify-between p-4">
