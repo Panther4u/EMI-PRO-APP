@@ -1,295 +1,513 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const Device = require("../models/Device");
-const Customer = require("../models/Customer");
+const Device = require('../models/Device');
+const Customer = require('../models/Customer');
+const crypto = require('crypto');
 
-// Legacy endpoint - kept for backward compatibility
-// Auto-Claim Register Endpoint (Step 2)
-// Matches device to customer using IMEI
-// IMEI-based Device Registration Endpoint (Admin DPC)
-// Matches device to customer using IMEI provided by Admin APK
-// Device Registration Endpoint (Admin DPC)
-// Upserts device info based on androidId
-router.post("/register", async (req, res) => {
+/**
+ * Device Management Routes
+ * Handles device lifecycle: create, assign, remove, track
+ */
+
+// Get all devices with optional filters
+router.get('/', async (req, res) => {
     try {
-        console.log("🔥 DEVICE REGISTER HIT 🔥", req.body);
-        const { androidId, brand, model, androidVersion, deviceId, imei } = req.body;
+        const { state, platform, customerId } = req.query;
+        const filter = {};
 
-        // Primary identifier: deviceId (IMEI or Android ID)
-        const primaryId = deviceId || imei || androidId;
+        if (state) filter.state = state;
+        if (platform) filter.platform = platform;
+        if (customerId) filter.assignedCustomerId = customerId;
 
-        if (!primaryId) {
-            return res.status(400).json({ error: "Device ID (IMEI/Android ID) missing" });
-        }
+        const devices = await Device.find(filter)
+            .sort({ updatedAt: -1 })
+            .lean();
 
-        console.log(`📱 Device registration - ID: ${primaryId}, Brand: ${brand}, Model: ${model}`);
-
-        // 🎯 IMEI-BASED AUTO-MATCHING
-        // Try to find customer by IMEI if customerId not provided
-        let matchedCustomerId = req.body.customerId;
-
-        if (!matchedCustomerId || matchedCustomerId === "IMEI_BASED" || matchedCustomerId === "UNCLAIMED") {
-            console.log(`🔍 No customerId provided - attempting IMEI-based matching...`);
-
-            const matchedCustomer = await Customer.findOne({
-                $or: [
-                    { imei1: primaryId },
-                    { imei2: primaryId },
-                    { "deviceStatus.technical.androidId": primaryId }
-                ]
-            });
-
-            if (matchedCustomer) {
-                matchedCustomerId = matchedCustomer.id;
-                console.log(`✅ IMEI MATCH FOUND! Linked to customer: ${matchedCustomerId} (${matchedCustomer.name})`);
-            } else {
-                console.log(`⚠️ No customer found with IMEI ${primaryId} - creating unclaimed device`);
-                matchedCustomerId = "UNCLAIMED";
+        // Enrich with customer info
+        const enrichedDevices = await Promise.all(devices.map(async (device) => {
+            if (device.assignedCustomerId) {
+                const customer = await Customer.findOne({ id: device.assignedCustomerId })
+                    .select('name phoneNo photoUrl isLocked')
+                    .lean();
+                return { ...device, customer };
             }
-        }
+            return device;
+        }));
 
-        // Upsert Device record
-        const device = await Device.findOneAndUpdate(
-            { androidId: primaryId },
-            {
-                androidId: primaryId,
-                imei: primaryId,
-                actualBrand: brand,
-                model,
-                androidVersion: parseInt(androidVersion) || 0,
-                status: matchedCustomerId === "UNCLAIMED" ? "UNCLAIMED" : "ADMIN_INSTALLED",
-                enrolledAt: new Date(),
-                lastSeen: new Date(),
-                customerId: matchedCustomerId
-            },
-            { upsert: true, new: true }
-        );
-
-        // 🔥 AUTO-LINK: If we found a matching customer, update their record
-        if (matchedCustomerId && matchedCustomerId !== "UNCLAIMED") {
-            console.log(`🔗 Auto-linking device ${primaryId} to customer ${matchedCustomerId}`);
-
-            const customerUpdate = {
-                "deviceStatus.status": "ADMIN_INSTALLED",
-                "deviceStatus.lastSeen": new Date(),
-                "deviceStatus.technical.brand": brand,
-                "deviceStatus.technical.model": model,
-                "deviceStatus.technical.osVersion": androidVersion,
-                "deviceStatus.technical.androidId": primaryId,
-                "deviceStatus.steps.qrScanned": true,
-                "deviceStatus.steps.appInstalled": true,
-                "deviceStatus.steps.detailsFetched": true,
-                isEnrolled: true
-            };
-
-            // Capture location if provided
-            if (req.body.location) {
-                customerUpdate["location.lat"] = req.body.location.lat;
-                customerUpdate["location.lng"] = req.body.location.lng;
-                customerUpdate["location.lastUpdated"] = new Date().toISOString();
-            }
-
-            await Customer.findOneAndUpdate(
-                { id: matchedCustomerId },
-                { $set: customerUpdate }
-            );
-
-            console.log(`✅ Customer ${matchedCustomerId} updated with device info`);
-        }
-
-        console.log("✅ Device registered/updated:", device.androidId);
-        res.json({
-            success: true,
-            device,
-            matched: matchedCustomerId !== "UNCLAIMED",
-            customerId: matchedCustomerId
-        });
-
-    } catch (e) {
-        console.error("Device registration error:", e);
-        res.status(500).json({ error: e.message });
+        res.json(enrichedDevices);
+    } catch (err) {
+        console.error('Error fetching devices:', err);
+        res.status(500).json({ message: err.message });
     }
 });
 
+// Get device stats
+router.get('/stats', async (req, res) => {
+    try {
+        const stats = await Device.aggregate([
+            {
+                $group: {
+                    _id: '$state',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
 
-// 🔥 NEW: Admin DPC enrollment endpoint
-// This is called IMMEDIATELY after QR provisioning completes
-// This is the ONLY source of truth for device details
-router.post("/enrolled", async (req, res) => {
+        const result = {
+            total: 0,
+            PENDING: 0,
+            ACTIVE: 0,
+            LOCKED: 0,
+            REMOVED: 0,
+            UNASSIGNED: 0
+        };
+
+        stats.forEach(s => {
+            result[s._id] = s.count;
+            result.total += s.count;
+        });
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get single device
+router.get('/:id', async (req, res) => {
+    try {
+        const device = await Device.findOne({ deviceId: req.params.id }).lean();
+        if (!device) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
+        // Get customer if assigned
+        if (device.assignedCustomerId) {
+            device.customer = await Customer.findOne({ id: device.assignedCustomerId }).lean();
+        }
+
+        res.json(device);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Register/Update device (called by mobile app)
+router.post('/register', async (req, res) => {
     try {
         const {
-            customerId,
-            brand,
-            model,
-            manufacturer,
-            androidVersion,
-            sdkInt,
-            androidId,
-            serial,
-            imei,
-            imei2,
-            meid,
-            enrolledAt,
-            status
+            deviceId, platform, brand, model, osVersion,
+            imei1, imei2, androidId, simOperator, simIccid,
+            enrollmentToken, customerId
         } = req.body;
 
-        console.log(`🚀 Device enrollment from Admin DPC: ${customerId}`);
-        console.log(`   Device: ${brand} ${model} (Android ${androidVersion})`);
-        console.log(`   IMEI: ${imei}`);
+        if (!deviceId) {
+            return res.status(400).json({ message: 'deviceId is required' });
+        }
 
-        // Update customer record with device details
-        const customer = await Customer.findOneAndUpdate(
-            { id: customerId },
-            {
-                $set: {
-                    // Update device status to ENROLLED
-                    "deviceStatus.status": "ADMIN_INSTALLED",
-                    "deviceStatus.lastSeen": new Date(),
-                    "deviceStatus.lastStatusUpdate": new Date(),
+        // Find existing or create new
+        let device = await Device.findOne({ deviceId });
 
-                    // Store technical details from Admin DPC
-                    "deviceStatus.technical.brand": brand,
-                    "deviceStatus.technical.model": model,
-                    "deviceStatus.technical.osVersion": androidVersion,
-                    "deviceStatus.technical.androidId": androidId,
+        if (device) {
+            // Update existing device
+            device.brand = brand || device.brand;
+            device.model = model || device.model;
+            device.osVersion = osVersion || device.osVersion;
+            device.imei1 = imei1 || device.imei1;
+            device.imei2 = imei2 || device.imei2;
+            device.androidId = androidId || device.androidId;
+            device.simOperator = simOperator || device.simOperator;
+            device.simIccid = simIccid || device.simIccid;
+            device.lastSeenAt = new Date();
 
-                    // Update onboarding steps
-                    "deviceStatus.steps.qrScanned": true,
-                    "deviceStatus.steps.appInstalled": true,
-                    "deviceStatus.steps.detailsFetched": true,
+            // If device was PENDING and now reporting, mark as ACTIVE
+            if (device.state === 'PENDING') {
+                device.state = 'ACTIVE';
+                device.stateHistory.push({
+                    state: 'ACTIVE',
+                    reason: 'Device enrolled successfully',
+                    changedAt: new Date()
+                });
+            }
 
-                    // Update IMEI if provided (verify against expected)
-                    ...(imei && { imei1: imei }),
+            await device.save();
+            console.log(`📱 Device updated: ${deviceId}`);
+        } else {
+            // Create new device
+            device = new Device({
+                deviceId,
+                platform: platform || 'android',
+                brand,
+                model,
+                osVersion,
+                imei1,
+                imei2,
+                androidId,
+                simOperator,
+                simIccid,
+                state: customerId ? 'ACTIVE' : 'UNASSIGNED',
+                assignedCustomerId: customerId || null,
+                lastSeenAt: new Date(),
+                stateHistory: [{
+                    state: customerId ? 'ACTIVE' : 'UNASSIGNED',
+                    reason: 'Device registered',
+                    changedAt: new Date()
+                }]
+            });
 
-                    // Mark as enrolled
-                    isEnrolled: true
+            await device.save();
+            console.log(`📱 New device registered: ${deviceId}`);
+        }
+
+        // Also update customer if provided
+        if (customerId) {
+            await Customer.findOneAndUpdate(
+                { id: customerId },
+                {
+                    $set: {
+                        'deviceStatus.status': 'connected',
+                        'deviceStatus.lastSeen': new Date(),
+                        'deviceStatus.technical.brand': brand,
+                        'deviceStatus.technical.model': model,
+                        'deviceStatus.technical.osVersion': osVersion,
+                        'deviceStatus.technical.androidId': androidId
+                    }
                 }
-            },
-            { new: true, upsert: false }
-        );
+            );
+        }
 
-        if (!customer) {
-            console.error(`❌ Customer not found: ${customerId}`);
-            return res.status(404).json({
-                success: false,
-                error: "Customer not found. Create customer record first."
+        res.json({ success: true, device });
+    } catch (err) {
+        console.error('Device registration error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Assign device to customer
+router.post('/:id/assign', async (req, res) => {
+    try {
+        const { customerId } = req.body;
+
+        if (!customerId) {
+            return res.status(400).json({ message: 'customerId is required' });
+        }
+
+        const device = await Device.findOne({ deviceId: req.params.id });
+        if (!device) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
+        // Check if device can be assigned
+        if (device.state === 'REMOVED') {
+            return res.status(400).json({
+                message: 'Cannot assign removed device. Generate new QR.'
             });
         }
 
-        // Also create/update Device record for backward compatibility
-        await Device.findOneAndUpdate(
-            { customerId: customerId },
-            {
-                customerId,
-                actualBrand: brand,
-                model,
-                androidVersion: parseInt(androidVersion) || 0,
-                imei,
-                serial,
-                androidId,
-                status: "ENROLLED",
-                enrolledAt: enrolledAt ? new Date(enrolledAt) : new Date(),
-                lastSeen: new Date()
-            },
-            { upsert: true, new: true }
-        );
+        // Update device
+        device.assignedCustomerId = customerId;
+        device.state = 'ACTIVE';
+        device.stateHistory.push({
+            state: 'ACTIVE',
+            reason: `Assigned to customer ${customerId}`,
+            changedAt: new Date()
+        });
 
-        console.log(`✅ Device enrolled successfully: ${customerId}`);
-        console.log(`   Dashboard will now show device details immediately`);
+        await device.save();
+
+        console.log(`📱 Device ${req.params.id} assigned to customer ${customerId}`);
+
+        res.json({ success: true, device });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Remove device from customer (soft delete)
+router.post('/:id/remove', async (req, res) => {
+    try {
+        const { reason, adminId } = req.body;
+
+        const device = await Device.findOne({ deviceId: req.params.id });
+        if (!device) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
+        const oldCustomerId = device.assignedCustomerId;
+
+        // Update device state
+        device.state = 'REMOVED';
+        device.assignedCustomerId = null;
+        device.removedAt = new Date();
+        device.removalReason = reason || 'Removed by admin';
+        device.stateHistory.push({
+            state: 'REMOVED',
+            reason: reason || 'Removed by admin',
+            changedBy: adminId,
+            changedAt: new Date()
+        });
+
+        await device.save();
+
+        // Update customer if was assigned
+        if (oldCustomerId) {
+            await Customer.findOneAndUpdate(
+                { id: oldCustomerId },
+                {
+                    $set: {
+                        'deviceStatus.status': 'offline',
+                        'deviceStatus.errorMessage': 'Device removed'
+                    }
+                }
+            );
+        }
+
+        console.log(`📱 Device ${req.params.id} removed`);
 
         res.json({
             success: true,
-            message: "Device enrolled successfully",
-            customer: {
-                id: customer.id,
-                name: customer.name,
-                deviceStatus: customer.deviceStatus
-            }
+            message: 'Device removed successfully',
+            device
         });
-
-    } catch (e) {
-        console.error("❌ Device enrollment error:", e);
-        res.status(500).json({
-            success: false,
-            error: e.message
-        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 
-// 🔥 FETCH UNCLAIMED DEVICES
-// Returns all devices that haven't been linked to a real customer account
-router.get("/unclaimed", async (req, res) => {
+// Lock device
+router.post('/:id/lock', async (req, res) => {
     try {
-        const devices = await Device.find({
-            $or: [
-                { status: "UNCLAIMED" },
-                { status: "ADMIN_INSTALLED", customerId: { $in: ["UNCLAIMED", "UNKNOWN_ORPHAN"] } }
-            ]
-        }).sort({ lastSeen: -1 });
-        res.json(devices);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+        const { reason, adminId } = req.body;
 
-
-// 🔥 CLAIM DEVICE
-// Links an unclaimed device to a specific customer
-router.post("/claim", async (req, res) => {
-    try {
-        const { deviceId, customerId } = req.body;
-
-        if (!deviceId || !customerId) {
-            return res.status(400).json({ error: "deviceId and customerId required" });
-        }
-
-        const device = await Device.findById(deviceId);
+        const device = await Device.findOne({ deviceId: req.params.id });
         if (!device) {
-            return res.status(404).json({ error: "Device not found" });
+            return res.status(404).json({ message: 'Device not found' });
         }
 
-        const customer = await Customer.findOne({ id: customerId });
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
-        }
+        device.state = 'LOCKED';
+        device.stateHistory.push({
+            state: 'LOCKED',
+            reason: reason || 'EMI overdue',
+            changedBy: adminId,
+            changedAt: new Date()
+        });
 
-        // 1. Update Customer with Device Details
-        // We use the device's reported ID (IMEI or Android ID) as the source of truth
-        const reportedId = device.imei || device.androidId;
-
-        // Ensure we don't accidentally overwrite strict IMEI if the device reported Android ID
-        // But for claiming, we generally trust the device's report.
-        if (device.imei) {
-            customer.imei1 = device.imei;
-        }
-
-        customer.deviceStatus.status = "ADMIN_INSTALLED";
-        customer.deviceStatus.technical = {
-            brand: device.actualBrand,
-            model: device.model,
-            osVersion: device.androidVersion,
-            androidId: device.androidId,
-            serial: device.serial
-        };
-        customer.deviceStatus.lastSeen = new Date();
-        customer.isEnrolled = true;
-        customer.deviceStatus.steps.imeiVerified = true; // Manually verified by admin
-
-        await customer.save();
-
-        // 2. Update Device Record to be CLAIMED
-        device.status = "ENROLLED";
-        device.customerId = customerId;
-        device.enrolledAt = new Date();
         await device.save();
 
-        res.json({ success: true, message: "Device successfully claimed and linked to customer" });
+        // Also update customer
+        if (device.assignedCustomerId) {
+            await Customer.findOneAndUpdate(
+                { id: device.assignedCustomerId },
+                {
+                    $set: { isLocked: true },
+                    $push: {
+                        lockHistory: {
+                            id: Date.now().toString(),
+                            action: 'locked',
+                            reason: reason || 'EMI overdue',
+                            timestamp: new Date().toISOString()
+                        }
+                    }
+                }
+            );
+        }
 
-    } catch (e) {
-        console.error("Claim error:", e);
-        res.status(500).json({ error: e.message });
+        res.json({ success: true, device });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Unlock device
+router.post('/:id/unlock', async (req, res) => {
+    try {
+        const { reason, adminId } = req.body;
+
+        const device = await Device.findOne({ deviceId: req.params.id });
+        if (!device) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
+        device.state = 'ACTIVE';
+        device.stateHistory.push({
+            state: 'ACTIVE',
+            reason: reason || 'Unlocked by admin',
+            changedBy: adminId,
+            changedAt: new Date()
+        });
+
+        await device.save();
+
+        // Also update customer
+        if (device.assignedCustomerId) {
+            await Customer.findOneAndUpdate(
+                { id: device.assignedCustomerId },
+                {
+                    $set: { isLocked: false },
+                    $push: {
+                        lockHistory: {
+                            id: Date.now().toString(),
+                            action: 'unlocked',
+                            reason: reason || 'Unlocked by admin',
+                            timestamp: new Date().toISOString()
+                        }
+                    }
+                }
+            );
+        }
+
+        res.json({ success: true, device });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Generate enrollment QR
+router.post('/generate-qr', async (req, res) => {
+    try {
+        const { customerId, enrollmentType, platform } = req.body;
+
+        // Validate enrollment type
+        const validTypes = ['ANDROID_NEW', 'ANDROID_EXISTING', 'IOS'];
+        if (!validTypes.includes(enrollmentType)) {
+            return res.status(400).json({
+                message: 'Invalid enrollmentType. Must be ANDROID_NEW, ANDROID_EXISTING, or IOS'
+            });
+        }
+
+        // Generate unique token
+        const enrollmentToken = crypto.randomBytes(16).toString('hex');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        // Create pending device entry
+        const tempDeviceId = `PENDING_${enrollmentToken.substring(0, 8)}`;
+
+        const device = new Device({
+            deviceId: tempDeviceId,
+            platform: platform || (enrollmentType === 'IOS' ? 'ios' : 'android'),
+            state: 'PENDING',
+            assignedCustomerId: customerId || null,
+            enrollmentType,
+            enrollmentToken,
+            enrollmentTokenExpiresAt: expiresAt,
+            stateHistory: [{
+                state: 'PENDING',
+                reason: 'QR generated for enrollment',
+                changedAt: new Date()
+            }]
+        });
+
+        await device.save();
+
+        // Build QR payload based on type
+        const serverUrl = process.env.SERVER_URL || 'https://emi-pro-app.onrender.com';
+        let qrPayload = {};
+
+        switch (enrollmentType) {
+            case 'ANDROID_NEW':
+                // Full Device Owner provisioning QR
+                qrPayload = {
+                    "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
+                        "com.securefinance.emilock/.DeviceAdminReceiver",
+                    "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
+                        `${serverUrl}/downloads/securefinance-admin.apk`,
+                    "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
+                        "customerId": customerId || "",
+                        "serverUrl": serverUrl,
+                        "enrollmentToken": enrollmentToken
+                    }
+                };
+                break;
+
+            case 'ANDROID_EXISTING':
+                // Simple enrollment QR (app already installed or manual install)
+                qrPayload = {
+                    "type": "ANDROID_EXISTING",
+                    "customerId": customerId || "",
+                    "serverUrl": serverUrl,
+                    "enrollmentToken": enrollmentToken,
+                    "apkUrl": `${serverUrl}/downloads/securefinance-admin.apk`
+                };
+                break;
+
+            case 'IOS':
+                // iOS enrollment QR
+                qrPayload = {
+                    "type": "IOS",
+                    "customerId": customerId || "",
+                    "serverUrl": serverUrl,
+                    "enrollmentToken": enrollmentToken,
+                    "appStoreUrl": "https://apps.apple.com/app/your-app-id" // Placeholder
+                };
+                break;
+        }
+
+        console.log(`📱 QR generated for ${enrollmentType}: ${tempDeviceId}`);
+
+        res.json({
+            success: true,
+            deviceId: tempDeviceId,
+            enrollmentToken,
+            enrollmentType,
+            expiresAt,
+            qrPayload,
+            qrString: JSON.stringify(qrPayload)
+        });
+
+    } catch (err) {
+        console.error('QR generation error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Validate enrollment token (called by mobile app)
+router.post('/validate-token', async (req, res) => {
+    try {
+        const { enrollmentToken, actualDeviceId } = req.body;
+
+        const device = await Device.findOne({
+            enrollmentToken,
+            state: 'PENDING'
+        });
+
+        if (!device) {
+            return res.status(404).json({
+                valid: false,
+                message: 'Invalid or expired enrollment token'
+            });
+        }
+
+        if (device.enrollmentTokenExpiresAt < new Date()) {
+            return res.status(400).json({
+                valid: false,
+                message: 'Enrollment token expired'
+            });
+        }
+
+        // Update device with actual device ID
+        if (actualDeviceId && device.deviceId.startsWith('PENDING_')) {
+            device.deviceId = actualDeviceId;
+        }
+
+        device.state = 'ACTIVE';
+        device.enrollmentToken = null; // Clear token after use
+        device.stateHistory.push({
+            state: 'ACTIVE',
+            reason: 'Token validated and device enrolled',
+            changedAt: new Date()
+        });
+
+        await device.save();
+
+        res.json({
+            valid: true,
+            customerId: device.assignedCustomerId,
+            device
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 
 module.exports = router;
-

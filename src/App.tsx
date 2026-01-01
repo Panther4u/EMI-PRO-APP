@@ -19,6 +19,8 @@ import MobileSimulator from "./pages/MobileSimulator";
 import AndroidSetup from "./pages/AndroidSetup";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import AddCustomer from "./pages/AddCustomer";
+import DevicesPage from "./pages/Devices";
 import { MobileFrame } from "./components/MobileFrame";
 
 const queryClient = new QueryClient();
@@ -109,6 +111,8 @@ const AppRoutes = () => {
                 <Route path="/customers" element={<ProtectedRoute><AdminLayout><Customers /></AdminLayout></ProtectedRoute>} />
                 <Route path="/customers/:id" element={<ProtectedRoute><AdminLayout><CustomerDetails /></AdminLayout></ProtectedRoute>} />
                 <Route path="/customers/:id/edit" element={<ProtectedRoute><AdminLayout><EditCustomer /></AdminLayout></ProtectedRoute>} />
+                <Route path="/add-customer" element={<ProtectedRoute><AdminLayout><AddCustomer /></AdminLayout></ProtectedRoute>} />
+                <Route path="/devices" element={<ProtectedRoute><AdminLayout><DevicesPage /></AdminLayout></ProtectedRoute>} />
                 <Route path="/generate-qr" element={<ProtectedRoute><AdminLayout><GenerateQR /></AdminLayout></ProtectedRoute>} />
                 <Route path="/lock-control" element={<ProtectedRoute><AdminLayout><LockControl /></AdminLayout></ProtectedRoute>} />
                 <Route path="/location" element={<ProtectedRoute><AdminLayout><LocationTrack /></AdminLayout></ProtectedRoute>} />
