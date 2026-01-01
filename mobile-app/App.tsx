@@ -18,7 +18,7 @@ const { DeviceLockModule } = NativeModules;
 export default function App() {
     const [loading, setLoading] = useState(true);
     const [isEnrolled, setIsEnrolled] = useState(false);
-    const [isLocked, setIsLocked] = useState(true); // Default to LOCKED
+    const [isLocked, setIsLocked] = useState(false); // Default to UNLOCKED to prevent startup lock issues
     const [isAdmin, setIsAdmin] = useState(false);
 
     // Handle app state changes (foreground/background)
@@ -34,7 +34,10 @@ export default function App() {
     }, []);
 
     // Check lock status from native module
+    // Check lock status from native module
     const checkLockStatus = useCallback(async () => {
+        if (isAdmin) return; // Skip if admin
+
         if (DeviceLockModule && DeviceLockModule.isDeviceLocked) {
             try {
                 const locked = await DeviceLockModule.isDeviceLocked();
@@ -57,7 +60,7 @@ export default function App() {
                 console.warn("Failed to check lock status:", e);
             }
         }
-    }, []);
+    }, [isAdmin]);
 
     useEffect(() => {
         checkStatus();
@@ -99,12 +102,14 @@ export default function App() {
             let deviceIsLocked = true; // Default to locked for safety
 
             // 1. Get app info and device owner status
+            let isAdminLocal = false; // Local variable for immediate logic usage
+
             if (dlm && dlm.getAppInfo) {
                 try {
                     const appInfo = await dlm.getAppInfo();
                     currentPackage = appInfo?.packageName || '';
                     deviceIsOwner = appInfo?.isDeviceOwner || false;
-                    deviceIsLocked = appInfo?.isLocked ?? true;
+                    deviceIsLocked = appInfo?.isLocked ?? false; // Default to false to avoid accidental lock
 
                     console.log("📱 Package:", currentPackage);
                     console.log("👑 Device Owner:", deviceIsOwner);
@@ -113,6 +118,7 @@ export default function App() {
                     // Detect Admin App
                     if (currentPackage.endsWith('.admin') || currentPackage.includes('.admin')) {
                         console.log("✅ Admin ID Detected");
+                        isAdminLocal = true;
                         setIsAdmin(true);
                         setIsLocked(false);
                     }
@@ -138,7 +144,11 @@ export default function App() {
                         }
 
                         setIsEnrolled(true);
-                        setIsLocked(deviceIsLocked);
+
+                        // Only set locked if NOT admin
+                        if (!isAdminLocal) {
+                            setIsLocked(deviceIsLocked);
+                        }
 
                         // Start lock service
                         if (dlm.startLockService) {
@@ -183,17 +193,26 @@ export default function App() {
 
             // Get lock status - prioritize native module over AsyncStorage
             const storedLockStatus = lockStatus === 'locked';
-            setIsLocked(deviceIsLocked || storedLockStatus);
 
-            // 4. ENABLE KIOSK MODE IF DEVICE IS LOCKED (Skip for Admin App)
-            if (!isAdmin && (deviceIsLocked || storedLockStatus) && DeviceLockModule && DeviceLockModule.startKioskMode) {
-                try {
-                    console.log("🔒 Device is locked - Enabling Kiosk Mode");
-                    await DeviceLockModule.startKioskMode();
-                    console.log("✅ Kiosk Mode ENABLED");
-                } catch (e) {
-                    console.error("❌ Failed to enable Kiosk Mode:", e);
+            // FINAL LOCK STATE DECISION
+            if (!isAdminLocal) {
+                const shouldBeLocked = deviceIsLocked || storedLockStatus;
+                console.log(`🔒 Final Lock Decision: ${shouldBeLocked} (Admin: ${isAdminLocal})`);
+                setIsLocked(shouldBeLocked);
+
+                // 4. ENABLE KIOSK MODE IF DEVICE IS LOCKED (Skip for Admin App)
+                if (shouldBeLocked && DeviceLockModule && DeviceLockModule.startKioskMode) {
+                    try {
+                        console.log("🔒 Device is locked - Enabling Kiosk Mode");
+                        await DeviceLockModule.startKioskMode();
+                        console.log("✅ Kiosk Mode ENABLED");
+                    } catch (e) {
+                        console.error("❌ Failed to enable Kiosk Mode:", e);
+                    }
                 }
+            } else {
+                console.log("🛡️ Admin App - Forcing Unlock State");
+                setIsLocked(false);
             }
 
             checkForUpdates(currentServerUrl);

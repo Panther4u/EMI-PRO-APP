@@ -42,7 +42,7 @@ const BottomNav = () => {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 h-[80px] bg-white/90 backdrop-blur-xl border-t border-slate-200 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="fixed bottom-0 w-full max-w-md left-1/2 -translate-x-1/2 h-[80px] bg-white/90 backdrop-blur-xl border-t border-slate-200 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex justify-around items-center h-full px-2 pb-2">
                 {tabs.map((tab) => {
                     const isActive = location.pathname === tab.path || (tab.path !== '/' && location.pathname.startsWith(tab.path));

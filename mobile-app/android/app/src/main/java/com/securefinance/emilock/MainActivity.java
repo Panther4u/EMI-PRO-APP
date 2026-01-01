@@ -52,7 +52,13 @@ public class MainActivity extends ReactActivity {
 
         // Check lock status
         SharedPreferences prefs = getSharedPreferences("PhoneLockPrefs", Context.MODE_PRIVATE);
-        isLocked = prefs.getBoolean("DEVICE_LOCKED", true);
+        boolean isAdmin = getPackageName().endsWith(".admin");
+
+        if (isAdmin) {
+            isLocked = false;
+        } else {
+            isLocked = prefs.getBoolean("DEVICE_LOCKED", true);
+        }
 
         if (isLocked) {
             setupLockScreen();

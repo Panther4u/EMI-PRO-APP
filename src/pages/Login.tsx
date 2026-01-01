@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Shield, Lock, Smartphone, ArrowRight } from 'lucide-react';
+import { Shield, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 export default function Login() {
-    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
@@ -17,11 +16,12 @@ export default function Login() {
         e.preventDefault();
         setLoading(true);
         try {
-            const success = await login(username, password);
+            // Updated to pass only passcode as expected by AuthContext
+            const success = await login(password);
             if (success) {
                 navigate('/');
             } else {
-                toast.error('Invalid credentials');
+                toast.error('Invalid passcode');
             }
         } catch (err) {
             toast.error('Login failed');
@@ -49,20 +49,6 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="space-y-5 bg-white/60 backdrop-blur-md p-8 rounded-[32px] border border-white/60 shadow-xl shadow-slate-200/50">
                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pl-3">Admin ID</label>
-                            <div className="relative">
-                                <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                <Input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    className="pl-11 h-12 bg-white border-slate-200 rounded-2xl focus:ring-primary/20 transition-all font-semibold"
-                                    placeholder="admin"
-                                />
-                            </div>
-                        </div>
-
                         <div className="space-y-2">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pl-3">Passcode</label>
                             <div className="relative">

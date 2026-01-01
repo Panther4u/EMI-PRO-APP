@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SecurePRO Admin</string>
+    <string name="title_activity_main">SecurePRO Admin</string>
+    <string name="package_name">com.securefinance.admin</string>
+    <string name="custom_url_scheme">com.securefinance.admin</string>
+</resources>

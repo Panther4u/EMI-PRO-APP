@@ -2,23 +2,33 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Smartphone, User, Phone, Mail, MapPin, ScanLine, CreditCard } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, MapPin, ScanLine, Wifi, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 export default function AddCustomer() {
     const navigate = useNavigate();
     const { addCustomer } = useDevice();
-    const { user } = useAuth();
+    const { currentAdmin } = useAuth();
     const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
         phoneNo: '',
         email: '',
+        photoUrl: '',
         address: '',
-        modelName: 'Samsung A54', // Default for now
+        brand: '',
+        modelName: '',
         imei1: '',
         totalAmount: '15000',
         downPayment: '5000',
@@ -26,7 +36,7 @@ export default function AddCustomer() {
         emiTenure: '10'
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -34,7 +44,6 @@ export default function AddCustomer() {
         e.preventDefault();
         setLoading(true);
         try {
-            // Validate
             if (!formData.name || !formData.phoneNo) {
                 toast.error('Name, Phone are required');
                 return;
@@ -42,8 +51,8 @@ export default function AddCustomer() {
 
             const newCustomerUser = {
                 name: formData.name,
-                username: formData.phoneNo, // using phone as username for user apk login if needed
-                password: 'password123', // default
+                username: formData.phoneNo,
+                password: 'password123',
                 role: 'user',
                 email: formData.email
             };
@@ -51,7 +60,7 @@ export default function AddCustomer() {
             const payload = {
                 ...formData,
                 deviceStatus: { status: 'ACTIVE' },
-                adminId: user?.id,
+                adminId: currentAdmin?.id,
                 user: newCustomerUser
             };
 
@@ -80,21 +89,58 @@ export default function AddCustomer() {
                 <div className="space-y-4">
                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 pl-1">Customer Info</p>
                     <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="relative">
-                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl" />
+
+                        <div className="flex gap-4">
+                            {/* Photo Side UI */}
+                            <div className="w-24 shrink-0 aspect-[3/4] bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center relative overflow-hidden group">
+                                {formData.photoUrl ? (
+                                    <img src={formData.photoUrl} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                ) : (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <Camera className="w-6 h-6 text-slate-300" />
+                                        <span className="text-[8px] font-bold text-slate-300 uppercase">Photo</span>
+                                    </div>
+                                )}
+                                <div className="absolute inset-x-0 bottom-0 bg-white/90 backdrop-blur-sm p-1 border-t border-slate-100">
+                                    <Input
+                                        name="photoUrl"
+                                        placeholder="URL"
+                                        value={formData.photoUrl}
+                                        onChange={handleChange}
+                                        className="h-5 text-[9px] border-0 bg-transparent text-center p-0 placeholder:text-slate-300 focus-visible:ring-0"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Name & Phone Side */}
+                            <div className="flex-1 space-y-3">
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl font-semibold" />
+                                </div>
+                                <div className="relative">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input name="phoneNo" placeholder="Phone Number" type="tel" value={formData.phoneNo} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl font-medium" />
+                                </div>
+                            </div>
                         </div>
-                        <div className="relative">
-                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input name="phoneNo" placeholder="Phone Number" type="tel" value={formData.phoneNo} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl" />
-                        </div>
+
+                        {/* Email */}
                         <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <Input name="email" placeholder="Email Address (Optional)" type="email" value={formData.email} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl" />
                         </div>
+
+                        {/* Address Textarea */}
                         <div className="relative">
-                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input name="address" placeholder="City / Address" value={formData.address} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl" />
+                            <MapPin className="absolute left-4 top-4 w-4 h-4 text-slate-400" />
+                            <Textarea
+                                name="address"
+                                placeholder="Full Address / City"
+                                value={formData.address}
+                                onChange={handleChange}
+                                className="pl-11 min-h-[80px] bg-slate-50 border-0 rounded-xl resize-none py-3"
+                            />
                         </div>
                     </div>
                 </div>
@@ -102,13 +148,46 @@ export default function AddCustomer() {
                 <div className="space-y-4">
                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 pl-1">Device Details</p>
                     <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="relative">
-                            <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input name="modelName" placeholder="Device Model" value={formData.modelName} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl" />
+                        {/* Brand Select */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] bg-slate-100 px-2 py-1 rounded-md text-slate-500 font-bold uppercase tracking-wider">Brand</label>
+                            <Select onValueChange={(value) => setFormData({ ...formData, brand: value })}>
+                                <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-0 font-semibold text-slate-700">
+                                    <SelectValue placeholder="Select Brand" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {['Samsung', 'Xiaomi', 'Vivo', 'Oppo', 'Realme', 'OnePlus', 'Motorola', 'Apple', 'Other'].map(brand => (
+                                        <SelectItem key={brand} value={brand} className="font-medium">{brand}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="relative">
-                            <ScanLine className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input name="imei1" placeholder="IMEI Number (15 Digits)" maxLength={15} value={formData.imei1} onChange={handleChange} className="pl-11 h-12 bg-slate-50 border-0 rounded-xl font-mono tracking-widest" />
+
+                        {/* IMEI Input */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] bg-slate-100 px-2 py-1 rounded-md text-slate-500 font-bold uppercase tracking-wider">IMEI 1</label>
+                            <div className="relative">
+                                <ScanLine className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    name="imei1"
+                                    placeholder="Enter IMEI 1 (Mandatory)"
+                                    maxLength={15}
+                                    value={formData.imei1}
+                                    onChange={handleChange}
+                                    className="pl-11 h-12 bg-slate-50 border-0 rounded-xl font-mono tracking-widest font-bold text-slate-700"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Auto-Fetch Placeholder */}
+                        <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 border-dashed flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <Wifi className="w-5 h-5 text-blue-600 animate-pulse" />
+                            </div>
+                            <div className="space-y-0.5">
+                                <p className="text-xs font-bold text-blue-900">Auto-Fetch Enabled</p>
+                                <p className="text-[10px] text-blue-600/80 font-medium">Model & Serial will sync after device verification</p>
+                            </div>
                         </div>
                     </div>
                 </div>

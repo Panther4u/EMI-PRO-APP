@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import {
-    ArrowLeft, Shield, Lock, Unlock, smartphone,
+    ArrowLeft, Shield, Lock, Unlock, Smartphone,
     MapPin, Clock, Trash2, RotateCcw, Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ export default function CustomerDetails() {
     const { customers, deleteCustomer, toggleLock } = useDevice();
     const [customer, setCustomer] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [activeTab, setActiveTab] = useState<'fresh' | 'used' | 'ios'>('fresh');
 
     useEffect(() => {
         if (customers && id) {
@@ -129,19 +131,83 @@ export default function CustomerDetails() {
                     </div>
                 </div>
 
-                {/* QR Code Mini */}
-                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+                {/* Setup Device Action */}
+                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm flex items-center justify-between group cursor-pointer" onClick={() => setShowQRModal(true)}>
                     <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-slate-900">Device QR Backup</h3>
-                        <p className="text-xs text-slate-400">Scan to re-enroll device</p>
+                        <h3 className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">Setup Device</h3>
+                        <p className="text-xs text-slate-400">View generic & specialized QR codes</p>
                     </div>
-                    <div className="bg-white p-2 rounded-xl border border-slate-100">
-                        <QRCodeSVG value={JSON.stringify({
-                            customerId: customer.id,
-                            serverUrl: 'https://emi-pro-app.onrender.com'
-                        })} size={48} />
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                        <QRCodeSVG value="SETUP" size={20} className="opacity-50" />
                     </div>
                 </div>
+
+                {/* QR Modal Overlay */}
+                {showQRModal && (
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+                        <div className="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 space-y-6 p-6">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-lg font-black text-slate-900">Device Setup</h2>
+                                <button onClick={() => setShowQRModal(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200">
+                                    <span className="text-slate-500 font-bold">✕</span>
+                                </button>
+                            </div>
+
+                            {/* Tabs */}
+                            <div className="flex bg-slate-100 p-1 rounded-xl">
+                                {['fresh', 'used', 'ios'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab as any)}
+                                        className={cn(
+                                            "flex-1 py-2 rounded-lg text-xs font-bold transition-all capitalize",
+                                            activeTab === tab ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                        )}
+                                    >
+                                        {tab === 'fresh' ? 'Fresh' : tab === 'used' ? 'Used' : 'iOS'}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex flex-col items-center text-center space-y-4 py-4">
+                                <div className="p-4 bg-white rounded-[24px] border-2 border-slate-100 shadow-sm relative">
+                                    <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-primary -mt-1 -ml-1 rounded-tl-lg"></div>
+                                    <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-primary -mt-1 -mr-1 rounded-tr-lg"></div>
+                                    <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-primary -mb-1 -ml-1 rounded-bl-lg"></div>
+                                    <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-primary -mb-1 -mr-1 rounded-br-lg"></div>
+
+                                    <QRCodeSVG
+                                        value={
+                                            activeTab === 'fresh' ? JSON.stringify({
+                                                "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.securefinance.emilock/com.securefinance.emilock.AdminReceiver",
+                                                "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": "https://emi-pro.onrender.com/downloads/app-admin.apk",
+                                                "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
+                                                    "customerId": customer.id,
+                                                    "serverUrl": "https://emi-pro-app.onrender.com"
+                                                }
+                                            }) :
+                                                activeTab === 'used' ? "https://emi-pro.onrender.com/downloads/app-admin-release.apk" :
+                                                    "https://apps.apple.com/app-placeholder"
+                                        }
+                                        size={180}
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <h3 className="font-bold text-slate-800">
+                                        {activeTab === 'fresh' ? 'Factory Reset Provisioning' : activeTab === 'used' ? 'Direct App Install' : 'iOS Enrollment'}
+                                    </h3>
+                                    <p className="text-xs text-slate-400 max-w-[200px] mx-auto">
+                                        {activeTab === 'fresh' ? 'Tap screen 6 times on welcome screen to scan.' :
+                                            activeTab === 'used' ? 'Scan to download Admin APK directly.' :
+                                                'Scan to download iOS management profile.'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Danger Zone */}
                 <Button
