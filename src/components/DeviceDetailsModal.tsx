@@ -174,12 +174,12 @@ export default function DeviceDetailsModal({ deviceId, isOpen, onClose, onRefres
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg md:max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in zoom-in-95">
+            <div className="absolute inset-x-4 top-[5%] bottom-[5%] md:inset-x-4 md:top-[10%] md:bottom-[10%] bg-card border border-border rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in zoom-in-95">
                 {/* Header */}
                 <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
                     <div className="flex items-center gap-3">

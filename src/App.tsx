@@ -21,7 +21,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import AddCustomer from "./pages/AddCustomer";
 import DevicesPage from "./pages/Devices";
-import { MobileFrame } from "./components/MobileFrame";
+import MobileFrame from "./components/MobileFrame";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +50,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const isBlocked = isAdminLocked && userRole === 'admin';
 
     return (
-        <div className="flex h-full bg-background overflow-hidden relative selection:bg-primary/20">
+        <div className="flex flex-col h-full bg-background overflow-hidden relative selection:bg-primary/20">
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             <main className="flex-1 flex flex-col overflow-hidden relative w-full">
@@ -70,7 +70,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </Link>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full animate-in fade-in duration-500 scrollbar-hide relative">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
                     {children}
 
                     {/* Lock Overlay */}
@@ -103,10 +103,12 @@ const AppRoutes = () => {
     return (
         <MobileFrame>
             <Routes>
+                {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/android-setup" element={<AndroidSetup />} />
                 <Route path="/mobile-simulator/:imei?" element={<MobileSimulator />} />
 
+                {/* Protected Admin Routes */}
                 <Route path="/" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
                 <Route path="/customers" element={<ProtectedRoute><AdminLayout><Customers /></AdminLayout></ProtectedRoute>} />
                 <Route path="/customers/:id" element={<ProtectedRoute><AdminLayout><CustomerDetails /></AdminLayout></ProtectedRoute>} />

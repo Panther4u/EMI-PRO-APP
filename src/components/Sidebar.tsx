@@ -53,7 +53,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       {/* Backdrop Overlay */}
       <div
         className={cn(
-          "fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300",
+          "absolute inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
