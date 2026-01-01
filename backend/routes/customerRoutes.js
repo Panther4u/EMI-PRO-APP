@@ -71,7 +71,11 @@ router.delete('/:id', async (req, res) => {
     try {
         const customer = await Customer.findOneAndDelete({ id: req.params.id });
         if (!customer) return res.status(404).json({ message: 'Customer not found' });
-        res.json({ message: 'Customer deleted' });
+
+        // Cascade delete associated devices to prevent orphans
+        await Device.deleteMany({ assignedCustomerId: req.params.id });
+
+        res.json({ message: 'Customer and associated devices deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

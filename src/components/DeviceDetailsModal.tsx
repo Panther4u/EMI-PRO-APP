@@ -382,7 +382,7 @@ export default function DeviceDetailsModal({ deviceId, isOpen, onClose, onRefres
                             disabled={actionLoading}
                         >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Remove
+                            {device.assignedCustomerId || device.customer ? 'Remove' : 'Delete'}
                         </Button>
                     </div>
                 )}
