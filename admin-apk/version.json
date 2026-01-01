@@ -1,14 +1,12 @@
 {
-    "version": "1.0.0",
-    "versionCode": 1,
+    "version": "1.1.0",
+    "versionCode": 8,
     "releaseDate": "2026-01-02",
     "downloadUrl": "https://github.com/Panther4u/EMI-PRO-APP/raw/main/admin-apk/app-admin-release.apk",
     "changelog": [
-        "Initial release",
-        "Admin dashboard access",
-        "Device management",
-        "Customer management",
-        "Lock/unlock controls"
+        "Fixed Add Customer failures",
+        "Permission fixes (Camera/Storage)",
+        "Corrected Lock Logic"
     ],
     "minAndroidVersion": "8.0",
     "packageName": "com.securefinance.emilock.admin"
