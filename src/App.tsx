@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import AddCustomer from "./pages/AddCustomer";
 import DevicesPage from "./pages/Devices";
 import MobileFrame from "./components/MobileFrame";
+import MobileDashboard from "./pages/MobileDashboard";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,7 @@ const AppRoutes = () => {
 
                 {/* Protected Admin Routes */}
                 <Route path="/" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
+                <Route path="/mobile" element={<ProtectedRoute><MobileDashboard /></ProtectedRoute>} />
                 <Route path="/customers" element={<ProtectedRoute><AdminLayout><Customers /></AdminLayout></ProtectedRoute>} />
                 <Route path="/customers/:id" element={<ProtectedRoute><AdminLayout><CustomerDetails /></AdminLayout></ProtectedRoute>} />
                 <Route path="/customers/:id/edit" element={<ProtectedRoute><AdminLayout><EditCustomer /></AdminLayout></ProtectedRoute>} />

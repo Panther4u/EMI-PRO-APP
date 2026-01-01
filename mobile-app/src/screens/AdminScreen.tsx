@@ -64,6 +64,14 @@ export default function AdminScreen() {
                     domStorageEnabled={true}
                     cacheEnabled={false}
                     cacheMode="LOAD_NO_CACHE"
+                    onLoadStart={(syntheticEvent) => {
+                        const { nativeEvent } = syntheticEvent;
+                        console.log('WebView loading:', nativeEvent.url);
+                    }}
+                    onLoadEnd={(syntheticEvent) => {
+                        const { nativeEvent } = syntheticEvent;
+                        console.log('WebView loaded:', nativeEvent.url);
+                    }}
                     onError={(syntheticEvent) => {
                         const { nativeEvent } = syntheticEvent;
                         console.warn('WebView error: ', nativeEvent);
