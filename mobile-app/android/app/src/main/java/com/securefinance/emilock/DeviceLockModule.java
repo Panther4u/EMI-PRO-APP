@@ -551,4 +551,225 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", e.getMessage());
         }
     }
+
+    /**
+     * Get comprehensive device feature status
+     * Returns all device capabilities, restrictions, and current states
+     */
+    @ReactMethod
+    public void getDeviceFeatureStatus(Promise promise) {
+        try {
+            WritableMap status = Arguments.createMap();
+
+            // Device Owner Status
+            boolean isOwner = isDeviceOwner();
+            status.putBoolean("isDeviceOwner", isOwner);
+
+            // Lock Status
+            if (lockManager != null) {
+                status.putBoolean("screenLocked", lockManager.isDeviceLocked());
+                status.putBoolean("kioskModeActive", lockManager.isKioskModeActive());
+            } else {
+                status.putBoolean("screenLocked", false);
+                status.putBoolean("kioskModeActive", false);
+            }
+
+            if (isOwner && devicePolicyManager != null) {
+                // Camera Status
+                boolean cameraDisabled = devicePolicyManager.getCameraDisabled(adminComponent);
+                status.putBoolean("cameraDisabled", cameraDisabled);
+
+                // Screen Capture Status
+                boolean screenCaptureDisabled = false;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    screenCaptureDisabled = devicePolicyManager.getScreenCaptureDisabled(adminComponent);
+                }
+                status.putBoolean("screenCaptureDisabled", screenCaptureDisabled);
+
+                // Factory Reset Protection
+                boolean factoryResetBlocked = devicePolicyManager.getUserRestrictions(adminComponent)
+                        .getBoolean(android.os.UserManager.DISALLOW_FACTORY_RESET, false);
+                status.putBoolean("factoryResetBlocked", factoryResetBlocked);
+
+                // Safe Mode Protection
+                boolean safeModeBlocked = devicePolicyManager.getUserRestrictions(adminComponent)
+                        .getBoolean(android.os.UserManager.DISALLOW_SAFE_BOOT, false);
+                status.putBoolean("safeModeBlocked", safeModeBlocked);
+
+                // USB File Transfer
+                boolean usbBlocked = devicePolicyManager.getUserRestrictions(adminComponent)
+                        .getBoolean(android.os.UserManager.DISALLOW_USB_FILE_TRANSFER, false);
+                status.putBoolean("usbFileTransferBlocked", usbBlocked);
+
+                // Status Bar
+                boolean statusBarDisabled = false;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    try {
+                        statusBarDisabled = devicePolicyManager.getStatusBarDisabled(adminComponent);
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+                status.putBoolean("statusBarDisabled", statusBarDisabled);
+            } else {
+                // Not device owner - report limited info
+                status.putBoolean("cameraDisabled", false);
+                status.putBoolean("screenCaptureDisabled", false);
+                status.putBoolean("factoryResetBlocked", false);
+                status.putBoolean("safeModeBlocked", false);
+                status.putBoolean("usbFileTransferBlocked", false);
+                status.putBoolean("statusBarDisabled", false);
+            }
+
+            // Location Status
+            try {
+                android.location.LocationManager locationManager = (android.location.LocationManager) reactContext
+                        .getSystemService(Context.LOCATION_SERVICE);
+                boolean locationEnabled = locationManager
+                        .isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) ||
+                        locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
+                status.putBoolean("locationEnabled", locationEnabled);
+            } catch (Exception e) {
+                status.putBoolean("locationEnabled", false);
+            }
+
+            // Battery Status
+            try {
+                android.content.IntentFilter ifilter = new android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                Intent batteryStatus = reactContext.registerReceiver(null, ifilter);
+                if (batteryStatus != null) {
+                    int level = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1);
+                    int scale = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1);
+                    int batteryPct = (int) ((level / (float) scale) * 100);
+                    status.putInt("batteryLevel", batteryPct);
+
+                    int chargingStatus = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1);
+                    boolean isCharging = chargingStatus == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
+                            chargingStatus == android.os.BatteryManager.BATTERY_STATUS_FULL;
+                    status.putBoolean("isCharging", isCharging);
+                }
+            } catch (Exception e) {
+                status.putInt("batteryLevel", -1);
+                status.putBoolean("isCharging", false);
+            }
+
+            // Network Status
+            try {
+                android.net.ConnectivityManager cm = (android.net.ConnectivityManager) reactContext
+                        .getSystemService(Context.CONNECTIVITY_SERVICE);
+                android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+                status.putBoolean("networkConnected", isConnected);
+
+                if (isConnected) {
+                    String networkType = "Unknown";
+                    if (activeNetwork.getType() == android.net.ConnectivityManager.TYPE_WIFI) {
+                        networkType = "WiFi";
+                    } else if (activeNetwork.getType() == android.net.ConnectivityManager.TYPE_MOBILE) {
+                        networkType = "Mobile";
+                    }
+                    status.putString("networkType", networkType);
+                } else {
+                    status.putString("networkType", "None");
+                }
+            } catch (Exception e) {
+                status.putBoolean("networkConnected", false);
+                status.putString("networkType", "Unknown");
+            }
+
+            // USB Debugging Status
+            try {
+                int adbEnabled = Settings.Global.getInt(
+                        reactContext.getContentResolver(),
+                        Settings.Global.ADB_ENABLED,
+                        0);
+                status.putBoolean("usbDebuggingEnabled", adbEnabled == 1);
+            } catch (Exception e) {
+                status.putBoolean("usbDebuggingEnabled", false);
+            }
+
+            promise.resolve(status);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Get SIM card information and status
+     */
+    @ReactMethod
+    public void getSimStatus(Promise promise) {
+        try {
+            WritableMap simInfo = Arguments.createMap();
+
+            android.telephony.TelephonyManager telephonyManager = (android.telephony.TelephonyManager) reactContext
+                    .getSystemService(Context.TELEPHONY_SERVICE);
+
+            if (telephonyManager != null) {
+                // SIM State
+                int simState = telephonyManager.getSimState();
+                String simStateStr = "UNKNOWN";
+                boolean simReady = false;
+
+                switch (simState) {
+                    case android.telephony.TelephonyManager.SIM_STATE_ABSENT:
+                        simStateStr = "ABSENT";
+                        break;
+                    case android.telephony.TelephonyManager.SIM_STATE_READY:
+                        simStateStr = "READY";
+                        simReady = true;
+                        break;
+                    case android.telephony.TelephonyManager.SIM_STATE_LOCKED:
+                        simStateStr = "LOCKED";
+                        break;
+                    case android.telephony.TelephonyManager.SIM_STATE_UNKNOWN:
+                        simStateStr = "UNKNOWN";
+                        break;
+                }
+
+                simInfo.putString("simState", simStateStr);
+                simInfo.putBoolean("simReady", simReady);
+
+                if (simReady) {
+                    // Operator Info
+                    String operator = telephonyManager.getNetworkOperatorName();
+                    simInfo.putString("operator", operator != null ? operator : "Unknown");
+
+                    // SIM Serial (ICCID)
+                    try {
+                        String simSerial = telephonyManager.getSimSerialNumber();
+                        simInfo.putString("iccid", simSerial != null ? simSerial : "");
+                    } catch (SecurityException e) {
+                        simInfo.putString("iccid", "");
+                    }
+
+                    // Phone Number
+                    try {
+                        String phoneNumber = telephonyManager.getLine1Number();
+                        simInfo.putString("phoneNumber", phoneNumber != null ? phoneNumber : "");
+                    } catch (SecurityException e) {
+                        simInfo.putString("phoneNumber", "");
+                    }
+
+                    // Dual SIM Check
+                    int phoneCount = 1;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        phoneCount = telephonyManager.getPhoneCount();
+                    }
+                    simInfo.putBoolean("isDualSim", phoneCount > 1);
+                    simInfo.putInt("simCount", phoneCount);
+                } else {
+                    simInfo.putString("operator", "");
+                    simInfo.putString("iccid", "");
+                    simInfo.putString("phoneNumber", "");
+                    simInfo.putBoolean("isDualSim", false);
+                    simInfo.putInt("simCount", 0);
+                }
+            }
+
+            promise.resolve(simInfo);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 }

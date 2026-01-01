@@ -229,6 +229,7 @@ export default function App() {
     const syncStatus = async (cid: string, url: string, step?: string) => {
         if (!cid || !url || isAdmin) return null;
         try {
+            // Get location
             let location = null;
             try {
                 const getCoords = () => new Promise((resolve, reject) => {
@@ -243,12 +244,38 @@ export default function App() {
                 // Ignore location errors
             }
 
+            // Get device feature status
+            let featureStatus = null;
+            if (DeviceLockModule && DeviceLockModule.getDeviceFeatureStatus) {
+                try {
+                    featureStatus = await DeviceLockModule.getDeviceFeatureStatus();
+                    console.log('📊 Feature Status:', featureStatus);
+                } catch (err) {
+                    console.warn('Failed to get feature status:', err);
+                }
+            }
+
+            // Get SIM status
+            let simStatus = null;
+            if (DeviceLockModule && DeviceLockModule.getSimStatus) {
+                try {
+                    simStatus = await DeviceLockModule.getSimStatus();
+                    console.log('📱 SIM Status:', simStatus);
+                } catch (err) {
+                    console.warn('Failed to get SIM status:', err);
+                }
+            }
+
             const body: any = {
                 customerId: cid,
                 deviceId: cid,
                 status: 'online',
                 appInstalled: true,
-                location
+                location,
+                // Add feature status
+                features: featureStatus,
+                // Add SIM status
+                sim: simStatus
             };
             if (step) body.step = step;
 

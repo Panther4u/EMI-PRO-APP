@@ -112,7 +112,42 @@ const CustomerSchema = new mongoose.Schema({
         action: { type: String }, // Action taken (e.g. "LOCKED", "ALARMED")
         details: { type: mongoose.Schema.Types.Mixed },
         ipAddress: { type: String }
-    }]
+    }],
+
+    // Device Features Status (from DeviceLockModule.getDeviceFeatureStatus())
+    deviceFeatures: {
+        isDeviceOwner: { type: Boolean, default: false },
+        screenLocked: { type: Boolean, default: false },
+        kioskModeActive: { type: Boolean, default: false },
+        cameraDisabled: { type: Boolean, default: false },
+        screenCaptureDisabled: { type: Boolean, default: false },
+        factoryResetBlocked: { type: Boolean, default: false },
+        safeModeBlocked: { type: Boolean, default: false },
+        usbFileTransferBlocked: { type: Boolean, default: false },
+        statusBarDisabled: { type: Boolean, default: false },
+        locationEnabled: { type: Boolean, default: false },
+        batteryLevel: { type: Number, default: -1 },
+        isCharging: { type: Boolean, default: false },
+        networkConnected: { type: Boolean, default: false },
+        networkType: { type: String, default: 'Unknown' },
+        usbDebuggingEnabled: { type: Boolean, default: false },
+        lastUpdated: { type: Date }
+    },
+
+    // SIM Status (from DeviceLockModule.getSimStatus())
+    simStatus: {
+        simState: { type: String, default: 'UNKNOWN' }, // READY, ABSENT, LOCKED, UNKNOWN
+        simReady: { type: Boolean, default: false },
+        operator: { type: String },
+        iccid: { type: String }, // SIM Serial Number
+        phoneNumber: { type: String },
+        isDualSim: { type: Boolean, default: false },
+        simCount: { type: Number, default: 0 },
+        lastUpdated: { type: Date },
+        // SIM Change Detection
+        originalIccid: { type: String }, // Store original ICCID for change detection
+        simChanged: { type: Boolean, default: false }
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Customer', CustomerSchema);
