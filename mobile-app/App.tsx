@@ -109,6 +109,12 @@ export default function App() {
                     console.log("📱 Package:", currentPackage);
                     console.log("👑 Device Owner:", deviceIsOwner);
                     console.log("🔒 Locked:", deviceIsLocked);
+
+                    // Detect Admin App
+                    if (currentPackage.endsWith('.admin') || currentPackage.includes('.admin')) {
+                        console.log("✅ Admin ID Detected");
+                        setIsAdmin(true);
+                    }
                 } catch (appInfoError) {
                     console.warn("getAppInfo failed:", appInfoError);
                 }

@@ -34,6 +34,14 @@ allprojects {
         }
     }
     
+    // Make ext properties available to all subprojects
+    ext {
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        minSdkVersion = 23
+        buildToolsVersion = "34.0.0"
+    }
+    
     // Fix dependency resolution for older libraries asking for react-native instead of react-android
     configurations.all {
         resolutionStrategy {

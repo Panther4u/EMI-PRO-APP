@@ -72,6 +72,7 @@ app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/devices', require('./routes/deviceRoutes'));
 app.use('/api/provisioning', require('./routes/provisioningRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api', require('./routes/versionRoutes'));
 
 // Serve frontend build (production)
 app.use(express.static(path.join(__dirname, '../dist')));
