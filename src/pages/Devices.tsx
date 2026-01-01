@@ -125,6 +125,14 @@ export default function DevicesPage() {
     };
 
     const filteredDevices = devices.filter(device => {
+        // Filter by State
+        if (filterState) {
+            if (device.state !== filterState) return false;
+        } else {
+            // By default, hide REMOVED devices
+            if (device.state === 'REMOVED') return false;
+        }
+
         if (!searchQuery) return true;
         const search = searchQuery.toLowerCase();
         return (

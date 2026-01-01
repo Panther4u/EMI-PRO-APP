@@ -32,7 +32,7 @@ export interface Customer {
   isEnrolled?: boolean;
   enrollmentToken?: string;
   deviceStatus?: {
-    status: 'pending' | 'installing' | 'connected' | 'online' | 'offline' | 'error' | 'warning' | 'ADMIN_INSTALLED';
+    status: 'pending' | 'installing' | 'connected' | 'online' | 'offline' | 'error' | 'warning' | 'ADMIN_INSTALLED' | 'removed';
     lastSeen?: Date;
     lastStatusUpdate?: Date;
     installProgress?: number; // 0-100
