@@ -30,16 +30,71 @@ export default function AdminScreen() {
         }
     };
 
-    // Minimal JavaScript - just set viewport, no CSS changes
+    // Auto-scale to fit screen - same UI, just scaled
     const injectedJavaScript = `
         (function() {
-            // Add meta viewport if not present
+            // Add meta viewport
             if (!document.querySelector('meta[name="viewport"]')) {
                 var meta = document.createElement('meta');
                 meta.name = 'viewport';
-                meta.content = 'width=device-width, initial-scale=1.0';
+                meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
                 document.head.appendChild(meta);
             }
+
+            // Add auto-scaling CSS
+            var style = document.createElement('style');
+            style.textContent = \`
+                /* Make everything fit screen height */
+                html, body {
+                    height: 100% !important;
+                    overflow: auto !important;
+                    -webkit-text-size-adjust: none !important;
+                    font-size: 13px !important; /* Reduced base font */
+                }
+                
+                /* Scale content to fit on small screens */
+                @media screen and (max-width: 768px) {
+                    body {
+                        zoom: 0.65;
+                        -moz-transform: scale(0.65);
+                        -moz-transform-origin: 0 0;
+                        font-size: 12px !important;
+                    }
+                }
+                
+                @media screen and (max-width: 480px) {
+                    body {
+                        zoom: 0.5;
+                        -moz-transform: scale(0.5);
+                        -moz-transform-origin: 0 0;
+                        font-size: 11px !important;
+                    }
+                }
+                
+                /* Remove fixed header heights */
+                header, [role="banner"] {
+                    height: auto !important;
+                    min-height: auto !important;
+                    padding-top: 8px !important;
+                    padding-bottom: 8px !important;
+                }
+
+                /* Compact padding for all containers */
+                .p-4, .p-6 {
+                    padding: 8px !important;
+                }
+
+                /* Ensure components don't overflow after scaling */
+                .container, .main-content {
+                    max-width: 100vw !important;
+                }
+
+                /* Smaller headings */
+                h1 { font-size: 1.1rem !important; margin-bottom: 4px !important; }
+                h2 { font-size: 1rem !important; margin-bottom: 2px !important; }
+                h3 { font-size: 0.9rem !important; }
+            \`;
+            document.head.appendChild(style);
         })();
         true;
     `;

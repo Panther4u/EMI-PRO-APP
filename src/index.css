@@ -92,7 +92,17 @@
     @apply border-border;
   }
 
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   html {
+    font-size: 14px;
+    /* Reduced base font size */
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -101,12 +111,15 @@
     display: none;
   }
 
+  /* Global utility for consistent padding */
+  .page-container {
+    padding: 0.5rem !important;
+    /* p-2 equivalent */
+  }
+
   body {
     @apply bg-zinc-950 text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
   }
 
   .font-mono {
