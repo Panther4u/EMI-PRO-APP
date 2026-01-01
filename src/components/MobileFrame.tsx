@@ -6,6 +6,13 @@ interface MobileFrameProps {
 }
 
 export default function MobileFrame({ children }: MobileFrameProps) {
+    // Detect if we are in the mobile app WebView
+    const isWebView = window.navigator.userAgent.includes('wv') || window.location.pathname.startsWith('/mobile');
+
+    if (isWebView) {
+        return <div className="h-full w-full bg-background overflow-hidden flex flex-col">{children}</div>;
+    }
+
     return (
         <div className="min-h-screen h-full w-full bg-[#f0f2f5] flex items-center justify-center p-0 md:p-4">
             {/* Mobile Device Frame */}

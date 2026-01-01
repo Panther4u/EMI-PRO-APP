@@ -44,55 +44,32 @@ export default function AdminScreen() {
             // Add auto-scaling CSS
             var style = document.createElement('style');
             style.textContent = \`
-                /* Make everything fit screen height */
+                /* Make everything fit screen height and width */
                 html, body {
                     height: 100% !important;
-                    overflow: auto !important;
+                    width: 100% !important;
+                    overflow: hidden !important;
                     -webkit-text-size-adjust: none !important;
-                    font-size: 13px !important; /* Reduced base font */
+                    margin: 0 !important;
+                    padding: 0 !important;
                 }
                 
-                /* Scale content to fit on small screens */
-                @media screen and (max-width: 768px) {
-                    body {
-                        zoom: 0.65;
-                        -moz-transform: scale(0.65);
-                        -moz-transform-origin: 0 0;
-                        font-size: 12px !important;
-                    }
+                #root {
+                    height: 100% !important;
+                    width: 100% !important;
                 }
-                
-                @media screen and (max-width: 480px) {
-                    body {
-                        zoom: 0.5;
-                        -moz-transform: scale(0.5);
-                        -moz-transform-origin: 0 0;
-                        font-size: 11px !important;
-                    }
-                }
-                
-                /* Remove fixed header heights */
+
+                /* Remove fixed header heights for flex stability */
                 header, [role="banner"] {
                     height: auto !important;
                     min-height: auto !important;
-                    padding-top: 8px !important;
-                    padding-bottom: 8px !important;
                 }
 
-                /* Compact padding for all containers */
-                .p-4, .p-6 {
-                    padding: 8px !important;
+                /* Ensure full height for main containers */
+                .page-container, main {
+                    height: 100% !important;
+                    overflow-y: auto !important;
                 }
-
-                /* Ensure components don't overflow after scaling */
-                .container, .main-content {
-                    max-width: 100vw !important;
-                }
-
-                /* Smaller headings */
-                h1 { font-size: 1.1rem !important; margin-bottom: 4px !important; }
-                h2 { font-size: 1rem !important; margin-bottom: 2px !important; }
-                h3 { font-size: 0.9rem !important; }
             \`;
             document.head.appendChild(style);
         })();
