@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Download, Plus } from 'lucide-react';
+import { Search, Filter, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CustomerCard } from '@/components/CustomerCard';
@@ -113,10 +113,6 @@ const Customers = () => {
           <h1 className="text-xl font-bold text-foreground tracking-tight">Customers</h1>
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold opacity-70">Directory Management</p>
         </div>
-        <Button className="w-full h-9 text-xs rounded-xl shadow-lg shadow-primary/10">
-          <Download className="w-3.5 h-3.5 mr-2" />
-          Export Report
-        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -130,48 +126,45 @@ const Customers = () => {
             className="pl-10 bg-secondary/30 border-border/50 h-11 rounded-xl"
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <Button
-              variant={filter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              className="flex-1 rounded-xl h-9"
-              onClick={() => setFilter('all')}
-            >
-              All ({customers.length})
-            </Button>
-            <Button
-              variant={filter === 'locked' ? 'destructive' : 'outline'}
-              size="sm"
-              className="flex-1 rounded-xl h-9"
-              onClick={() => setFilter('locked')}
-            >
-              Locked ({customers.filter(c => c.isLocked).length})
-            </Button>
-          </div>
+        <div className="flex items-center gap-1 w-full">
+          <Button
+            variant={filter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            className="flex-1 rounded-lg h-7 px-0 text-[10px]"
+            onClick={() => setFilter('all')}
+          >
+            All ({customers.length})
+          </Button>
+          <Button
+            variant={filter === 'locked' ? 'destructive' : 'outline'}
+            size="sm"
+            className="flex-1 rounded-lg h-7 px-0 text-[10px]"
+            onClick={() => setFilter('locked')}
+          >
+            Locked ({customers.filter(c => c.isLocked).length})
+          </Button>
           <Button
             variant={filter === 'unlocked' ? 'success' : 'outline'}
             size="sm"
-            className="w-full rounded-xl h-9"
+            className="flex-1 rounded-lg h-7 px-0 text-[10px]"
             onClick={() => setFilter('unlocked')}
           >
             Active ({customers.filter(c => !c.isLocked).length})
           </Button>
+          <Button
+            variant={filter === 'unclaimed' ? 'secondary' : 'outline'}
+            size="sm"
+            className="flex-1 rounded-lg h-7 px-0 text-[10px] border-dashed border-primary/50 text-foreground"
+            onClick={() => setFilter('unclaimed')}
+          >
+            Unclaimed ({unclaimedDevices.length})
+          </Button>
         </div>
-        {/* UNCLAIMED DEVICES TAB */}
-        <Button
-          variant={filter === 'unclaimed' ? 'secondary' : 'outline'}
-          size="sm"
-          className="w-full rounded-xl h-9 border-dashed border-primary/50 text-foreground"
-          onClick={() => setFilter('unclaimed')}
-        >
-          Unclaimed Devices ({unclaimedDevices.length})
-        </Button>
       </div>
 
 
       {/* Customer Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
         {filteredCustomers.map((customer) => (
           <CustomerCard
             key={customer.id}

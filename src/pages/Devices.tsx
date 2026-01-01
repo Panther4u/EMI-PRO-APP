@@ -295,7 +295,7 @@ export default function DevicesPage() {
 
                 {/* Device List */}
                 {loading ? (
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
                         {[1, 2, 3, 4].map(i => (
                             <Card key={i} className="animate-pulse">
                                 <CardContent className="p-4 h-24" />
@@ -320,7 +320,7 @@ export default function DevicesPage() {
                         </Button>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
                         {filteredDevices.map(device => (
                             <DeviceCard key={device._id} device={device} />
                         ))}

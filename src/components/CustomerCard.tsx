@@ -1,7 +1,7 @@
 import { Customer } from '@/types/customer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Lock, Unlock, MapPin, Phone, CreditCard, Smartphone, Pencil } from 'lucide-react';
+import { Lock, Unlock, MapPin, Phone, CreditCard, Smartphone, Pencil, Trash2, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CustomerCardProps {
@@ -114,36 +114,38 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
           <Button
             variant="glass"
             size="sm"
-            className="w-full h-8 text-xs"
+            className="w-full h-8 px-0"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(customer);
             }}
+            title="View Details"
           >
-            View
+            <div className="flex items-center justify-center w-full h-full"><Eye className="w-4 h-4" /></div>
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="w-full h-8 text-xs px-0"
+            className="w-full h-8 px-0"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(customer.id);
             }}
+            title="Edit Customer"
           >
-            <Pencil className="w-3 h-3 mr-1" />
-            Edit
+            <Pencil className="w-4 h-4" />
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="w-full h-8 text-xs px-0 border-destructive/20 text-destructive hover:bg-destructive hover:text-white"
+            className="w-full h-8 px-0 border-destructive/20 text-destructive hover:bg-destructive hover:text-white"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(customer.id);
             }}
+            title="Delete Customer"
           >
-            Delete
+            <div className="flex items-center justify-center w-full h-full"><Trash2 className="w-4 h-4" /></div>
           </Button>
         </div>
         <div className="grid grid-cols-2 gap-2">
