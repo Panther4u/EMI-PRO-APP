@@ -397,6 +397,59 @@ export const CustomerDetailsModal = ({
           )
         }
 
+        {/* Security Events */}
+        {customer.securityEvents && customer.securityEvents.length > 0 && (
+          <div className="glass-card p-4 mt-4 border-red-500/20 bg-red-500/5">
+            <h3 className="font-semibold text-red-500 mb-3 flex items-center gap-2">
+              <Lock className="w-4 h-4" />
+              Security Events
+            </h3>
+            <div className="space-y-2">
+              {customer.securityEvents.map((event: any, i: number) => (
+                <div key={i} className="flex items-center gap-3 bg-red-100/50 rounded-lg p-3 border border-red-200">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-200">
+                    <Lock className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-red-700">{event.event}</p>
+                    <p className="text-xs text-red-500">Action: {event.action || 'LOGGED'}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {event.timestamp ? (() => {
+                      try { return format(new Date(event.timestamp), 'PPp'); } catch (e) { return '-'; }
+                    })() : '-'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Offline Lock Tokens */}
+        <div className="glass-card p-4 mt-4 border-blue-500/20 bg-blue-500/5">
+          <h3 className="font-semibold text-blue-600 mb-3 flex items-center gap-2">
+            <Phone className="w-4 h-4" />
+            SMS Lock Commands (Offline)
+          </h3>
+          <div className="space-y-3">
+            <div className="bg-blue-100/50 rounded-lg p-3 border border-blue-200">
+              <p className="text-xs text-blue-700 mb-1 font-semibold">To Lock via SMS:</p>
+              <code className="text-sm font-mono bg-white px-2 py-1 rounded border block text-center">
+                LOCK:{customer.offlineLockToken || '------'}
+              </code>
+            </div>
+            <div className="bg-green-100/50 rounded-lg p-3 border border-green-200">
+              <p className="text-xs text-green-700 mb-1 font-semibold">To Unlock via SMS:</p>
+              <code className="text-sm font-mono bg-white px-2 py-1 rounded border block text-center">
+                UNLOCK:{customer.offlineUnlockToken || '------'}
+              </code>
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center">
+              Send SMS to device phone number when offline
+            </p>
+          </div>
+        </div>
+
         {/* Actions */}
         <div className="flex gap-3 mt-6">
           <Button variant="outline" className="flex-1" onClick={onClose}>

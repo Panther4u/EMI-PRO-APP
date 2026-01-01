@@ -32,7 +32,7 @@ export interface Customer {
   isEnrolled?: boolean;
   enrollmentToken?: string;
   deviceStatus?: {
-    status: 'pending' | 'installing' | 'connected' | 'online' | 'offline' | 'error' | 'ADMIN_INSTALLED';
+    status: 'pending' | 'installing' | 'connected' | 'online' | 'offline' | 'error' | 'warning' | 'ADMIN_INSTALLED';
     lastSeen?: Date;
     lastStatusUpdate?: Date;
     installProgress?: number; // 0-100
@@ -69,6 +69,18 @@ export interface Customer {
   offlineLockToken?: string;
   offlineUnlockToken?: string;
   expectedIMEI?: string;
+  // Lock Screen Customization
+  lockMessage?: string;
+  supportPhone?: string;
+  wallpaperUrl?: string;
+  // Security Events
+  securityEvents?: {
+    event: string;
+    timestamp: string;
+    action?: string;
+    details?: any;
+    ipAddress?: string;
+  }[];
   // Advanced Controls
   networkRestricted?: boolean;
   wifiRestricted?: boolean;
