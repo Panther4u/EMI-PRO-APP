@@ -11,14 +11,14 @@ import {
   Smartphone,
   LogOut,
   UserPlus,
-  Tablet,
-  MoreVertical
+  Tablet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 
 const menuItems = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Users, label: 'Customers', path: '/customers' },
   { icon: UserPlus, label: 'Add Customer', path: '/add-customer' },
   { icon: Tablet, label: 'Devices', path: '/devices' },

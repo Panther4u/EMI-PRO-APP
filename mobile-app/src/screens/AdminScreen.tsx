@@ -8,7 +8,8 @@ const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
 export default function AdminScreen() {
     const [loading, setLoading] = useState(true);
     // Exact same URL as the mobile dashboard the user likes
-    const uri = 'https://emi-pro-app.onrender.com/customers'; // Start at Customers list instead of Dashboard
+    const uri = 'https://emi-pro-app.onrender.com/mobile';
+
     useEffect(() => {
         checkForUpdates();
     }, []);
@@ -36,8 +37,9 @@ export default function AdminScreen() {
                 meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
                 document.head.appendChild(meta);
             }
-            // Ensure background covers everything
+            // Ensure background covers everything and add slight zoom to show more info
             document.body.style.backgroundColor = '#ffffff';
+            document.body.style.zoom = '0.9';
             true;
         })();
     `;
