@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Menu, Smartphone, Apple } from 'lucide-react';
+import { RefreshCw, Menu, Smartphone, Apple, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { getApiUrl } from '@/config/api';
@@ -48,23 +48,21 @@ export default function MobileDashboard() {
     };
 
     return (
-        <div className="h-full bg-gray-50">
-            {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-10">
-                <div className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" className="md:hidden">
-                            <Menu className="w-5 h-5" />
-                        </Button>
-                        <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center">
-                                <Smartphone className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="font-semibold text-lg">SecureFinance</span>
+        <div className="h-full bg-gray-50 flex flex-col">
+            {/* Header matches App.tsx */}
+            <header className="py-3 border-b border-border/50 flex items-center px-4 bg-white/80 backdrop-blur-md z-30 flex-shrink-0">
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="p-2 -ml-2 hover:bg-secondary rounded-xl transition-all duration-200">
+                        <Menu className="w-5 h-5 text-foreground" />
+                    </Button>
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Shield className="w-4 h-4 text-primary-foreground" />
                         </div>
+                        <span className="font-bold text-foreground text-sm tracking-tight">SecureFinance</span>
                     </div>
                 </div>
-            </div>
+            </header>
 
             {/* Content */}
             <div className="p-2 pb-20">
