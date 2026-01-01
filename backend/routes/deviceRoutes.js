@@ -281,7 +281,7 @@ router.post('/:id/assign', async (req, res) => {
     }
 });
 
-// Remove device from customer (soft delete)
+// Remove device from customer (soft delete - keeps customer data)
 router.post('/:id/remove', async (req, res) => {
     try {
         const { reason, adminId } = req.body;
@@ -293,38 +293,47 @@ router.post('/:id/remove', async (req, res) => {
 
         const oldCustomerId = device.assignedCustomerId;
 
-        // Update device state
+        // Update device state - KEEP assignedCustomerId for audit trail
         device.state = 'REMOVED';
-        device.assignedCustomerId = null;
+        // device.assignedCustomerId = null; // REMOVED: Keep for history
         device.removedAt = new Date();
         device.removalReason = reason || 'Removed by admin';
         device.stateHistory.push({
             state: 'REMOVED',
             reason: reason || 'Removed by admin',
             changedBy: adminId,
-            changedAt: new Date()
+            changedAt: new Date(),
+            previousCustomerId: oldCustomerId // Store for reference
         });
 
         await device.save();
 
-        // Update customer if was assigned
+        // Update customer status but DO NOT DELETE customer
         if (oldCustomerId) {
             await Customer.findOneAndUpdate(
                 { id: oldCustomerId },
                 {
                     $set: {
-                        'deviceStatus.status': 'offline',
-                        'deviceStatus.errorMessage': 'Device removed'
+                        'deviceStatus.status': 'removed',
+                        'deviceStatus.errorMessage': 'Device removed from this customer'
+                    },
+                    $push: {
+                        lockHistory: {
+                            id: Date.now().toString(),
+                            action: 'device_removed',
+                            reason: reason || 'Removed by admin',
+                            timestamp: new Date().toISOString()
+                        }
                     }
                 }
             );
         }
 
-        console.log(`📱 Device ${req.params.id} removed`);
+        console.log(`📱 Device ${req.params.id} removed (customer ${oldCustomerId} data preserved)`);
 
         res.json({
             success: true,
-            message: 'Device removed successfully',
+            message: 'Device removed successfully. Customer data preserved.',
             device
         });
     } catch (err) {
