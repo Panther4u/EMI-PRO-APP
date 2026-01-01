@@ -69,7 +69,7 @@ const CustomerSchema = new mongoose.Schema({
     deviceStatus: {
         status: {
             type: String,
-            enum: ['pending', 'installing', 'connected', 'online', 'offline', 'error', 'ADMIN_INSTALLED'],
+            enum: ['pending', 'installing', 'connected', 'online', 'offline', 'error', 'warning', 'ADMIN_INSTALLED'],
             default: 'pending'
         },
         lastSeen: { type: Date },
@@ -96,9 +96,23 @@ const CustomerSchema = new mongoose.Schema({
         }
     },
     remoteCommand: {
-        command: { type: String }, // e.g. "lock", "unlock", "wipe"
+        command: { type: String }, // e.g. "lock", "unlock", "wipe", "setWallpaper", "setPin"
+        params: { type: mongoose.Schema.Types.Mixed }, // Parameters like { wallpaperUrl, pin, message, phone }
         timestamp: { type: Date }
-    }
+    },
+    // Lock screen customization
+    lockMessage: { type: String, default: "This device has been locked due to payment overdue." },
+    supportPhone: { type: String, default: "8876655444" },
+    wallpaperUrl: { type: String }, // Custom wallpaper URL
+
+    // Security Events tracking
+    securityEvents: [{
+        event: { type: String }, // e.g. "SAFE_MODE_ATTEMPT", "SIM_CHANGE", "ROOT_DETECTED", "TAMPERING"
+        timestamp: { type: Date },
+        action: { type: String }, // Action taken (e.g. "LOCKED", "ALARMED")
+        details: { type: mongoose.Schema.Types.Mixed },
+        ipAddress: { type: String }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Customer', CustomerSchema);

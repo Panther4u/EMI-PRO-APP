@@ -11,12 +11,27 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
 
+/**
+ * DeviceLockModule - React Native Bridge for Device Control
+ * 
+ * Exposes all device management functions to JavaScript:
+ * - Lock/Unlock device
+ * - Kiosk mode
+ * - Set wallpaper
+ * - Set PIN
+ * - Grant permissions
+ * - Security hardening
+ * - Power button protection
+ */
 public class DeviceLockModule extends ReactContextBaseJavaModule {
 
     private DevicePolicyManager devicePolicyManager;
     private ComponentName adminComponent;
     private ReactApplicationContext reactContext;
+    private FullDeviceLockManager lockManager;
 
     public DeviceLockModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -26,12 +41,12 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             this.devicePolicyManager = (DevicePolicyManager) reactContext
                     .getSystemService(Context.DEVICE_POLICY_SERVICE);
             this.adminComponent = new ComponentName(reactContext, DeviceAdminReceiver.class);
+            this.lockManager = new FullDeviceLockManager(reactContext);
         } catch (Exception e) {
-            // Safely handle cases where Device Admin is not available
-            // This allows Admin APK to work as remote control without local privileges
             android.util.Log.w("DeviceLockModule", "Device Admin not available: " + e.getMessage());
             this.devicePolicyManager = null;
             this.adminComponent = null;
+            this.lockManager = null;
         }
     }
 
@@ -50,10 +65,19 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void isDeviceLocked(Promise promise) {
+        if (lockManager != null) {
+            promise.resolve(lockManager.isDeviceLocked());
+        } else {
+            promise.resolve(false);
+        }
+    }
+
+    @ReactMethod
     public void requestAdminPermission(Promise promise) {
         try {
             if (isDeviceOwner()) {
-                promise.resolve(true); // Already owner
+                promise.resolve(true);
                 return;
             }
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
@@ -75,6 +99,40 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         } else {
             boolean isActive = devicePolicyManager.isAdminActive(adminComponent);
             promise.resolve(isActive);
+        }
+    }
+
+    /**
+     * Lock device immediately with full lockdown
+     */
+    @ReactMethod
+    public void lockDeviceImmediately(Promise promise) {
+        try {
+            if (lockManager != null && isDeviceOwner()) {
+                lockManager.lockDeviceImmediately();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner or lock manager unavailable");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Unlock device (admin only)
+     */
+    @ReactMethod
+    public void unlockDevice(Promise promise) {
+        try {
+            if (lockManager != null && isDeviceOwner()) {
+                lockManager.unlockDevice();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner or lock manager unavailable");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
         }
     }
 
@@ -110,7 +168,6 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     public void wipeData(Promise promise) {
         try {
             if (isDeviceOwner() && devicePolicyManager.isAdminActive(adminComponent)) {
-                // Wipe internal data (Factory Reset)
                 devicePolicyManager.wipeData(0);
                 promise.resolve(true);
             } else {
@@ -121,11 +178,156 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /**
+     * Set device wallpaper from URL
+     */
+    @ReactMethod
+    public void setWallpaper(String imageUrl, Promise promise) {
+        try {
+            if (lockManager != null && isDeviceOwner()) {
+                // Run on background thread to avoid blocking UI
+                new Thread(() -> {
+                    boolean result = lockManager.setWallpaper(imageUrl);
+                    if (result) {
+                        promise.resolve(true);
+                    } else {
+                        promise.reject("ERROR", "Failed to set wallpaper");
+                    }
+                }).start();
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Set device PIN code
+     */
+    @ReactMethod
+    public void setDevicePin(String pin, Promise promise) {
+        try {
+            if (lockManager != null && isDeviceOwner()) {
+                boolean result = lockManager.setDevicePin(pin);
+                promise.resolve(result);
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Grant all permissions automatically
+     */
+    @ReactMethod
+    public void grantAllPermissions(Promise promise) {
+        try {
+            if (lockManager != null && isDeviceOwner()) {
+                lockManager.grantAllPermissions();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Apply full security restrictions
+     */
+    @ReactMethod
+    public void applySecurityRestrictions(Promise promise) {
+        try {
+            if (lockManager != null && isDeviceOwner()) {
+                lockManager.applyFullSecurityRestrictions();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Start power button alarm
+     */
+    @ReactMethod
+    public void startPowerAlarm(Promise promise) {
+        try {
+            if (lockManager != null) {
+                lockManager.startPowerButtonAlarm();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Lock manager unavailable");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Stop power button alarm
+     */
+    @ReactMethod
+    public void stopPowerAlarm(Promise promise) {
+        try {
+            if (lockManager != null) {
+                lockManager.stopPowerButtonAlarm();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Lock manager unavailable");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Set lock screen message and support phone
+     */
+    @ReactMethod
+    public void setLockInfo(String message, String phone, Promise promise) {
+        try {
+            if (lockManager != null) {
+                lockManager.setLockInfo(message, phone);
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Lock manager unavailable");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Get lock screen info (message and phone)
+     */
+    @ReactMethod
+    public void getLockInfo(Promise promise) {
+        try {
+            if (lockManager != null) {
+                WritableMap map = Arguments.createMap();
+                map.putString("message", lockManager.getLockMessage());
+                map.putString("phone", lockManager.getSupportPhone());
+                map.putBoolean("isLocked", lockManager.isDeviceLocked());
+                promise.resolve(map);
+            } else {
+                promise.reject("ERROR", "Lock manager unavailable");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
     @ReactMethod
     public void getIMEI(Promise promise) {
         try {
             String deviceId = null;
-            // Try to get actual IMEI if we have permission/ownership
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
                     android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) reactContext
@@ -139,7 +341,6 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
                 }
             }
 
-            // Fallback to Android ID
             if (deviceId == null) {
                 deviceId = Settings.Secure.getString(reactContext.getContentResolver(), Settings.Secure.ANDROID_ID);
             }
@@ -166,24 +367,13 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
 
             if (subscriptionInfoList != null && !subscriptionInfoList.isEmpty()) {
                 android.telephony.SubscriptionInfo info = subscriptionInfoList.get(0);
-                com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
+                WritableMap map = Arguments.createMap();
                 map.putString("operator", info.getCarrierName().toString());
                 map.putString("subscriptionId", String.valueOf(info.getSubscriptionId()));
 
-                // ICCID is restricted in newer Android versions but accessible with carrier
-                // privileges or device owner
-                // We'll try to get it, or fallback to hash if needed.
-                // In earlier versions getIccId() exists. In Android 11+ unlikely without
-                // specific privileges.
-                // However, since we are Device Owner, we should have success or use getCardId()
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         try {
-                            // On Q+ access to IccId is restricted.
-                            // But let's try reading it if available or use subscription ID as proxy for now
-                            // if IccId fails
-                            // Actually SubscriptionInfo.getIccId() is deprecated/hidden in some versions.
-                            // We will try standard access:
                             String iccId = info.getIccId();
                             if (iccId != null)
                                 map.putString("serialNumber", iccId);
@@ -196,7 +386,6 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
                 } catch (Exception e) {
                 }
 
-                // Try to get phone number safely
                 try {
                     String number = info.getNumber();
                     if (number != null && !number.isEmpty())
@@ -234,10 +423,11 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             String customerId = prefs.getString("CUSTOMER_ID", null);
             boolean isProvisioned = prefs.getBoolean("IS_PROVISIONED", false);
 
-            if (isProvisioned && customerId != null) {
-                com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
+            if (isProvisioned) {
+                WritableMap map = Arguments.createMap();
                 map.putString("serverUrl", serverUrl);
                 map.putString("customerId", customerId);
+                map.putBoolean("isProvisioned", true);
                 promise.resolve(map);
             } else {
                 promise.resolve(null);
@@ -250,8 +440,10 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getAppInfo(Promise promise) {
         try {
-            com.facebook.react.bridge.WritableMap map = com.facebook.react.bridge.Arguments.createMap();
+            WritableMap map = Arguments.createMap();
             map.putString("packageName", reactContext.getPackageName());
+            map.putBoolean("isDeviceOwner", isDeviceOwner());
+            map.putBoolean("isLocked", lockManager != null ? lockManager.isDeviceLocked() : false);
             promise.resolve(map);
         } catch (Exception e) {
             promise.reject("ERROR", e.getMessage());
@@ -264,7 +456,16 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             if (isDeviceOwner()) {
                 String[] packages = { reactContext.getPackageName() };
                 devicePolicyManager.setLockTaskPackages(adminComponent, packages);
-                getCurrentActivity().startLockTask();
+
+                // Configure lock task features (block everything)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    devicePolicyManager.setLockTaskFeatures(adminComponent,
+                            DevicePolicyManager.LOCK_TASK_FEATURE_NONE);
+                }
+
+                if (getCurrentActivity() != null) {
+                    getCurrentActivity().startLockTask();
+                }
                 promise.resolve(true);
             } else {
                 promise.reject("ERROR", "Not device owner");
@@ -282,7 +483,6 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             }
             promise.resolve(true);
         } catch (Exception e) {
-            // Silently resolve if it fails on non-owner or inactive lock task
             promise.resolve(true);
         }
     }
@@ -291,22 +491,58 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     public void setSecurityHardening(boolean enabled, Promise promise) {
         try {
             if (isDeviceOwner()) {
-                // Block Factory Reset
-                devicePolicyManager.addUserRestriction(adminComponent,
-                        android.os.UserManager.DISALLOW_FACTORY_RESET);
+                if (enabled) {
+                    devicePolicyManager.addUserRestriction(adminComponent,
+                            android.os.UserManager.DISALLOW_FACTORY_RESET);
+                    devicePolicyManager.addUserRestriction(adminComponent,
+                            android.os.UserManager.DISALLOW_SAFE_BOOT);
+                    devicePolicyManager.setGlobalSetting(adminComponent,
+                            android.provider.Settings.Global.ADB_ENABLED, "0");
+                    devicePolicyManager.addUserRestriction(adminComponent,
+                            android.os.UserManager.DISALLOW_USB_FILE_TRANSFER);
+                } else {
+                    devicePolicyManager.clearUserRestriction(adminComponent,
+                            android.os.UserManager.DISALLOW_FACTORY_RESET);
+                    devicePolicyManager.clearUserRestriction(adminComponent,
+                            android.os.UserManager.DISALLOW_SAFE_BOOT);
+                    devicePolicyManager.clearUserRestriction(adminComponent,
+                            android.os.UserManager.DISALLOW_USB_FILE_TRANSFER);
+                }
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 
-                // Block Safe Mode entry (on supported devices)
-                devicePolicyManager.addUserRestriction(adminComponent,
-                        android.os.UserManager.DISALLOW_SAFE_BOOT);
+    /**
+     * Start the lock screen service
+     */
+    @ReactMethod
+    public void startLockService(Promise promise) {
+        try {
+            Intent serviceIntent = new Intent(reactContext, LockScreenService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                reactContext.startForegroundService(serviceIntent);
+            } else {
+                reactContext.startService(serviceIntent);
+            }
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 
-                // Block USB Debugging (Developer Options)
-                devicePolicyManager.setGlobalSetting(adminComponent,
-                        android.provider.Settings.Global.ADB_ENABLED, "0");
-
-                // Block USB File Transfer
-                devicePolicyManager.addUserRestriction(adminComponent,
-                        android.os.UserManager.DISALLOW_USB_FILE_TRANSFER);
-
+    /**
+     * Disable status bar
+     */
+    @ReactMethod
+    public void setStatusBarDisabled(boolean disabled, Promise promise) {
+        try {
+            if (isDeviceOwner()) {
+                devicePolicyManager.setStatusBarDisabled(adminComponent, disabled);
                 promise.resolve(true);
             } else {
                 promise.reject("ERROR", "Not device owner");

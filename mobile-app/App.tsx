@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NativeModules, Alert, Linking } from 'react-native';
+import { NativeModules, Alert, Linking, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APP_VERSION } from './src/config';
 
@@ -18,8 +18,46 @@ const { DeviceLockModule } = NativeModules;
 export default function App() {
     const [loading, setLoading] = useState(true);
     const [isEnrolled, setIsEnrolled] = useState(false);
-    const [isLocked, setIsLocked] = useState(false);
+    const [isLocked, setIsLocked] = useState(true); // Default to LOCKED
     const [isAdmin, setIsAdmin] = useState(false);
+
+    // Handle app state changes (foreground/background)
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', (nextAppState) => {
+            if (nextAppState === 'active') {
+                // Re-check lock status when app comes to foreground
+                checkLockStatus();
+            }
+        });
+
+        return () => subscription?.remove();
+    }, []);
+
+    // Check lock status from native module
+    const checkLockStatus = useCallback(async () => {
+        if (DeviceLockModule && DeviceLockModule.isDeviceLocked) {
+            try {
+                const locked = await DeviceLockModule.isDeviceLocked();
+                console.log("📱 Device lock status:", locked ? "LOCKED" : "UNLOCKED");
+                setIsLocked(locked);
+
+                // Persist to AsyncStorage
+                await AsyncStorage.setItem('lock_status', locked ? 'locked' : 'unlocked');
+
+                // If locked, ensure kiosk mode is active
+                if (locked && DeviceLockModule.startKioskMode) {
+                    try {
+                        await DeviceLockModule.startKioskMode();
+                        console.log("✅ Kiosk mode enforced");
+                    } catch (e) {
+                        console.warn("Kiosk mode failed:", e);
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to check lock status:", e);
+            }
+        }
+    }, []);
 
     useEffect(() => {
         checkStatus();
@@ -53,40 +91,74 @@ export default function App() {
         let currentServerUrl = 'https://emi-pro-app.onrender.com';
 
         try {
-            console.log("Checking Admin status...");
-            // 1. DPC / Device Owner Check
+            console.log("🔍 Checking device status...");
+
             const dlm = NativeModules.DeviceLockModule;
             let currentPackage = '';
+            let deviceIsOwner = false;
+            let deviceIsLocked = true; // Default to locked for safety
+
+            // 1. Get app info and device owner status
             if (dlm && dlm.getAppInfo) {
                 try {
                     const appInfo = await dlm.getAppInfo();
                     currentPackage = appInfo?.packageName || '';
-                    console.log("Running as:", currentPackage);
+                    deviceIsOwner = appInfo?.isDeviceOwner || false;
+                    deviceIsLocked = appInfo?.isLocked ?? true;
 
-                    // Note: In single APK mode, we treat the 'admin' flavor 
-                    // as the DPC that runs on the customer's phone.
+                    console.log("📱 Package:", currentPackage);
+                    console.log("👑 Device Owner:", deviceIsOwner);
+                    console.log("🔒 Locked:", deviceIsLocked);
                 } catch (appInfoError) {
                     console.warn("getAppInfo failed:", appInfoError);
                 }
             }
 
-            // 2. USER DEVICE CHECK
-            console.log("Checking User Provisioning...");
+            // 2. Check provisioning data
+            console.log("📋 Checking provisioning data...");
             if (dlm && dlm.getProvisioningData) {
                 try {
                     const provisioningData = await dlm.getProvisioningData();
-                    if (provisioningData?.customerId) {
-                        await AsyncStorage.setItem('enrollment_data', JSON.stringify({
-                            customerId: provisioningData.customerId,
-                            serverUrl: provisioningData.serverUrl,
-                            enrolledAt: new Date().toISOString()
-                        }));
+                    if (provisioningData?.isProvisioned) {
+                        console.log("✅ Device is provisioned");
+
+                        if (provisioningData.customerId) {
+                            await AsyncStorage.setItem('enrollment_data', JSON.stringify({
+                                customerId: provisioningData.customerId,
+                                serverUrl: provisioningData.serverUrl || currentServerUrl,
+                                enrolledAt: new Date().toISOString()
+                            }));
+                        }
+
+                        setIsEnrolled(true);
+                        setIsLocked(deviceIsLocked);
+
+                        // Start lock service
+                        if (dlm.startLockService) {
+                            try {
+                                await dlm.startLockService();
+                                console.log("🔐 Lock service started");
+                            } catch (e) {
+                                console.warn("Failed to start lock service:", e);
+                            }
+                        }
+
+                        // Apply security restrictions if device owner
+                        if (deviceIsOwner && dlm.applySecurityRestrictions) {
+                            try {
+                                await dlm.applySecurityRestrictions();
+                                console.log("🛡️ Security restrictions applied");
+                            } catch (e) {
+                                console.warn("Failed to apply security:", e);
+                            }
+                        }
                     }
                 } catch (provError) {
                     console.warn("getProvisioningData failed:", provError);
                 }
             }
 
+            // 3. Check stored enrollment data
             const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
             const lockStatus = await AsyncStorage.getItem('lock_status');
 
@@ -94,18 +166,34 @@ export default function App() {
                 setIsEnrolled(true);
                 const enrollmentData = JSON.parse(enrollmentDataStr);
                 currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
+
+                // Sync with backend
                 await syncStatus(enrollmentData.customerId, currentServerUrl);
-                // Verify Device Details & Sync Offline Token
+
+                // Verify device
                 verifyDevice(enrollmentData.customerId, currentServerUrl);
             }
 
-            setIsLocked(lockStatus === 'locked');
+            // Get lock status - prioritize native module over AsyncStorage
+            const storedLockStatus = lockStatus === 'locked';
+            setIsLocked(deviceIsLocked || storedLockStatus);
+
+            // 4. ENABLE KIOSK MODE IF DEVICE IS LOCKED
+            if ((deviceIsLocked || storedLockStatus) && DeviceLockModule && DeviceLockModule.startKioskMode) {
+                try {
+                    console.log("🔒 Device is locked - Enabling Kiosk Mode");
+                    await DeviceLockModule.startKioskMode();
+                    console.log("✅ Kiosk Mode ENABLED");
+                } catch (e) {
+                    console.error("❌ Failed to enable Kiosk Mode:", e);
+                }
+            }
+
             checkForUpdates(currentServerUrl);
 
         } catch (e) {
             console.error("Critical Startup Error:", e);
         } finally {
-            // Guarantee loading is cleared
             setTimeout(() => setLoading(false), 500);
         }
     };
@@ -113,7 +201,6 @@ export default function App() {
     const syncStatus = async (cid: string, url: string, step?: string) => {
         if (!cid || !url || isAdmin) return;
         try {
-            // Try to get location
             let location = null;
             try {
                 const getCoords = () => new Promise((resolve, reject) => {
@@ -130,14 +217,13 @@ export default function App() {
 
             const body: any = {
                 customerId: cid,
-                deviceId: cid, // fallback
+                deviceId: cid,
                 status: 'online',
                 appInstalled: true,
                 location
             };
             if (step) body.step = step;
 
-            // Use the heartbeat endpoint for real-time commands
             const response = await fetch(`${url}/api/customers/heartbeat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -147,29 +233,85 @@ export default function App() {
             if (response.ok) {
                 const data = await response.json();
 
-                // Handle Remote Command if present
+                // Handle Remote Commands
                 if (data.command) {
-                    console.log("🚀 Received Remote Command:", data.command);
+                    console.log("🚀 Remote Command:", data.command);
+
                     if (data.command === 'lock') {
+                        console.log("🔒 LOCKING DEVICE");
                         setIsLocked(true);
                         await AsyncStorage.setItem('lock_status', 'locked');
-                        if (DeviceLockModule) DeviceLockModule.lockNow().catch(console.error);
+
+                        if (DeviceLockModule) {
+                            // Lock immediately
+                            if (DeviceLockModule.lockDeviceImmediately) {
+                                await DeviceLockModule.lockDeviceImmediately();
+                            }
+                            // Enable kiosk mode
+                            if (DeviceLockModule.startKioskMode) {
+                                await DeviceLockModule.startKioskMode();
+                            }
+                        }
+
                     } else if (data.command === 'unlock') {
+                        console.log("🔓 UNLOCKING DEVICE");
                         setIsLocked(false);
                         await AsyncStorage.setItem('lock_status', 'unlocked');
+
+                        if (DeviceLockModule) {
+                            // Unlock device
+                            if (DeviceLockModule.unlockDevice) {
+                                await DeviceLockModule.unlockDevice();
+                            }
+                            // Disable kiosk mode
+                            if (DeviceLockModule.stopKioskMode) {
+                                await DeviceLockModule.stopKioskMode();
+                            }
+                        }
+
                     } else if (data.command === 'wipe') {
-                        // wipe logic (requires Device Owner)
-                        console.log("⚠️ Executing REMOTE WIPE...");
-                        if (DeviceLockModule) DeviceLockModule.wipeData().catch(console.error);
+                        console.log("⚠️ WIPING DEVICE");
+                        if (DeviceLockModule?.wipeData) {
+                            DeviceLockModule.wipeData();
+                        }
+
+                    } else if (data.command === 'setWallpaper' && data.wallpaperUrl) {
+                        console.log("🖼️ Setting wallpaper:", data.wallpaperUrl);
+                        if (DeviceLockModule?.setWallpaper) {
+                            DeviceLockModule.setWallpaper(data.wallpaperUrl);
+                        }
+
+                    } else if (data.command === 'setPin' && data.pin) {
+                        console.log("🔢 Setting PIN");
+                        if (DeviceLockModule?.setDevicePin) {
+                            DeviceLockModule.setDevicePin(data.pin);
+                        }
+
+                    } else if (data.command === 'alarm') {
+                        console.log("🚨 Starting alarm");
+                        if (DeviceLockModule?.startPowerAlarm) {
+                            DeviceLockModule.startPowerAlarm();
+                        }
                     }
                 }
 
-                // Support legacy isLocked flag too
+                // Legacy isLocked support
                 if (data.isLocked !== undefined) {
                     const newLockState = !!data.isLocked;
                     if (newLockState !== isLocked) {
+                        console.log(`🔄 Lock state: ${newLockState ? 'LOCKED' : 'UNLOCKED'}`);
                         setIsLocked(newLockState);
                         await AsyncStorage.setItem('lock_status', newLockState ? 'locked' : 'unlocked');
+
+                        if (DeviceLockModule) {
+                            if (newLockState) {
+                                DeviceLockModule.lockDeviceImmediately?.();
+                                DeviceLockModule.startKioskMode?.();
+                            } else {
+                                DeviceLockModule.unlockDevice?.();
+                                DeviceLockModule.stopKioskMode?.();
+                            }
+                        }
                     }
                 }
             }
@@ -181,13 +323,9 @@ export default function App() {
     const verifyDevice = async (cid: string, url: string) => {
         if (!DeviceLockModule || isAdmin) return;
         try {
-            // Fetch Native Data
-            console.log("Verifying Device...");
+            console.log("🔍 Verifying Device...");
             const actualIMEI = await DeviceLockModule.getIMEI();
             const simDetails = await DeviceLockModule.getSimDetails();
-
-            // Basic Device Info
-            // In a real app, use react-native-device-info for detailed model info
             const modelDetails = "Android Device";
 
             const response = await fetch(`${url}/api/customers/${cid}/verify`, {
@@ -200,21 +338,18 @@ export default function App() {
                 })
             });
 
-            // Mark details fetched after call succeeds
             syncStatus(cid, url, 'details');
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Verification Result:", data);
+                console.log("✅ Verification:", data);
 
                 if (data.offlineLockToken && DeviceLockModule.setOfflineToken) {
                     await DeviceLockModule.setOfflineToken(data.offlineLockToken);
-                    console.log("Offline token secured");
                 }
 
                 if (data.status === 'MISMATCH') {
-                    // Optional: Force Lock or Show Warning
-                    console.warn('Device Mismatch Detected');
+                    console.warn('⚠️ Device Mismatch Detected');
                 }
             }
         } catch (e) {
@@ -222,23 +357,23 @@ export default function App() {
         }
     };
 
-    // Global Heartbeat
+    // Heartbeat - sync every 30 seconds
     useEffect(() => {
         let interval: any;
+
         const startHeartbeat = async () => {
             const data = await AsyncStorage.getItem('enrollment_data');
             if (data) {
                 const { customerId, serverUrl } = JSON.parse(data);
 
-                // Initial Syncs
-                // Just in case it's a fresh install/launch
-                syncStatus(customerId, serverUrl, 'launched'); // Report App Launched
-                syncStatus(customerId, serverUrl, 'installed'); // Keep existing just in case
+                // Initial syncs
+                syncStatus(customerId, serverUrl, 'launched');
+                syncStatus(customerId, serverUrl, 'installed');
 
                 interval = setInterval(() => {
                     syncStatus(customerId, serverUrl);
                     verifyDevice(customerId, serverUrl);
-                }, 30000);
+                }, 30000); // 30 second heartbeat
             }
         };
 

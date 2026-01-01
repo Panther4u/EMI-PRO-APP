@@ -318,9 +318,12 @@ router.post('/heartbeat', async (req, res) => {
 
         // Check for pending commands
         let pendingCommand = null;
+        let commandParams = null;
+
         if (customer.remoteCommand && customer.remoteCommand.command) {
             pendingCommand = customer.remoteCommand.command;
-            console.log(`📤 Sending command to device: ${pendingCommand}`);
+            commandParams = customer.remoteCommand.params || {};
+            console.log(`📤 Sending command to device: ${pendingCommand}`, commandParams);
             // Clear once sent to device
             await Customer.updateOne({ _id: customer._id }, { $unset: { remoteCommand: "" } });
         }
@@ -329,7 +332,17 @@ router.post('/heartbeat', async (req, res) => {
             ok: true,
             status: customer.deviceStatus.status,
             isLocked: customer.isLocked, // ✅ Return lock status
-            command: pendingCommand
+            command: pendingCommand,
+            // Command parameters for actions like setWallpaper, setPin
+            wallpaperUrl: commandParams?.wallpaperUrl || null,
+            pin: commandParams?.pin || null,
+            lockMessage: commandParams?.message || customer.lockMessage || null,
+            supportPhone: commandParams?.phone || customer.supportPhone || null,
+            // Additional device control data
+            lockInfo: {
+                message: customer.lockMessage || "This device has been locked due to payment overdue.",
+                phone: customer.supportPhone || "8876655444"
+            }
         });
     } catch (err) {
         console.error('Heartbeat error:', err);
@@ -338,23 +351,65 @@ router.post('/heartbeat', async (req, res) => {
 });
 
 // Set remote command for a device
+// Supported commands: lock, unlock, wipe, reset, setWallpaper, setPin, alarm, stopAlarm, setLockInfo
 router.post('/:id/command', async (req, res) => {
     try {
-        const { command } = req.body;
-        if (!['lock', 'unlock', 'wipe', 'reset'].includes(command)) {
-            return res.status(400).json({ message: 'Invalid command' });
+        const { command, params } = req.body;
+
+        // Valid commands list
+        const validCommands = [
+            'lock', 'unlock', 'wipe', 'reset',
+            'setWallpaper', 'setPin', 'alarm', 'stopAlarm',
+            'setLockInfo', 'grantPermissions', 'applyRestrictions'
+        ];
+
+        if (!validCommands.includes(command)) {
+            return res.status(400).json({
+                message: 'Invalid command',
+                validCommands
+            });
         }
 
         const updateData = {
             remoteCommand: {
                 command,
+                params: params || {},
                 timestamp: new Date()
             }
         };
 
-        // If the command is lock or unlock, also update the high-level state
-        if (command === 'lock') updateData.isLocked = true;
-        if (command === 'unlock') updateData.isLocked = false;
+        // Update high-level state based on command
+        if (command === 'lock') {
+            updateData.isLocked = true;
+
+            // Add lock history entry
+            updateData.$push = updateData.$push || {};
+            updateData.$push.lockHistory = {
+                id: Date.now().toString(),
+                action: 'locked',
+                reason: params?.reason || 'Remote lock by admin',
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        if (command === 'unlock') {
+            updateData.isLocked = false;
+
+            // Add unlock history entry
+            updateData.$push = updateData.$push || {};
+            updateData.$push.lockHistory = {
+                id: Date.now().toString(),
+                action: 'unlocked',
+                reason: params?.reason || 'Remote unlock by admin',
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        // Handle setLockInfo - update the lock message and support phone
+        if (command === 'setLockInfo' && params) {
+            if (params.message) updateData.lockMessage = params.message;
+            if (params.phone) updateData.supportPhone = params.phone;
+        }
 
         const customer = await Customer.findOneAndUpdate(
             { id: req.params.id },
@@ -363,10 +418,192 @@ router.post('/:id/command', async (req, res) => {
         );
 
         if (!customer) return res.status(404).json({ message: 'Customer not found' });
-        res.json({ success: true, message: `Command ${command} queued for device`, customer });
+
+        console.log(`📤 Command ${command} queued for device ${req.params.id}`);
+        if (params) console.log(`   Params:`, params);
+
+        res.json({
+            success: true,
+            message: `Command ${command} queued for device`,
+            command,
+            params,
+            customer
+        });
+    } catch (err) {
+        console.error('Command error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// SIM Change Report - Device reports SIM card change
+router.post('/:id/sim-change', async (req, res) => {
+    try {
+        const { originalIccid, newIccid, newOperator, timestamp } = req.body;
+
+        console.log(`🚨 SIM CHANGE REPORTED for ${req.params.id}`);
+        console.log(`   Original ICCID: ${originalIccid}`);
+        console.log(`   New ICCID: ${newIccid}`);
+        console.log(`   New Operator: ${newOperator}`);
+
+        const updateData = {
+            $push: {
+                simChangeHistory: {
+                    serialNumber: newIccid,
+                    operator: newOperator,
+                    detectedAt: new Date(timestamp || Date.now()),
+                    ipAddress: req.ip
+                },
+                lockHistory: {
+                    id: Date.now().toString(),
+                    action: 'locked',
+                    reason: `SIM change detected: ${newOperator || 'Unknown'}`,
+                    timestamp: new Date().toISOString()
+                }
+            },
+            $set: {
+                isLocked: true, // Auto-lock on SIM change
+                'deviceStatus.status': 'warning',
+                'deviceStatus.errorMessage': `Unauthorized SIM change detected at ${new Date().toISOString()}`,
+                'simDetails.serialNumber': newIccid,
+                'simDetails.operator': newOperator,
+                'simDetails.isAuthorized': false,
+                'simDetails.lastUpdated': new Date()
+            }
+        };
+
+        const customer = await Customer.findOneAndUpdate(
+            { id: req.params.id },
+            updateData,
+            { new: true }
+        );
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        console.log(`🔒 Device auto-locked due to SIM change`);
+
+        res.json({
+            success: true,
+            message: 'SIM change recorded and device locked',
+            isLocked: true
+        });
+
+    } catch (err) {
+        console.error('SIM change error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Security Event Report - Device reports security events
+router.post('/:id/security-event', async (req, res) => {
+    try {
+        const { event, timestamp, action, details } = req.body;
+
+        console.log(`🚨 SECURITY EVENT for ${req.params.id}: ${event}`);
+
+        const eventData = {
+            event,
+            timestamp: new Date(timestamp || Date.now()),
+            action,
+            details,
+            ipAddress: req.ip
+        };
+
+        const updateData = {
+            $push: {
+                securityEvents: eventData
+            }
+        };
+
+        // Auto-lock for certain events
+        if (['SAFE_MODE_ATTEMPT', 'ROOT_DETECTED', 'TAMPERING'].includes(event)) {
+            updateData.$set = {
+                isLocked: true,
+                'deviceStatus.status': 'warning',
+                'deviceStatus.errorMessage': `Security event: ${event}`
+            };
+            updateData.$push.lockHistory = {
+                id: Date.now().toString(),
+                action: 'locked',
+                reason: `Security event: ${event}`,
+                timestamp: new Date().toISOString()
+            };
+            console.log(`🔒 Device auto-locked due to security event`);
+        }
+
+        const customer = await Customer.findOneAndUpdate(
+            { id: req.params.id },
+            updateData,
+            { new: true }
+        );
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Security event recorded',
+            event
+        });
+
+    } catch (err) {
+        console.error('Security event error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get offline tokens for a device
+router.get('/:id/tokens', async (req, res) => {
+    try {
+        const customer = await Customer.findOne({ id: req.params.id }).select('offlineLockToken offlineUnlockToken');
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        res.json({
+            lockToken: customer.offlineLockToken,
+            unlockToken: customer.offlineUnlockToken
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Set offline tokens for a device
+router.post('/:id/tokens', async (req, res) => {
+    try {
+        const { lockToken, unlockToken } = req.body;
+
+        const customer = await Customer.findOneAndUpdate(
+            { id: req.params.id },
+            {
+                $set: {
+                    offlineLockToken: lockToken,
+                    offlineUnlockToken: unlockToken
+                }
+            },
+            { new: true }
+        );
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        console.log(`🔐 Tokens updated for ${req.params.id}`);
+
+        res.json({
+            success: true,
+            message: 'Tokens updated'
+        });
+
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
 module.exports = router;
+
