@@ -259,7 +259,7 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     public void applySecurityRestrictions(Promise promise) {
         try {
             if (lockManager != null && isDeviceOwner()) {
-                lockManager.applyFullSecurityRestrictions();
+                lockManager.applyLockedRestrictions();
                 promise.resolve(true);
             } else {
                 promise.reject("ERROR", "Not device owner");

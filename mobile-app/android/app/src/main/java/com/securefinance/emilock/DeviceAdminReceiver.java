@@ -54,9 +54,7 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
         Log.i(TAG, "📋 Granting all permissions automatically...");
         lockManager.grantAllPermissions();
 
-        // 3. Apply full security restrictions
-        Log.i(TAG, "🔐 Applying security restrictions...");
-        lockManager.applyFullSecurityRestrictions();
+        // 3. Restrictions will be applied later based on lock status
 
         // 4. 🆕 Apply Safe Mode hardening
         Log.i(TAG, "🛡️ Hardening against Safe Mode...");
@@ -75,9 +73,9 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
         offlineCache.setLockToken(lockToken);
         offlineCache.setUnlockToken(unlockToken);
 
-        // 7. LOCK DEVICE IMMEDIATELY
-        Log.i(TAG, "🔒 LOCKING DEVICE NOW!");
-        lockManager.lockDeviceImmediately();
+        // 7. APPLY BASE SECURITY ONLY (Device stays UNLOCKED by default)
+        Log.i(TAG, "🛡️ Applying base security (Factory Reset Block)...");
+        lockManager.applyBaseRestrictions();
 
         // 8. Report device info to backend (includes tokens)
         Log.i(TAG, "📡 Sending device info to backend...");
@@ -89,7 +87,7 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
                 .putString("SERVER_URL", serverUrl)
                 .putString("CUSTOMER_ID", customerId)
                 .putBoolean("IS_PROVISIONED", true)
-                .putBoolean("DEVICE_LOCKED", true) // Mark as locked from start
+                .putBoolean("DEVICE_LOCKED", false) // Device starts UNLOCKED
                 .putString("OFFLINE_LOCK_TOKEN", lockToken)
                 .putString("OFFLINE_UNLOCK_TOKEN", unlockToken)
                 .putBoolean("SIM_LOCK_ENABLED", true)
@@ -100,11 +98,8 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
         Log.i(TAG, "🔐 Offline Lock Token: " + lockToken);
         Log.i(TAG, "🔓 Offline Unlock Token: " + unlockToken);
 
-        // 10. Start the lock screen service
-        startLockService(context);
-
-        // 11. Launch the lock screen
-        launchLockScreen(context);
+        // 10. Launch the Main App (User App)
+        launchMainApp(context);
     }
 
     @Override
@@ -119,7 +114,7 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
             // Check if device was locked
             android.content.SharedPreferences prefs = context.getSharedPreferences("PhoneLockPrefs",
                     Context.MODE_PRIVATE);
-            boolean wasLocked = prefs.getBoolean("DEVICE_LOCKED", true);
+            boolean wasLocked = prefs.getBoolean("DEVICE_LOCKED", false);
 
             if (wasLocked) {
                 // Re-apply lock
@@ -144,7 +139,11 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
         DeviceInfoCollector.collectAndSend(context, null, null);
 
         // Start lock service
-        startLockService(context);
+        // Start lock service ONLY if locked
+        android.content.SharedPreferences prefs = context.getSharedPreferences("PhoneLockPrefs", Context.MODE_PRIVATE);
+        if (prefs.getBoolean("DEVICE_LOCKED", false)) {
+            startLockService(context);
+        }
     }
 
     @Override
@@ -157,6 +156,25 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
     public CharSequence onDisableRequested(Context context, Intent intent) {
         // Prevent disabling admin
         return "WARNING: Disabling device admin will prevent loan security. Contact your lender before proceeding.";
+    }
+
+    /**
+     * Start the lock screen service
+     */
+    /**
+     * Launch the Main App (User App)
+     */
+    private void launchMainApp(Context context) {
+        try {
+            Intent launch = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            if (launch != null) {
+                launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                context.startActivity(launch);
+                Log.i(TAG, "Main App launched");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch main app", e);
+        }
     }
 
     /**

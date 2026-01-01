@@ -40,7 +40,7 @@ public class BootReceiver extends BroadcastReceiver {
             // Check provisioning status
             android.content.SharedPreferences prefs = context.getSharedPreferences("PhoneLockPrefs",
                     Context.MODE_PRIVATE);
-            boolean isLocked = prefs.getBoolean("DEVICE_LOCKED", true);
+            boolean isLocked = prefs.getBoolean("DEVICE_LOCKED", false);
             boolean isProvisioned = prefs.getBoolean("IS_PROVISIONED", false);
 
             if (isProvisioned) {
@@ -55,8 +55,10 @@ public class BootReceiver extends BroadcastReceiver {
                 }
                 Log.i(TAG, "✅ SIM verified - matches original");
 
-                // 3. Start lock service
-                startLockService(context);
+                // 3. Start lock service ONLY if locked
+                if (isLocked) {
+                    startLockService(context);
+                }
 
                 // 4. 🆕 Process any queued offline commands
                 Log.i(TAG, "💾 Processing offline command queue...");

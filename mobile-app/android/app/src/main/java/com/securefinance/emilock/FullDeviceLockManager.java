@@ -84,8 +84,8 @@ public class FullDeviceLockManager {
             // 1. Enable Kiosk Mode (Lock Task)
             enableKioskMode();
 
-            // 2. Apply all security restrictions
-            applyFullSecurityRestrictions();
+            // 2. Apply STRICT security restrictions
+            applyLockedRestrictions();
 
             // 3. Disable all user interaction
             disableUserInteraction();
@@ -128,9 +128,10 @@ public class FullDeviceLockManager {
     }
 
     /**
-     * Apply comprehensive security restrictions
+     * Apply BASE security restrictions (For Normal Usage)
+     * blocks Factory Reset, Uninstall, Safe Boot only.
      */
-    public void applyFullSecurityRestrictions() {
+    public void applyBaseRestrictions() {
         if (!isDeviceOwner())
             return;
 
@@ -141,6 +142,31 @@ public class FullDeviceLockManager {
             // Block Safe Mode
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_SAFE_BOOT);
 
+            // Block uninstalling apps (Admin app)
+            dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_UNINSTALL_APPS);
+
+            // Block removing users
+            dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_REMOVE_USER);
+
+            Log.i(TAG, "Base security restrictions applied (Device Unlocked)");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to apply base restrictions", e);
+        }
+    }
+
+    /**
+     * Apply STRICT security restrictions (For Locked State)
+     * Blocks Camera, USB, Apps, etc.
+     */
+    public void applyLockedRestrictions() {
+        if (!isDeviceOwner())
+            return;
+
+        try {
+            // Re-apply base just in case
+            applyBaseRestrictions();
+
             // Block USB file transfer
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_USB_FILE_TRANSFER);
 
@@ -150,16 +176,10 @@ public class FullDeviceLockManager {
             // Block adding users
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_ADD_USER);
 
-            // Block removing users
-            dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_REMOVE_USER);
-
             // Block config changes
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_CONFIG_WIFI);
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_CONFIG_BLUETOOTH);
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS);
-
-            // Block uninstalling apps
-            dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_UNINSTALL_APPS);
 
             // Block installing apps
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_INSTALL_APPS);
@@ -170,21 +190,10 @@ public class FullDeviceLockManager {
             // Block screen capture
             dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_SHARE_INTO_MANAGED_PROFILE);
 
-            // Block Bluetooth
-            dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_BLUETOOTH);
-
-            // Block Outgoing calls (except emergency)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_OUTGOING_CALLS);
-            }
-
-            // Block SMS
-            dpm.addUserRestriction(adminComponent, UserManager.DISALLOW_SMS);
-
-            Log.i(TAG, "All security restrictions applied");
+            Log.i(TAG, "Strict/Locked security restrictions applied");
 
         } catch (Exception e) {
-            Log.e(TAG, "Failed to apply restrictions", e);
+            Log.e(TAG, "Failed to apply strict restrictions", e);
         }
     }
 
@@ -450,8 +459,9 @@ public class FullDeviceLockManager {
             // 2. Enable status bar
             dpm.setStatusBarDisabled(adminComponent, false);
 
-            // 3. Remove restrictions (optional - can be selective)
-            removeSecurityRestrictions();
+            // 3. Revert to Base Restrictions (Clear strict ones)
+            clearStrictRestrictions();
+            applyBaseRestrictions();
 
             // 4. Set lock status
             prefs.edit().putBoolean(KEY_DEVICE_LOCKED, false).apply();
@@ -467,22 +477,31 @@ public class FullDeviceLockManager {
     }
 
     /**
-     * Remove security restrictions (for unlock)
+     * Clear strict restrictions (called during unlock)
      */
-    private void removeSecurityRestrictions() {
+
+    private void clearStrictRestrictions() {
         if (!isDeviceOwner())
             return;
 
         try {
-            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_OUTGOING_CALLS);
-            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_SMS);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_USB_FILE_TRANSFER);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_ADD_USER);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_CONFIG_WIFI);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_CONFIG_BLUETOOTH);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_INSTALL_APPS);
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_SHARE_INTO_MANAGED_PROFILE);
             dpm.setCameraDisabled(adminComponent, false);
 
-            // Keep some restrictions for security
-            // Factory reset, USB debugging, etc. should stay blocked
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_OUTGOING_CALLS);
+            }
+            dpm.clearUserRestriction(adminComponent, UserManager.DISALLOW_SMS);
 
+            Log.i(TAG, "Strict restrictions cleared");
         } catch (Exception e) {
-            Log.e(TAG, "Failed to remove restrictions", e);
+            Log.e(TAG, "Failed to clear strict restrictions", e);
         }
     }
 
