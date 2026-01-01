@@ -53,7 +53,7 @@ export default function MobileDashboard() {
                             <span className="font-black text-foreground text-[16px] leading-tight tracking-tight uppercase italic">SecurePRO</span>
                             <div className="flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span className="text-[9px] text-muted-foreground font-black tracking-widest uppercase opacity-70">Admin Cloud</span>
+                                <span className="text-[9px] text-muted-foreground font-black tracking-widest uppercase opacity-70">Admin Cloud V2</span>
                             </div>
                         </div>
                     </div>

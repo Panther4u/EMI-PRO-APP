@@ -114,6 +114,7 @@ export default function App() {
                     if (currentPackage.endsWith('.admin') || currentPackage.includes('.admin')) {
                         console.log("✅ Admin ID Detected");
                         setIsAdmin(true);
+                        setIsLocked(false);
                     }
                 } catch (appInfoError) {
                     console.warn("getAppInfo failed:", appInfoError);
@@ -184,8 +185,8 @@ export default function App() {
             const storedLockStatus = lockStatus === 'locked';
             setIsLocked(deviceIsLocked || storedLockStatus);
 
-            // 4. ENABLE KIOSK MODE IF DEVICE IS LOCKED
-            if ((deviceIsLocked || storedLockStatus) && DeviceLockModule && DeviceLockModule.startKioskMode) {
+            // 4. ENABLE KIOSK MODE IF DEVICE IS LOCKED (Skip for Admin App)
+            if (!isAdmin && (deviceIsLocked || storedLockStatus) && DeviceLockModule && DeviceLockModule.startKioskMode) {
                 try {
                     console.log("🔒 Device is locked - Enabling Kiosk Mode");
                     await DeviceLockModule.startKioskMode();

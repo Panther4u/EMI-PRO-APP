@@ -7,7 +7,7 @@ const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
 
 export default function AdminScreen() {
     const [loading, setLoading] = useState(true);
-    const uri = 'https://emi-pro-app.onrender.com/mobile';
+    const uri = `https://emi-pro-app.onrender.com/mobile?t=${Date.now()}`;
 
     // Injected script - ensure it fills screen and handles safe areas
     const injectedJavaScript = `
