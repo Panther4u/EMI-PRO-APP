@@ -144,13 +144,13 @@ export default function DevicesPage() {
             <button
                 onClick={() => setFilterState(isActive ? null : state)}
                 className={cn(
-                    "flex-1 p-3 rounded-xl border-2 transition-all text-center",
-                    isActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+                    "p-2 rounded-xl border transition-all text-center w-full",
+                    isActive ? "border-primary bg-primary/5" : "border-border/50 hover:border-primary/50",
                     config?.textColor
                 )}
             >
-                <p className="text-xl font-bold">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-lg font-bold">{value}</p>
+                <p className="text-[10px] text-muted-foreground">{label}</p>
             </button>
         );
     };
@@ -238,7 +238,7 @@ export default function DevicesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background p-4">
+        <div className="min-h-screen bg-background">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between gap-4 mb-6">
@@ -261,7 +261,7 @@ export default function DevicesPage() {
 
                 {/* Stats */}
                 {stats && (
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
+                    <div className="grid grid-cols-3 gap-2 mb-4">
                         <StatCard label="Total" value={stats.total} state={null} />
                         <StatCard label="Active" value={stats.ACTIVE} state="ACTIVE" />
                         <StatCard label="Locked" value={stats.LOCKED} state="LOCKED" />

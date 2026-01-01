@@ -45,9 +45,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Admin Layout with Sidebar
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { isAdminLocked, userRole } = useAuth();
-
-    const isBlocked = isAdminLocked && userRole === 'admin';
+    const { isAdminLocked } = useAuth();
+    // Assuming implicit admin role for blockage logic or simple global lock
+    const isBlocked = isAdminLocked;
 
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden relative selection:bg-primary/20">
@@ -70,7 +70,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </Link>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
+                <div className="flex-1 overflow-y-auto p-0 sm:p-4 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
                     {children}
 
                     {/* Lock Overlay */}
