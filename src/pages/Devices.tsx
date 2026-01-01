@@ -166,11 +166,11 @@ export default function DevicesPage() {
                 )}
                 onClick={() => openDeviceDetails(device.deviceId)}
             >
-                <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
+                <CardContent className="p-3">
+                    <div className="flex items-start gap-2.5">
                         {/* Avatar/Icon */}
                         <div className={cn(
-                            "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
+                            "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
                             device.customer?.photoUrl ? "" : "bg-secondary"
                         )}>
                             {device.customer?.photoUrl ? (
@@ -186,27 +186,27 @@ export default function DevicesPage() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-0.5">
                                 <h4 className="font-semibold text-foreground truncate text-sm">
                                     {device.customer?.name || device.model || device.brand || 'Unknown'}
                                 </h4>
-                                <Badge className={cn("text-[10px]", config.color, "text-white")}>
+                                <Badge className={cn("text-[10px] px-1.5 h-4", config.color, "text-white")}>
                                     {config.label}
                                 </Badge>
                             </div>
 
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-[10px] text-muted-foreground truncate">
                                 {device.brand} {device.model}
                             </p>
 
                             {device.customer && (
-                                <p className="text-xs text-muted-foreground mt-0.5">
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
                                     📱 {device.customer.phoneNo}
                                 </p>
                             )}
 
                             {/* Quick stats */}
-                            <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {device.lastSeenAt
@@ -230,7 +230,7 @@ export default function DevicesPage() {
                         </div>
 
                         {/* Arrow */}
-                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     </div>
                 </CardContent>
             </Card>

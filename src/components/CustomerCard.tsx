@@ -20,17 +20,17 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
   return (
     <div
       className={cn(
-        "glass-card p-5 transition-all duration-300 hover:border-border cursor-pointer",
+        "glass-card p-4 transition-all duration-300 hover:border-border cursor-pointer",
         customer.isLocked && "border-destructive/30 bg-destructive/5"
       )}
       onClick={() => onViewDetails(customer)}
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0",
+              "w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0",
               customer.isLocked
                 ? "bg-destructive/20 text-destructive"
                 : "bg-primary/20 text-primary"
@@ -42,7 +42,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
                 <h3 className="font-semibold text-sm text-foreground truncate">{customer.name}</h3>
                 <div
                   className={cn(
-                    "w-2 h-2 rounded-full",
+                    "w-1.5 h-1.5 rounded-full flex-shrink-0",
                     customer.deviceStatus?.status === 'online' ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-muted"
                   )}
                 />
@@ -56,7 +56,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
           <Badge
             variant="outline"
             className={cn(
-              "whitespace-nowrap flex-shrink-0",
+              "whitespace-nowrap flex-shrink-0 text-[10px] px-1.5 h-5",
               customer.isLocked ? "status-locked" :
                 (customer.deviceStatus?.status === 'ADMIN_INSTALLED' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "status-unlocked")
             )}
@@ -68,14 +68,14 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
 
 
       {/* EMI Progress */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-muted-foreground">EMI Progress</span>
-          <span className="text-sm font-medium text-foreground">
+      <div className="mb-3 mt-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs text-muted-foreground">EMI Progress</span>
+          <span className="text-xs font-medium text-foreground">
             {customer.paidEmis || 0}/{customer.totalEmis || 0}
           </span>
         </div>
-        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
@@ -87,34 +87,34 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
       </div>
 
       {/* EMI Details */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-secondary/50 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="bg-secondary/50 rounded-lg p-2.5">
+          <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
             <CreditCard className="w-3 h-3" />
-            <span className="text-xs">Monthly EMI</span>
+            <span className="text-[10px]">Monthly EMI</span>
           </div>
-          <p className="font-semibold text-foreground">₹{(customer.emiAmount || 0).toLocaleString()}</p>
+          <p className="font-semibold text-sm text-foreground">₹{(customer.emiAmount || 0).toLocaleString()}</p>
         </div>
-        <div className="bg-secondary/50 rounded-lg p-3">
-          <div className="text-xs text-muted-foreground mb-1">Pending</div>
-          <p className="font-semibold text-foreground">
+        <div className="bg-secondary/50 rounded-lg p-2.5">
+          <div className="text-[10px] text-muted-foreground mb-0.5">Pending</div>
+          <p className="font-semibold text-sm text-foreground">
             ₹{((remainingEmis || 0) * (customer.emiAmount || 0)).toLocaleString()}
           </p>
         </div>
       </div>
 
       {/* Location */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-        <MapPin className="w-4 h-4" />
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3 truncate">
+        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
         <span className="truncate">{customer.address}</span>
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <Button
             variant="glass"
             size="sm"
-            className="w-full"
+            className="w-full h-8 text-xs"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(customer);
@@ -125,7 +125,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
+            className="w-full h-8 text-xs px-0"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(customer.id);
@@ -137,7 +137,7 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
           <Button
             variant="outline"
             size="sm"
-            className="w-full border-destructive/20 text-destructive hover:bg-destructive hover:text-white"
+            className="w-full h-8 text-xs px-0 border-destructive/20 text-destructive hover:bg-destructive hover:text-white"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(customer.id);
@@ -146,30 +146,32 @@ export const CustomerCard = ({ customer, onLockToggle, onViewDetails, onEdit, on
             Delete
           </Button>
         </div>
-        <Button
-          variant={customer.isLocked ? "successOutline" : "danger"}
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onLockToggle(customer.id);
-          }}
-          className="gap-2 w-full"
-        >
-          {customer.isLocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-          {customer.isLocked ? 'Unlock Device' : 'Lock Device'}
-        </Button>
-        <Button
-          className="w-full bg-green-600 hover:bg-green-700 text-white"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onCollectEmi(customer.id);
-          }}
-          disabled={remainingEmis <= 0}
-        >
-          <CreditCard className="w-3 h-3 mr-2" />
-          Collect Payment
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant={customer.isLocked ? "successOutline" : "danger"}
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLockToggle(customer.id);
+            }}
+            className="gap-1.5 w-full h-9 text-xs"
+          >
+            {customer.isLocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+            {customer.isLocked ? 'Unlock' : 'Lock'}
+          </Button>
+          <Button
+            className="w-full bg-green-600 hover:bg-green-700 text-white h-9 text-xs"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCollectEmi(customer.id);
+            }}
+            disabled={remainingEmis <= 0}
+          >
+            <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+            Collect
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -108,13 +108,13 @@ const Customers = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Customers</h1>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold opacity-70">Directory Management</p>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">Customers</h1>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold opacity-70">Directory Management</p>
         </div>
-        <Button className="w-full rounded-xl shadow-lg shadow-primary/10">
-          <Download className="w-4 h-4 mr-2" />
+        <Button className="w-full h-9 text-xs rounded-xl shadow-lg shadow-primary/10">
+          <Download className="w-3.5 h-3.5 mr-2" />
           Export Report
         </Button>
       </div>
@@ -189,16 +189,18 @@ const Customers = () => {
       {
         filter === 'unclaimed' && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">New / Unclaimed Devices</h2>
-            <p className="text-sm text-muted-foreground">These devices have reported to the server but do not match any Customer IMEI.</p>
+            <div className="mb-2">
+              <h2 className="text-base font-bold">New / Unclaimed Devices</h2>
+              <p className="text-xs text-muted-foreground">Devices reported but not matched.</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {unclaimedDevices.map((device: any) => (
-                <div key={device._id} className="glass-card p-4 border-l-4 border-l-orange-500">
+                <div key={device._id} className="glass-card p-3 border-l-4 border-l-orange-500">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-bold">{device.actualBrand} {device.model}</h3>
-                      <p className="text-xs text-muted-foreground">Android {device.androidVersion}</p>
+                      <h3 className="font-bold text-sm">{device.actualBrand} {device.model}</h3>
+                      <p className="text-[10px] text-muted-foreground">Android {device.androidVersion}</p>
                     </div>
                     <div className="bg-orange-100 text-orange-700 text-[10px] px-2 py-1 rounded-full font-bold">
                       UNCLAIMED
