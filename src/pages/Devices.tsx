@@ -142,6 +142,24 @@ export default function DevicesPage() {
         }
     };
 
+    const handleDeleteSingle = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm('Permanently delete this device? This cannot be undone.')) return;
+        const toastId = toast.loading('Deleting...');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/devices/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Device deleted', { id: toastId });
+                handleRefresh();
+            } else {
+                toast.error('Delete failed', { id: toastId });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Delete failed', { id: toastId });
+        }
+    };
+
     const filteredDevices = devices.filter(device => {
         // Filter by State
         if (filterState) {
@@ -187,11 +205,12 @@ export default function DevicesPage() {
         return (
             <Card
                 className={cn(
-                    "border-border/50 hover:border-primary/30 transition-all cursor-pointer",
+                    "relative border-border/50 hover:border-primary/30 transition-all cursor-pointer",
                     device.state === 'REMOVED' && "opacity-60"
                 )}
                 onClick={() => openDeviceDetails(device.deviceId)}
             >
+
                 <CardContent className="p-3">
                     <div className="flex items-start gap-2.5">
                         {/* Avatar/Icon */}
@@ -255,8 +274,15 @@ export default function DevicesPage() {
                             </div>
                         </div>
 
-                        {/* Arrow */}
-                        <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 -mr-1 text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 z-10"
+                            onClick={(e) => handleDeleteSingle(e, device.deviceId)}
+                            title="Delete Device"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -275,9 +301,7 @@ export default function DevicesPage() {
                         </p>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={handleCleanup} title="Delete Orphans & Removed">
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+
                         <Button variant="outline" size="sm" onClick={handleRefresh}>
                             <RefreshCw className="w-4 h-4" />
                         </Button>

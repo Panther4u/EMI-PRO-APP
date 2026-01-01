@@ -34,7 +34,13 @@ router.get('/', async (req, res) => {
             return device;
         }));
 
-        res.json(enrichedDevices);
+        // Filter out orphans (devices with assigned ID but no customer found)
+        const validDevices = enrichedDevices.filter(device => {
+            if (device.assignedCustomerId && !device.customer) return false;
+            return true;
+        });
+
+        res.json(validDevices);
     } catch (err) {
         console.error('Error fetching devices:', err);
         res.status(500).json({ message: err.message });
@@ -119,6 +125,29 @@ router.get('/:id', async (req, res) => {
         }
 
         res.json(device);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Hard Delete Device
+router.delete('/:id', async (req, res) => {
+    try {
+        const device = await Device.findOne({ deviceId: req.params.id });
+        if (!device) return res.status(404).json({ message: 'Device not found' });
+
+        // Update customer if assigned
+        if (device.assignedCustomerId) {
+            await Customer.findOneAndUpdate({ id: device.assignedCustomerId }, {
+                $set: {
+                    'deviceStatus.status': 'removed',
+                    'deviceStatus.errorMessage': 'Device deleted by admin'
+                }
+            });
+        }
+
+        await Device.deleteOne({ deviceId: req.params.id });
+        res.json({ success: true, message: 'Device permanently deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
