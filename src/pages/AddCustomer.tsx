@@ -199,7 +199,7 @@ export default function AddCustomer() {
     const DeviceIcon = deviceInfo.icon;
 
     return (
-        <div className="min-h-screen bg-background p-4">
+        <div className="min-h-screen bg-background p-0">
             <div className="max-w-lg mx-auto">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">
