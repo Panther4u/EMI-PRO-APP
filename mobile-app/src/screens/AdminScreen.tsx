@@ -2,9 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+const CURRENT_VERSION = '1.0.0';
+const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
+
 export default function AdminScreen() {
     const [loading, setLoading] = useState(true);
     const uri = 'https://emi-pro-app.onrender.com/mobile';
+
+    // Injected script - ensure it fills screen and handles safe areas
+    const injectedJavaScript = `
+        (function() {
+            if (!document.querySelector('meta[name="viewport"]')) {
+                var meta = document.createElement('meta');
+                meta.name = 'viewport';
+                meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+                document.head.appendChild(meta);
+            }
+            // Sync background to avoid flicker
+            document.body.style.backgroundColor = '#f8fafc';
+            true;
+        })();
+    `;
 
     return (
         <SafeAreaView style={styles.container}>
@@ -19,6 +37,7 @@ export default function AdminScreen() {
                 cacheMode="LOAD_NO_CACHE"
                 userAgent="MobileApp"
                 allowsBackForwardNavigationGestures={true}
+                injectedJavaScript={injectedJavaScript}
                 scalesPageToFit={false}
                 startInLoadingState={true}
                 renderLoading={() => (

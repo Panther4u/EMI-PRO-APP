@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Menu, Smartphone, Apple, Shield } from 'lucide-react';
+import { RefreshCw, Smartphone, TrendingUp, AlertTriangle, Shield, Search, Plus, Filter, LayoutGrid, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { getApiUrl } from '@/config/api';
 
 export default function MobileDashboard() {
@@ -29,7 +30,7 @@ export default function MobileDashboard() {
                     total: customers.length,
                     active: customers.filter((c: any) => c.deviceStatus?.status === 'ACTIVE').length,
                     locked: customers.filter((c: any) => c.isLocked).length,
-                    removed: customers.filter((c: any) => c.deviceStatus?.status === 'REMOVED').length
+                    removed: customers.filter((c: any) => (c.deviceStatus?.status === 'REMOVED' || c.deviceStatus?.status === 'removed')).length
                 });
             }
         } catch (error) {
@@ -39,152 +40,173 @@ export default function MobileDashboard() {
         }
     };
 
-    const handleGenerateQR = (type: 'fresh' | 'used' | 'ios') => {
-        if (type === 'ios') {
-            alert('iOS device provisioning is not yet supported. Please use Android devices.');
-            return;
-        }
-        navigate('/customers');
-    };
-
     return (
-        <div className="h-full bg-gray-50 flex flex-col">
-            {/* Header matches App.tsx */}
-            <header className="h-14 border-b border-border/50 flex items-center px-4 bg-white/80 backdrop-blur-md z-30 flex-shrink-0">
-                <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="p-2 -ml-2 hover:bg-secondary rounded-xl transition-all duration-200">
-                        <Menu className="w-5 h-5 text-foreground" />
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                            <Shield className="w-4 h-4 text-primary-foreground" />
+        <div className="min-h-screen bg-slate-50/50 flex flex-col selection:bg-primary/20">
+            {/* Premium App Header */}
+            <header className="h-[70px] border-b border-border/40 flex items-center px-6 bg-white/80 backdrop-blur-2xl z-50 sticky top-0">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-[14px] bg-primary flex items-center justify-center shadow-[0_4px_12px_rgba(37,99,235,0.2)]">
+                            <Shield className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <span className="font-bold text-foreground text-sm tracking-tight">SecureFinance</span>
+                        <div className="flex flex-col">
+                            <span className="font-black text-foreground text-[16px] leading-tight tracking-tight uppercase italic">SecurePRO</span>
+                            <div className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span className="text-[9px] text-muted-foreground font-black tracking-widest uppercase opacity-70">Admin Cloud</span>
+                            </div>
+                        </div>
                     </div>
+                    <Button variant="secondary" size="icon" onClick={fetchStats} className={cn("h-11 w-11 rounded-2xl bg-secondary/50", loading && "animate-spin")}>
+                        <RefreshCw className="w-5 h-5 text-muted-foreground" />
+                    </Button>
                 </div>
             </header>
 
-            {/* Content */}
-            <div className="p-4 pb-20">
-                {/* Title */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-sm text-gray-500">Manage your devices</p>
+            {/* Main Content Area */}
+            <main className="flex-1 overflow-y-auto px-5 pt-6 pb-28 space-y-7 animate-in fade-in slide-in-from-bottom-3 duration-700">
+
+                {/* Search & Add Section */}
+                <div className="flex gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Find user/device..."
+                            className="w-full bg-white border border-border/60 rounded-2xl h-12 pl-11 pr-4 text-sm font-semibold shadow-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                        />
                     </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={fetchStats}
-                        disabled={loading}
-                        className="gap-2"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh
+                    <Button className="h-12 w-12 rounded-2xl bg-slate-900 shadow-xl shadow-slate-900/10 active:scale-90 transition-transform">
+                        <Plus className="w-6 h-6" />
                     </Button>
                 </div>
 
-                {/* Generate Device QR */}
-                <Card className="p-4 mb-6">
-                    <h2 className="font-semibold text-lg mb-2">Generate Device QR</h2>
-                    <p className="text-sm text-gray-500 mb-4">Tap below to add new device</p>
-
-                    <div className="space-y-3">
-                        {/* Fresh Android */}
-                        <button
-                            onClick={() => handleGenerateQR('fresh')}
-                            className="w-full bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 hover:bg-green-100 transition-colors"
-                        >
-                            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <Smartphone className="w-6 h-6 text-green-600" />
+                {/* Main Action Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                    {/* Active Units */}
+                    <Card className="rounded-[32px] border-none bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-transform" onClick={() => navigate('/customers')}>
+                        <CardContent className="p-5 flex flex-col gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                                <LayoutGrid className="w-5 h-5" />
                             </div>
-                            <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-900">Fresh Android</div>
-                                <div className="text-sm text-gray-600">Factory reset → Tap 6 times → Scan</div>
-                                <div className="text-xs font-semibold text-green-600 mt-1">NEW DEVICES</div>
+                            <div className="space-y-0">
+                                <p className="text-3xl font-black italic tracking-tighter">{stats.active}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Active Live</p>
                             </div>
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-
-                        {/* Used Android */}
-                        <button
-                            onClick={() => handleGenerateQR('used')}
-                            className="w-full bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-4 hover:bg-blue-100 transition-colors"
-                        >
-                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <Smartphone className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-900">Used Android</div>
-                                <div className="text-sm text-gray-600">Install APK → Open → Scan</div>
-                                <div className="text-xs font-semibold text-blue-600 mt-1">EXISTING DATA</div>
-                            </div>
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-
-                        {/* iPhone/iPad */}
-                        <button
-                            onClick={() => handleGenerateQR('ios')}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:bg-gray-100 transition-colors"
-                        >
-                            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <Apple className="w-6 h-6 text-gray-600" />
-                            </div>
-                            <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-900">iPhone / iPad</div>
-                                <div className="text-sm text-gray-600">Install App → Scan</div>
-                                <div className="text-xs font-semibold text-gray-600 mt-1">IOS DEVICES</div>
-                            </div>
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
-                </Card>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                    <Card className="p-4 text-center">
-                        <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-                        <div className="text-sm text-gray-500 uppercase mt-1">Total</div>
+                        </CardContent>
                     </Card>
-                    <Card className="p-4 text-center">
-                        <div className="text-3xl font-bold text-green-600">{stats.active}</div>
-                        <div className="text-sm text-gray-500 uppercase mt-1">Active</div>
-                    </Card>
-                    <Card className="p-4 text-center">
-                        <div className="text-3xl font-bold text-red-600">{stats.locked}</div>
-                        <div className="text-sm text-gray-500 uppercase mt-1">Locked</div>
-                    </Card>
-                    <Card className="p-4 text-center">
-                        <div className="text-3xl font-bold text-gray-600">{stats.removed}</div>
-                        <div className="text-sm text-gray-500 uppercase mt-1">Removed</div>
+
+                    {/* Locked Units */}
+                    <Card className="rounded-[32px] border-none bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-xl shadow-rose-500/20 active:scale-95 transition-transform" onClick={() => navigate('/customers')}>
+                        <CardContent className="p-5 flex flex-col gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                                <Shield className="w-5 h-5" />
+                            </div>
+                            <div className="space-y-0">
+                                <p className="text-3xl font-black italic tracking-tighter">{stats.locked}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Locked</p>
+                            </div>
+                        </CardContent>
                     </Card>
                 </div>
 
-                {/* Devices Section */}
-                <Card className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <Smartphone className="w-5 h-5 text-gray-600" />
-                            <h2 className="font-semibold text-lg">Devices</h2>
+                {/* Sub-Stats Bar */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white rounded-3xl p-4 border border-border/40 flex items-center gap-3 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center">
+                            <Smartphone className="w-5 h-5 text-slate-600" />
                         </div>
-                        <span className="text-sm font-semibold text-gray-600">{stats.total}</span>
+                        <div>
+                            <p className="text-lg font-black tracking-tight text-slate-900">{stats.total}</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Fleet Size</p>
+                        </div>
                     </div>
-                    <p className="text-sm text-gray-500">All registered devices</p>
-                    <Button
-                        variant="outline"
-                        className="w-full mt-4"
-                        onClick={() => navigate('/devices')}
-                    >
-                        View All Devices
-                    </Button>
-                </Card>
+                    <div className="bg-white rounded-3xl p-4 border border-border/40 flex items-center gap-3 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center">
+                            <AlertTriangle className="w-5 h-5 text-amber-500" />
+                        </div>
+                        <div>
+                            <p className="text-lg font-black tracking-tight text-amber-600">{stats.removed}</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Deactivated</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quick Actions List */}
+                <div className="space-y-4">
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 px-1">Control Operations</h3>
+                    <div className="space-y-3">
+                        <button onClick={() => navigate('/add-customer')} className="w-full bg-white p-5 rounded-[28px] border border-border/40 flex items-center justify-between shadow-sm active:scale-98 transition-all hover:bg-slate-50">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                                    <Plus className="w-6 h-6 text-indigo-600" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="font-extrabold text-[15px] tracking-tight">Provision New Device</p>
+                                    <p className="text-[11px] text-muted-foreground font-bold">QR Generation & Setup</p>
+                                </div>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground/40" />
+                        </button>
+
+                        <button onClick={() => navigate('/customers')} className="w-full bg-white p-5 rounded-[28px] border border-border/40 flex items-center justify-between shadow-sm active:scale-98 transition-all hover:bg-slate-50">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                    <Smartphone className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="font-extrabold text-[15px] tracking-tight">Monitor Active Fleet</p>
+                                    <p className="text-[11px] text-muted-foreground font-bold">Live Status Tracking</p>
+                                </div>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground/40" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Recent Activity Mini-Card */}
+                <div className="bg-slate-900 rounded-[36px] p-6 text-white shadow-2xl shadow-slate-900/20 relative overflow-hidden group">
+                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-[60px] group-hover:scale-125 transition-transform duration-1000"></div>
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Financial Analytics</p>
+                            <h3 className="text-2xl font-black italic tracking-tighter uppercase">Total Collection</h3>
+                            <div className="flex items-baseline gap-2 mt-2">
+                                <span className="text-3xl font-black tracking-tighter text-emerald-400">Pro 2.0</span>
+                                <TrendingUp className="w-5 h-5 text-emerald-400 opacity-50" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            {/* Bottom Floating Navigation (Native Look) */}
+            <div className="fixed bottom-0 left-0 right-0 h-24 bg-white/80 backdrop-blur-2xl border-t border-border/40 flex items-center justify-around px-4 pb-4 pt-2 z-[100]">
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary transition-all group-hover:bg-primary group-hover:text-white">
+                        <LayoutGrid className="w-6 h-6" />
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-[0.1em] text-primary">Dash</span>
+                </button>
+                <button onClick={() => navigate('/customers')} className="flex flex-col items-center gap-1 group active:scale-90 transition-transform text-muted-foreground">
+                    <div className="w-12 h-12 rounded-2xl bg-secondary/80 flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                        <Smartphone className="w-6 h-6" />
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-[0.1em] opacity-50 font-bold">Fleet</span>
+                </button>
+                <button onClick={() => navigate('/settings')} className="flex flex-col items-center gap-1 group active:scale-90 transition-transform text-muted-foreground">
+                    <div className="w-12 h-12 rounded-2xl bg-secondary/80 flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                        <Shield className="w-6 h-6" />
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-[0.1em] opacity-50 font-bold">Admin</span>
+                </button>
             </div>
         </div>
     );
+}
+
+// Utility function to merge class names
+function cn(...inputs: any[]) {
+    return inputs.filter(Boolean).join(' ');
 }

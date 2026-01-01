@@ -1,271 +1,213 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CustomerCard } from '@/components/CustomerCard';
-import { CustomerDetailsModal } from '@/components/CustomerDetailsModal';
-import { Customer } from '@/types/customer';
-import { useDevice } from '@/context/DeviceContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Users,
+  Search,
+  Smartphone,
+  ChevronRight,
+  Plus,
+  Filter,
+  ArrowLeft,
+  ArrowUpRight,
+  Shield,
+  Trash2,
+  Lock,
+  MoreVertical
+} from 'lucide-react';
+import { useDevice } from '@/context/DeviceContext';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
-const Customers = () => {
-  const { customers, updateCustomer, deleteCustomer, unclaimedDevices, claimDevice, collectEmi } = useDevice();
+export default function Customers() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { customers, refreshCustomers, toggleLock, deleteCustomer } = useDevice();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked' | 'enrolled' | 'unclaimed'>('all');
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'active' | 'locked' | 'removed'>('all');
+  const [loading, setLoading] = useState(false);
 
-  // Handle URL parameters
   useEffect(() => {
-    const urlFilter = searchParams.get('filter');
-    const action = searchParams.get('action');
+    refreshCustomers();
+  }, []);
 
-    if (urlFilter === 'enrolled' || urlFilter === 'locked' || urlFilter === 'unlocked') {
-      setFilter(urlFilter);
-    }
+  const filteredCustomers = (customers || []).filter(customer => {
+    const matchesSearch =
+      customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.phoneNo?.includes(searchQuery) ||
+      customer.imei1?.includes(searchQuery);
 
-    if (action === 'add') {
-      navigate('/generate-qr'); // Navigate to Generate QR page to add customer
-    }
-  }, [searchParams, navigate]);
+    const status = customer.deviceStatus?.status as string;
+    const isRemoved = status === 'REMOVED' || status === 'removed';
 
-  const filteredCustomers = (customers || []).filter(c => {
-    const matchesSearch = (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.phoneNo || '').includes(searchQuery) ||
-      (c.imei1 || '').includes(searchQuery);
-
-    const matchesFilter = filter === 'all' ||
-      (filter === 'locked' && c.isLocked) ||
-      (filter === 'unlocked' && !c.isLocked) ||
-      (filter === 'enrolled' && (c.isEnrolled || c.deviceStatus?.status === 'ADMIN_INSTALLED'));
-
-    return matchesSearch && matchesFilter;
+    if (filter === 'all') return matchesSearch;
+    if (filter === 'active') return matchesSearch && !customer.isLocked && !isRemoved;
+    if (filter === 'locked') return matchesSearch && customer.isLocked;
+    if (filter === 'removed') return matchesSearch && isRemoved;
+    return matchesSearch;
   });
 
-  const handleLockToggle = async (id: string) => {
-    const customer = customers.find(c => c.id === id);
-    if (!customer) return;
-
-    const newLockState = !customer.isLocked;
-
-    await updateCustomer(id, {
-      isLocked: newLockState,
-      lockHistory: [
-        ...customer.lockHistory,
-        {
-          id: Date.now().toString(),
-          action: newLockState ? 'locked' : 'unlocked',
-          timestamp: new Date().toISOString(),
-          reason: newLockState ? 'Manual lock by admin' : 'Manual unlock by admin',
-        }
-      ]
-    });
-  };
-
-  const handleEdit = (id: string) => {
-    navigate(`/customers/${id}/edit`);
-  };
-
-  const handleCollectEmi = async (id: string) => {
-    const customer = customers.find(c => c.id === id);
-    if (!customer || customer.paidEmis >= customer.totalEmis) return;
-
-    if (window.confirm(`Confirm payment of ₹${customer.emiAmount} for ${customer.name}?`)) {
-      await collectEmi(id, customer.emiAmount);
+  const handleDelete = async (id: string) => {
+    if (!confirm('Permanent deletion! This cannot be undone. System access will be revoked.')) return;
+    try {
+      await deleteCustomer(id);
+      toast.success('Customer deleted forever');
+    } catch (e) {
+      toast.error('Deletion failed: Access Denied');
     }
   };
 
-  const handleDeleteClick = (id: string) => {
-    console.log('Deleting customer:', id);
-    setDeleteId(id);
-  };
-
-  const confirmDelete = async () => {
-    if (deleteId) {
-      await deleteCustomer(deleteId);
-      setDeleteId(null);
+  const handleToggleLock = async (customer: any) => {
+    const newState = !customer.isLocked;
+    try {
+      await toggleLock(customer.id, newState, `Manual toggle to ${newState ? 'LOCKED' : 'ACTIVE'}`);
+      toast.success(`Unit ${newState ? 'locked' : 'unlocked'} successfully`);
+    } catch (e) {
+      toast.error('State change failed');
     }
-  };
-
-  const handleViewDetails = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setModalOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">Customers</h1>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold opacity-70">Directory Management</p>
+    <div className="space-y-6 pb-24 animate-in fade-in duration-500">
+      {/* Header Area */}
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-secondary rounded-xl active:scale-90 transition-all">
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
+          <h1 className="text-xl font-black uppercase tracking-tight italic">Device Fleet</h1>
+          <Button variant="ghost" size="icon" onClick={() => refreshCustomers()} className="h-10 w-10 rounded-xl bg-secondary/50">
+            <Users className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Search & Statistics Bar */}
+        <div className="space-y-4">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by name, IMEI or phone..."
+              className="w-full bg-secondary/30 border-none rounded-2xl h-12 pl-11 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Horizontal Filter Scroll */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {[
+              { id: 'all', label: 'All Units' },
+              { id: 'active', label: 'Active' },
+              { id: 'locked', label: 'Locked' },
+              { id: 'removed', label: 'History' }
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id as any)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all active:scale-95 border",
+                  filter === f.id
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                    : "bg-card text-muted-foreground border-border/60 hover:border-primary/40"
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="glass-card p-4 space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search directory..."
-            className="pl-10 bg-secondary/30 border-border/50 h-11 rounded-xl"
-          />
-        </div>
-        <div className="flex items-center gap-1 w-full">
-          <Button
-            variant={filter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            className="flex-1 rounded-lg h-7 px-0 text-[10px]"
-            onClick={() => setFilter('all')}
-          >
-            All ({customers.length})
-          </Button>
-          <Button
-            variant={filter === 'locked' ? 'destructive' : 'outline'}
-            size="sm"
-            className="flex-1 rounded-lg h-7 px-0 text-[10px]"
-            onClick={() => setFilter('locked')}
-          >
-            Locked ({customers.filter(c => c.isLocked).length})
-          </Button>
-          <Button
-            variant={filter === 'unlocked' ? 'success' : 'outline'}
-            size="sm"
-            className="flex-1 rounded-lg h-7 px-0 text-[10px]"
-            onClick={() => setFilter('unlocked')}
-          >
-            Active ({customers.filter(c => !c.isLocked).length})
-          </Button>
-          <Button
-            variant={filter === 'unclaimed' ? 'secondary' : 'outline'}
-            size="sm"
-            className="flex-1 rounded-lg h-7 px-0 text-[10px] border-dashed border-primary/50 text-foreground"
-            onClick={() => setFilter('unclaimed')}
-          >
-            Unclaimed ({unclaimedDevices.length})
-          </Button>
-        </div>
-      </div>
+      {/* Fleet List */}
+      <div className="space-y-3">
+        {filteredCustomers.length === 0 ? (
+          <div className="text-center py-20 bg-secondary/10 rounded-[40px] border border-dashed border-border/60">
+            <Smartphone className="w-16 h-16 text-muted-foreground/10 mx-auto mb-4" />
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">Zero Units Registered</p>
+          </div>
+        ) : (
+          filteredCustomers.map((customer) => (
+            <div
+              key={customer.id}
+              className={cn(
+                "p-5 rounded-[32px] border transition-all relative overflow-hidden group active:scale-[0.98]",
+                customer.isLocked ? "bg-destructive/[0.02] border-destructive/20" : "bg-card border-border/60 hover:border-primary/40 shadow-sm"
+              )}
+              onClick={() => navigate(`/customers/${customer.id}`)}
+            >
+              {/* Decorative Gradient Overlay */}
+              <div className={cn(
+                "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
+                customer.isLocked ? "bg-gradient-to-br from-destructive/5 to-transparent" : "bg-gradient-to-br from-primary/5 to-transparent"
+              )}></div>
 
-
-      {/* Customer Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
-        {filteredCustomers.map((customer) => (
-          <CustomerCard
-            key={customer.id}
-            customer={customer}
-            onLockToggle={handleLockToggle}
-            onViewDetails={handleViewDetails}
-            onEdit={handleEdit}
-            onCollectEmi={handleCollectEmi}
-            onDelete={handleDeleteClick}
-          />
-        ))}
-      </div>
-
-      {/* UNCLAIMED DEVICES LIST */}
-      {
-        filter === 'unclaimed' && (
-          <div className="space-y-4">
-            <div className="mb-2">
-              <h2 className="text-base font-bold">New / Unclaimed Devices</h2>
-              <p className="text-xs text-muted-foreground">Devices reported but not matched.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
-              {unclaimedDevices.map((device: any) => (
-                <div key={device._id} className="glass-card p-3 border-l-4 border-l-orange-500">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-bold text-sm">{device.actualBrand} {device.model}</h3>
-                      <p className="text-[10px] text-muted-foreground">Android {device.androidVersion}</p>
-                    </div>
-                    <div className="bg-orange-100 text-orange-700 text-[10px] px-2 py-1 rounded-full font-bold">
-                      UNCLAIMED
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 my-3 bg-secondary/50 p-2 rounded text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">ID Type:</span>
-                      <span className="font-mono">{device.imei ? 'IMEI' : 'ANDROID_ID'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Value:</span>
-                      <span className="font-mono font-bold select-all">{device.imei || device.androidId}</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    className="w-full mt-2"
-                    onClick={() => {
-                      const customerId = prompt("Enter Customer ID to assign this device to:");
-                      if (customerId) claimDevice(device._id, customerId);
-                    }}
-                  >
-                    Link to Customer
-                  </Button>
+              <div className="flex items-center gap-4 relative z-10">
+                {/* Avatar Container */}
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-500",
+                  customer.isLocked ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
+                )}>
+                  {customer.name?.charAt(0) || '?'}
                 </div>
-              ))}
+
+                {/* Identity & Status */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-extrabold text-[15px] tracking-tight truncate uppercase italic">{customer.name}</h3>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      customer.isLocked ? "bg-destructive animate-pulse" : "bg-emerald-500"
+                    )}></div>
+                  </div>
+                  <p className="text-[12px] font-bold text-muted-foreground tracking-wide">{customer.phoneNo}</p>
+                  <div className="flex items-center gap-2 mt-1.5 grayscale opacity-60">
+                    <Smartphone className="w-3 h-3" />
+                    <span className="text-[10px] font-mono tracking-tighter truncate">{customer.imei1 || 'ID_UNASSIGNED'}</span>
+                  </div>
+                </div>
+
+                {/* Compact Control Button */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleToggleLock(customer); }}
+                  className={cn(
+                    "w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-90",
+                    customer.isLocked
+                      ? "bg-destructive/10 text-destructive hover:bg-destructive shadow-lg shadow-destructive/10 hover:text-white"
+                      : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/10 hover:text-white"
+                  )}
+                >
+                  <Lock className={cn("w-4.5 h-4.5", customer.isLocked && "fill-current")} />
+                </button>
+              </div>
+
+              {/* Sub-Footer Inside Card */}
+              <div className="mt-4 pt-4 border-t border-border/40 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">EMI Paid</span>
+                    <span className="text-[11px] font-black">{customer.paidEmis}/{customer.totalEmis}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Credit Score</span>
+                    <span className="text-[11px] font-black text-primary">A+</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
+              </div>
             </div>
-          </div>
-        )
-      }
+          ))
+        )}
+      </div>
 
-      {
-        filteredCustomers.length === 0 && (
-          <div className="glass-card p-12 text-center">
-            <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-lg font-medium text-foreground">No customers found</p>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
-          </div>
-        )
-      }
-
-      {/* Customer Details Modal */}
-      <CustomerDetailsModal
-        customer={selectedCustomer}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onLockToggle={handleLockToggle}
-        onCollectEmi={handleCollectEmi}
-      />
-
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the customer
-              and remove their data from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div >
+      {/* Floating Action Button (Native Mobile Feel) */}
+      <button
+        onClick={() => navigate('/add-customer')}
+        className="fixed bottom-28 right-6 w-16 h-16 bg-primary text-primary-foreground rounded-3xl shadow-2xl shadow-primary/40 flex items-center justify-center animate-bounce-subtle z-[60] active:scale-90 transition-transform"
+      >
+        <Plus className="w-8 h-8" />
+      </button>
+    </div>
   );
-};
-
-export default Customers;
+}

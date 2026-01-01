@@ -47,49 +47,61 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { isAdminLocked } = useAuth();
-    // Assuming implicit admin role for blockage logic or simple global lock
     const isBlocked = isAdminLocked;
 
     return (
-        <div className="flex flex-col h-full bg-background overflow-hidden relative selection:bg-primary/20">
+        <div className="flex flex-col h-full bg-background overflow-hidden relative selection:bg-primary/20 transition-colors duration-300">
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-            <main className="flex-1 flex flex-col overflow-hidden relative w-full">
-                {/* Mobile Header */}
-                <header className="h-14 border-b border-border/50 flex items-center px-4 bg-card/50 backdrop-blur-md z-30 flex-shrink-0">
+            <main className="flex-1 flex flex-col overflow-hidden relative w-full h-full">
+                {/* Modern Mobile Header - Clean & Premium */}
+                <header className="h-[64px] border-b border-border/40 flex items-center px-5 bg-background/80 backdrop-blur-xl z-40 flex-shrink-0 sticky top-0">
                     <button
                         onClick={() => setSidebarOpen(true)}
-                        className="p-2 -ml-2 hover:bg-secondary rounded-xl transition-all duration-200 active:scale-95"
+                        className="p-2.5 -ml-2.5 hover:bg-secondary rounded-2xl transition-all duration-300 active:scale-90 group"
                     >
-                        <Menu className="w-5 h-5 text-foreground" />
-                    </button>
-                    <Link to="/" className="ml-3 flex items-center gap-2 hover:opacity-80 transition-opacity">
-                        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                            <Shield className="w-4 h-4 text-primary-foreground" />
+                        <div className="flex flex-col gap-1 w-5">
+                            <span className="h-0.5 w-full bg-foreground rounded-full transition-transform group-hover:bg-primary"></span>
+                            <span className="h-0.5 w-2/3 bg-foreground rounded-full transition-transform group-hover:bg-primary"></span>
+                            <span className="h-0.5 w-full bg-foreground rounded-full transition-transform group-hover:bg-primary"></span>
                         </div>
-                        <span className="font-bold text-foreground text-sm tracking-tight">SecureFinance</span>
+                    </button>
+                    <Link to="/" className="ml-4 flex items-center gap-2.5 hover:opacity-85 transition-all active:scale-95">
+                        <div className="w-9 h-9 rounded-[12px] bg-primary flex items-center justify-center shadow-[0_4px_12px_rgba(37,99,235,0.25)] ring-1 ring-white/20">
+                            <Shield className="w-5 h-5 text-primary-foreground" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-extrabold text-foreground text-[15px] leading-tight tracking-tight uppercase">SecureFinance</span>
+                            <span className="text-[10px] text-muted-foreground font-bold tracking-[0.1em] uppercase leading-none opacity-80">Admin Center</span>
+                        </div>
                     </Link>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-4 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
-                    {children}
+                {/* Content Area - Smooth & Spacious */}
+                <div className="flex-1 overflow-y-auto w-full animate-in fade-in slide-in-from-bottom-2 duration-500 no-scrollbar relative bg-slate-50/30">
+                    <div className="max-w-2xl mx-auto w-full p-4 pb-24 min-h-full">
+                        {children}
+                    </div>
 
-                    {/* Lock Overlay */}
+                    {/* Premium Lock Overlay */}
                     {isBlocked && (
-                        <div className="absolute inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-8 text-center animate-in fade-in duration-500">
-                            <div className="max-w-xs space-y-6">
-                                <div className="w-20 h-20 bg-destructive/10 rounded-3xl flex items-center justify-center mx-auto ring-4 ring-destructive/5 animate-pulse">
-                                    <Shield className="w-10 h-10 text-destructive" />
+                        <div className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-2xl flex items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-500">
+                            <div className="max-w-xs space-y-8">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-destructive/20 rounded-full blur-[40px] animate-pulse"></div>
+                                    <div className="w-24 h-24 bg-destructive/10 rounded-[32px] flex items-center justify-center mx-auto ring-1 ring-destructive/20 relative">
+                                        <Shield className="w-12 h-12 text-destructive" />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <h2 className="text-2xl font-black tracking-tight text-foreground">LIMIT REACHED</h2>
-                                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                                        Your access has been suspended by system oversight.
+                                <div className="space-y-3">
+                                    <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase">Service Suspended</h2>
+                                    <p className="text-[15px] text-muted-foreground font-medium leading-relaxed px-4">
+                                        Your administrative access has been temporarily restricted.
                                     </p>
                                 </div>
-                                <div className="bg-secondary/50 p-4 rounded-2xl border border-border/50">
-                                    <p className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-1">Contact Authority</p>
-                                    <p className="text-lg font-black tracking-tighter text-primary">9876543219</p>
+                                <div className="bg-secondary/60 p-6 rounded-[28px] border border-border/80 shadow-sm backdrop-blur-md">
+                                    <p className="text-[11px] uppercase tracking-[0.2em] font-black text-muted-foreground mb-2">Technical Support</p>
+                                    <a href="tel:9876543219" className="text-2xl font-black tracking-tighter text-primary hover:text-primary/80 transition-colors">9876543219</a>
                                 </div>
                             </div>
                         </div>
