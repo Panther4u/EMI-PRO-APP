@@ -13,6 +13,8 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * DeviceLockModule - React Native Bridge for Device Control
@@ -53,6 +55,20 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return "DeviceLockModule";
+    }
+
+    @Override
+    public Map<String, Object> getConstants() {
+        final Map<String, Object> constants = new HashMap<>();
+        try {
+            String packageName = reactContext.getPackageName();
+            constants.put("PACKAGE_NAME", packageName);
+            constants.put("IS_ADMIN",
+                    packageName != null && (packageName.endsWith(".admin") || packageName.contains(".admin")));
+        } catch (Exception e) {
+            constants.put("IS_ADMIN", false);
+        }
+        return constants;
     }
 
     private boolean isDeviceOwner() {

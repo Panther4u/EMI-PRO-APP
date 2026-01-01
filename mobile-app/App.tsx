@@ -17,11 +17,14 @@ import AutoUpdateChecker from './src/components/AutoUpdateChecker';
 const Stack = createStackNavigator();
 const { DeviceLockModule } = NativeModules;
 
+// Synchronous check from constants (prevents Setup screen flashing on Admin APK)
+const IS_ADMIN_CONSTANT = DeviceLockModule?.IS_ADMIN ?? false;
+
 export default function App() {
     const [loading, setLoading] = useState(true);
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [isLocked, setIsLocked] = useState(false); // Default to UNLOCKED to prevent startup lock issues
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(IS_ADMIN_CONSTANT);
 
     // Handle app state changes (foreground/background)
     useEffect(() => {
