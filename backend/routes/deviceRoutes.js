@@ -73,6 +73,38 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// Maintenance: Cleanup orphans and removed devices
+router.delete('/maintenance/orphans', async (req, res) => {
+    try {
+        // 1. Delete devices marked as REMOVED
+        const removed = await Device.deleteMany({ state: 'REMOVED' });
+
+        // 2. Delete orphans (devices pointing to non-existent customers)
+        const assignedDevices = await Device.find({ assignedCustomerId: { $exists: true, $ne: null } });
+        let orphansDeleted = 0;
+
+        for (const device of assignedDevices) {
+            const customer = await Customer.findOne({ id: device.assignedCustomerId });
+            if (!customer) {
+                await Device.deleteOne({ _id: device._id });
+                orphansDeleted++;
+            }
+        }
+
+        console.log(`🧹 Cleanup: ${removed.deletedCount} removed, ${orphansDeleted} orphans deleted`);
+
+        res.json({
+            success: true,
+            message: 'Cleanup complete',
+            removedDeleted: removed.deletedCount,
+            orphansDeleted
+        });
+    } catch (err) {
+        console.error('Cleanup error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Get single device
 router.get('/:id', async (req, res) => {
     try {

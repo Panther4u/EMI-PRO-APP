@@ -124,6 +124,24 @@ export default function DevicesPage() {
         fetchStats();
     };
 
+    const handleCleanup = async () => {
+        if (!confirm('This will permanently delete all orphaned devices and devices marked as REMOVED. Continue?')) return;
+        const toastId = toast.loading('Cleaning up...');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/devices/maintenance/orphans`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(`Cleanup: ${data.removedDeleted} removed logs cleared, ${data.orphansDeleted} orphans deleted`, { id: toastId });
+                handleRefresh();
+            } else {
+                toast.error('Cleanup failed: ' + data.message, { id: toastId });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Cleanup failed', { id: toastId });
+        }
+    };
+
     const filteredDevices = devices.filter(device => {
         // Filter by State
         if (filterState) {
@@ -257,6 +275,9 @@ export default function DevicesPage() {
                         </p>
                     </div>
                     <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={handleCleanup} title="Delete Orphans & Removed">
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                         <Button variant="outline" size="sm" onClick={handleRefresh}>
                             <RefreshCw className="w-4 h-4" />
                         </Button>
