@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, SafeAreaView, StatusBar, PermissionsAndroid, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AutoUpdateChecker from '../components/AutoUpdateChecker';
 
@@ -9,6 +9,24 @@ const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
 export default function AdminScreen() {
     const [loading, setLoading] = useState(true);
     const uri = `https://emi-pro-app.onrender.com/mobile?t=${Date.now()}`;
+
+    // Request permissions on mount for file upload/camera
+    useEffect(() => {
+        const requestPermissions = async () => {
+            if (Platform.OS === 'android') {
+                try {
+                    await PermissionsAndroid.requestMultiple([
+                        PermissionsAndroid.PERMISSIONS.CAMERA,
+                        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+                        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+                    ]);
+                } catch (err) {
+                    console.warn(err);
+                }
+            }
+        };
+        requestPermissions();
+    }, []);
 
     // Injected script - ensure it fills screen and handles safe areas
     const injectedJavaScript = `
@@ -47,6 +65,14 @@ export default function AdminScreen() {
                 allowsBackForwardNavigationGestures={true}
                 injectedJavaScript={injectedJavaScript}
                 scalesPageToFit={false}
+
+                // Enable file access for camera/upload
+                allowFileAccess={true}
+                allowFileAccessFromFileURLs={true}
+                allowUniversalAccessFromFileURLs={true}
+                mediaPlaybackRequiresUserAction={false}
+                geolocationEnabled={true}
+
                 startInLoadingState={true}
                 renderLoading={() => (
                     <View style={styles.center}>
