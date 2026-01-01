@@ -8,8 +8,7 @@ const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
 export default function AdminScreen() {
     const [loading, setLoading] = useState(true);
     // Exact same URL as the mobile dashboard the user likes
-    const uri = 'https://emi-pro-app.onrender.com/mobile';
-
+    const uri = 'https://emi-pro-app.onrender.com/customers'; // Start at Customers list instead of Dashboard
     useEffect(() => {
         checkForUpdates();
     }, []);

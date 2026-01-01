@@ -6,7 +6,13 @@ import { DeviceProvider } from "./context/DeviceContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Sidebar } from "./components/Sidebar";
 import { useState } from "react";
-import { Menu, Shield } from "lucide-react";
+import { Menu, Shield, MoreVertical, LayoutDashboard } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import CustomerDetails from "./pages/CustomerDetails";
@@ -45,10 +51,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Admin Layout with Sidebar
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { isAdminLocked } = useAuth();
     // Assuming implicit admin role for blockage logic or simple global lock
     const isBlocked = isAdminLocked;
+
+    const handleDashboardAccess = () => {
+        const pass = prompt("Enter Administration Password:");
+        if (pass === "888888") {
+            navigate("/");
+        } else {
+            alert("Security Alert: Invalid Password");
+        }
+    };
 
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden relative selection:bg-primary/20">
@@ -63,12 +79,30 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     >
                         <Menu className="w-5 h-5 text-foreground" />
                     </button>
-                    <Link to="/" className="ml-3 flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <Link to="/customers" className="ml-3 flex items-center gap-2 hover:opacity-80 transition-opacity flex-1">
                         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                             <Shield className="w-4 h-4 text-primary-foreground" />
                         </div>
                         <span className="font-bold text-foreground text-sm tracking-tight">SecureFinance</span>
                     </Link>
+
+                    {/* 3-Dot Options Menu */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="p-2 hover:bg-secondary rounded-xl transition-all duration-200">
+                                <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/50 shadow-xl">
+                            <DropdownMenuItem
+                                onClick={handleDashboardAccess}
+                                className="gap-2.5 font-bold text-[13px] py-2.5 cursor-pointer"
+                            >
+                                <LayoutDashboard className="w-4 h-4 text-primary" />
+                                Admin Dashboard
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </header>
 
                 <div className="flex-1 overflow-y-auto p-2 w-full animate-in fade-in duration-500 scrollbar-hide relative bg-secondary/10">
