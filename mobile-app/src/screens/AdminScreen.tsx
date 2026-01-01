@@ -37,9 +37,8 @@ export default function AdminScreen() {
                 meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
                 document.head.appendChild(meta);
             }
-            // Ensure background covers everything and add slight zoom to show more info
+            // Ensure background covers everything
             document.body.style.backgroundColor = '#ffffff';
-            document.body.style.zoom = '0.9';
             true;
         })();
     `;
