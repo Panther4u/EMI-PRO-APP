@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface MobileFrameProps {
@@ -6,37 +6,50 @@ interface MobileFrameProps {
 }
 
 export default function MobileFrame({ children }: MobileFrameProps) {
-    // Detect if we are in the mobile app WebView
-    const isWebView = window.navigator.userAgent.includes('wv') ||
-        window.navigator.userAgent.includes('MobileApp') ||
-        window.location.pathname.startsWith('/mobile');
+    const [isClient, setIsClient] = useState(false);
 
-    if (isWebView) {
-        // Raw web view - no extra frames or overflow restrictions
-        return <div className="min-h-screen w-full bg-background flex flex-col">{children}</div>;
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (!isClient) return <div className="min-h-screen w-full bg-background">{children}</div>;
+
+    // Detect if we are on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        window.innerWidth < 1024 ||
+        navigator.userAgent.includes('MobileApp');
+
+    // If it's a mobile device, just return the content. 
+    // NO wrapper with backgrounds or centering.
+    if (isMobile) {
+        return (
+            <div className="h-full w-full bg-background flex flex-col">
+                {children}
+            </div>
+        );
     }
 
+    // On Desktop, show the nice phone frame simulator
     return (
-        <div className="min-h-screen h-full w-full bg-[#f0f2f5] flex items-center justify-center p-0 md:p-4">
-            {/* Mobile Device Frame for Desktop View */}
+        <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center p-4 overflow-hidden">
+            {/* Mobile Device Frame */}
             <div className={cn(
-                "w-full h-full md:w-[400px] md:h-[850px] bg-background md:rounded-[40px] shadow-2xl overflow-hidden relative border-0 md:border-[8px] md:border-gray-900",
-                "flex flex-col h-full"
+                "w-[400px] h-[850px] bg-background rounded-[40px] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden relative border-[8px] border-slate-800",
+                "flex flex-col transform scale-90 md:scale-100 transition-transform duration-500"
             )}>
-                {/* Notch (Visual only on desktop) */}
-                <div className="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-gray-900 rounded-b-[18px] z-50"></div>
+                {/* Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-slate-800 rounded-b-[20px] z-50"></div>
 
-                {/* Status Bar Area (Hidden on mobile app) */}
-                <div className="hidden md:block h-[44px] w-full bg-background flex-shrink-0 z-40 border-b border-border/10"></div>
-
-                {/* Content Area - Scrollable */}
-                <div className="flex-1 overflow-x-hidden overflow-y-auto no-scrollbar relative w-full h-full bg-background">
-                    {children}
+                {/* Content */}
+                <div className="flex-1 overflow-hidden relative">
+                    <div className="absolute inset-0 overflow-y-auto no-scrollbar bg-background">
+                        {children}
+                    </div>
                 </div>
 
-                {/* Home Indicator (Hidden on mobile app) */}
-                <div className="hidden md:block h-[20px] w-full bg-background flex-shrink-0 flex items-center justify-center pt-2">
-                    <div className="w-[120px] h-[5px] bg-gray-300 rounded-full"></div>
+                {/* Home Indicator */}
+                <div className="h-6 w-full bg-background flex items-center justify-center">
+                    <div className="w-32 h-1.5 bg-slate-200 rounded-full opacity-50"></div>
                 </div>
             </div>
         </div>
