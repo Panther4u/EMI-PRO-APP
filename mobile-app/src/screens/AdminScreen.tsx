@@ -41,42 +41,32 @@ export default function AdminScreen() {
                 document.head.appendChild(meta);
             }
 
-            // Add mobile-optimized styles
+            // Add mobile-optimized styles with smaller fonts
             var style = document.createElement('style');
             style.textContent = \`
                 * {
-                    -webkit-tap-highlight-color: transparent;
-                    -webkit-touch-callout: none;
+                    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
                 }
                 
                 body {
-                    font-size: 16px !important;
                     -webkit-text-size-adjust: 100%;
-                    touch-action: manipulation;
                 }
                 
-                /* Ensure all text is readable on mobile */
-                h1 { font-size: 1.75rem !important; }
-                h2 { font-size: 1.5rem !important; }
-                h3 { font-size: 1.25rem !important; }
-                p, span, div { font-size: 0.875rem !important; }
-                
-                /* Make buttons touch-friendly */
-                button, a {
-                    min-height: 44px !important;
-                    min-width: 44px !important;
-                }
-                
-                /* Responsive images */
-                img {
-                    max-width: 100% !important;
-                    height: auto !important;
-                }
+                /* Smaller, more readable fonts */
+                h1 { font-size: 1.25rem !important; }
+                h2 { font-size: 1.125rem !important; }
+                h3 { font-size: 1rem !important; }
                 
                 /* Remove horizontal scroll */
                 html, body {
                     overflow-x: hidden !important;
                     max-width: 100vw !important;
+                }
+                
+                /* Ensure clickable elements work */
+                button, a, [role="button"], [role="menuitem"] {
+                    pointer-events: auto !important;
+                    cursor: pointer !important;
                 }
             \`;
             document.head.appendChild(style);
