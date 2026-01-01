@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { WebView } from 'react-native-webview';
+import AutoUpdateChecker from '../components/AutoUpdateChecker';
 
 const CURRENT_VERSION = '1.0.0';
 const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
@@ -27,6 +28,10 @@ export default function AdminScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+
+            {/* Auto-update checker */}
+            <AutoUpdateChecker />
+
             <WebView
                 source={{ uri }}
                 style={styles.webview}
