@@ -30,46 +30,16 @@ export default function AdminScreen() {
         }
     };
 
-    // Inject CSS for mobile responsiveness
+    // Minimal JavaScript - just set viewport, no CSS changes
     const injectedJavaScript = `
         (function() {
             // Add meta viewport if not present
             if (!document.querySelector('meta[name="viewport"]')) {
                 var meta = document.createElement('meta');
                 meta.name = 'viewport';
-                meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                meta.content = 'width=device-width, initial-scale=1.0';
                 document.head.appendChild(meta);
             }
-
-            // Add mobile-optimized styles with smaller fonts
-            var style = document.createElement('style');
-            style.textContent = \`
-                * {
-                    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-                }
-                
-                body {
-                    -webkit-text-size-adjust: 100%;
-                }
-                
-                /* Smaller, more readable fonts */
-                h1 { font-size: 1.25rem !important; }
-                h2 { font-size: 1.125rem !important; }
-                h3 { font-size: 1rem !important; }
-                
-                /* Remove horizontal scroll */
-                html, body {
-                    overflow-x: hidden !important;
-                    max-width: 100vw !important;
-                }
-                
-                /* Ensure clickable elements work */
-                button, a, [role="button"], [role="menuitem"] {
-                    pointer-events: auto !important;
-                    cursor: pointer !important;
-                }
-            \`;
-            document.head.appendChild(style);
         })();
         true;
     `;

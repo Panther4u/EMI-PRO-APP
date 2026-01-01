@@ -4,9 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Mobile-responsive styles */
-@import './styles/mobile-responsive.css';
-
 @layer base {
   :root {
     --background: 0 0% 100%;
