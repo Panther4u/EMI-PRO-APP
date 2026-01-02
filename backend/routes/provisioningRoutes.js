@@ -15,7 +15,7 @@ router.get('/payload/:customerId', (req, res) => {
         const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
 
         // For now, serve from Render (need to restore APK file)
-        const apkFileName = 'securefinance-user-v2.apk';
+        const apkFileName = 'securefinance-user-v2.0.1.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate checksum from local file

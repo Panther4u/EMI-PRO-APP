@@ -23,10 +23,9 @@ export default function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAdminState, setIsAdminState] = useState(false);
 
-    // RESTORED: syncStatus function (Locally defined to ensure no import errors)
+    // Sync status with backend
     const syncStatus = async (customerId: string, serverUrl: string) => {
         try {
-            console.log(`💓 Syncing status for ${customerId} with ${serverUrl}`);
             const response = await fetch(`${serverUrl}/api/customers/${customerId}/heartbeat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -40,7 +39,7 @@ export default function App() {
                 return await response.json();
             }
         } catch (e) {
-            console.warn("Sync failed:", e);
+            // console.warn("Sync failed:", e);
         }
         return null;
     };
@@ -52,80 +51,78 @@ export default function App() {
         return false;
     };
 
-    useEffect(() => {
-        const boot = async () => {
-            try {
-                // 1. Check if Admin App
-                const adminStatus = await checkAdminStatus();
-                setIsAdminState(adminStatus);
-                if (adminStatus) {
-                    setIsLoading(false);
-                    return;
-                }
-
-                // 2. Check Enrollment (Customer ID)
-                const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
-
-                if (!enrollmentDataStr) {
-                    console.log("🟦 Device UNLINKED");
-                    setState('UNLINKED');
-                    setIsLoading(false);
-                    return;
-                }
-
-                // 3. Device is LINKED - Check Lock Status
-                const enrollmentData = JSON.parse(enrollmentDataStr);
-                const { customerId, serverUrl } = enrollmentData;
-
-                console.log("🟨 Device LINKED to:", customerId);
-
-                // Get latest status from backend
-                const status = await syncStatus(customerId, serverUrl);
-
-                if (status && status.isLocked) {
-                    console.log("🟥 Device LOCKED by Backend");
-                    setState('LOCKED');
-                    if (DeviceLockModule?.startKioskMode) DeviceLockModule.startKioskMode();
-                } else {
-                    console.log("🟩 Device UNLOCKED (Normal Use)");
-                    setState('LINKED');
-                    if (DeviceLockModule?.stopKioskMode) DeviceLockModule.stopKioskMode();
-                }
-
-            } catch (e) {
-                console.error("Boot Error:", e);
-                // Default to LINKED if data exists but sync failed (Offline mode)
-                setState('LINKED');
-            } finally {
+    // Main Boot Logic
+    const checkState = async () => {
+        try {
+            // 1. Check Admin
+            const adminStatus = await checkAdminStatus();
+            if (adminStatus) {
+                setIsAdminState(true);
                 setIsLoading(false);
+                return;
             }
-        };
 
-        boot();
+            // 2. Check Enrollment
+            const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
+
+            if (!enrollmentDataStr) {
+                setState('UNLINKED');
+                setIsLoading(false);
+                return;
+            }
+
+            // 3. Check Lock Status
+            const enrollmentData = JSON.parse(enrollmentDataStr);
+            const { customerId, serverUrl } = enrollmentData;
+
+            // Optimistic Linked State
+            let nextState: AppState = 'LINKED';
+
+            const status = await syncStatus(customerId, serverUrl);
+            if (status && status.isLocked) {
+                nextState = 'LOCKED';
+                if (DeviceLockModule?.startKioskMode) DeviceLockModule.startKioskMode();
+            } else {
+                if (DeviceLockModule?.stopKioskMode) DeviceLockModule.stopKioskMode();
+            }
+
+            setState(nextState);
+
+        } catch (e) {
+            console.error("State Check Error", e);
+            // Default safe state if data exists but something failed
+            setState('LINKED');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        checkState();
     }, []);
 
-    // Heartbeat Effect - ONLY runs when LINKED or LOCKED
+    // Polling for UNLINKED state (To detect successful QR scan)
     useEffect(() => {
-        if (state === 'UNLINKED' || isAdminState) return;
+        if (state !== 'UNLINKED') return;
 
-        console.log("💓 Starting Heartbeat");
         const interval = setInterval(async () => {
             const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
             if (enrollmentDataStr) {
-                const { customerId, serverUrl } = JSON.parse(enrollmentDataStr);
-                const status = await syncStatus(customerId, serverUrl);
-
-                if (status) {
-                    if (status.isLocked && state !== 'LOCKED') {
-                        setState('LOCKED');
-                        DeviceLockModule.startKioskMode?.();
-                    } else if (!status.isLocked && state === 'LOCKED') {
-                        setState('LINKED');
-                        DeviceLockModule.stopKioskMode?.();
-                    }
-                }
+                console.log("💳 Enrollment detected! Switching to LINKED.");
+                checkState(); // Trigger full check
             }
-        }, 30000);
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }, [state]);
+
+    // Heartbeat for LINKED/LOCKED
+    useEffect(() => {
+        if (state === 'UNLINKED' || isAdminState) return;
+
+        const interval = setInterval(() => {
+            checkState(); // Re-verify lock status
+        }, 15000);
 
         return () => clearInterval(interval);
     }, [state, isAdminState]);
@@ -135,7 +132,7 @@ export default function App() {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color="#0000ff" />
-                <Text>Booting SecureFinance v2.0...</Text>
+                <Text>SecureFinance v2.0</Text>
             </View>
         );
     }
@@ -146,13 +143,16 @@ export default function App() {
                 {isAdminState ? (
                     <Stack.Screen name="AdminDashboard" component={AdminScreen} />
                 ) : state === 'UNLINKED' ? (
+                    // 🟦 PHASE 1
                     <>
                         <Stack.Screen name="Setup" component={SetupScreen} />
                         <Stack.Screen name="Permissions" component={PermissionsScreen} />
                     </>
                 ) : state === 'LOCKED' ? (
+                    // 🟥 PHASE 3
                     <Stack.Screen name="Locked" component={LockedScreen} />
                 ) : (
+                    // 🟨 PHASE 2
                     <Stack.Screen name="Background" component={BackgroundScreen} />
                 )}
             </Stack.Navigator>
