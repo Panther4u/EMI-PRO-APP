@@ -106,11 +106,12 @@ export default function CustomerDetails() {
     if (!customer) return <div className="p-10 text-center text-slate-400">Loading details...</div>;
 
     // Provisioning Steps
-    { id: 'qrScanned', label: 'QR Code Scanned', completed: customer.deviceStatus?.steps?.qrScanned },
-    { id: 'permissionsGranted', label: 'Permissions Granted', completed: customer.deviceStatus?.steps?.permissionsGranted },
-    { id: 'detailsFetched', label: 'Device Details Fetched', completed: customer.deviceStatus?.steps?.detailsFetched },
-    { id: 'imeiVerified', label: 'IMEI Verified', completed: customer.deviceStatus?.steps?.imeiVerified },
-    { id: 'deviceBound', label: 'Device Bound', completed: customer.deviceStatus?.steps?.deviceBound },
+    const provisioningSteps = [
+        { id: 'qrScanned', label: 'QR Code Scanned', completed: customer.deviceStatus?.steps?.qrScanned },
+        { id: 'permissionsGranted', label: 'Permissions Granted', completed: customer.deviceStatus?.steps?.permissionsGranted },
+        { id: 'detailsFetched', label: 'Device Details Fetched', completed: customer.deviceStatus?.steps?.detailsFetched },
+        { id: 'imeiVerified', label: 'IMEI Verified', completed: customer.deviceStatus?.steps?.imeiVerified },
+        { id: 'deviceBound', label: 'Device Bound', completed: customer.deviceStatus?.steps?.deviceBound },
     ];
 
     const completedSteps = provisioningSteps.filter(s => s.completed).length;
