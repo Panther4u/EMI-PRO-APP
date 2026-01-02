@@ -54,6 +54,20 @@
     <!-- Contacts -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <!-- Queries for Android 11+ (Required for Linking.openURL) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MainApplication"
         android:label="SecureFinance EMI"
