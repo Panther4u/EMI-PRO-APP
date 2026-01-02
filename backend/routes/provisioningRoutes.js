@@ -20,8 +20,8 @@ router.get('/payload/:customerId', (req, res) => {
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate checksum from local file OR use Verified Hardcoded Fallback
-        // Verified for Admin v2.0.4 (pUaK0RKw...)
-        const VERIFIED_CHECKSUM = 'pUaK0RKwVABKDjsyyC7yTTLtK9tvomL7DAp0CRQYkT4';
+        // Verified for Admin v2.0.4 (rebuilt with <queries> fix)
+        const VERIFIED_CHECKSUM = '-dB9W9NSNyz5jAhSpeBP-03q7QNqlhinSJHPRqh3cAo';
 
         // Prefer dynamic if file exists, but fallback to verified if fails
         let checksum = VERIFIED_CHECKSUM;
