@@ -35,7 +35,8 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const refreshCustomers = async () => {
         try {
-            const response = await fetch(getApiUrl('/api/customers'));
+            // Add timestamp to prevent caching
+            const response = await fetch(getApiUrl(`/api/customers?_t=${Date.now()}`));
             if (!response.ok) throw new Error('Failed to fetch customers');
             const data = await response.json();
             setCustomers(data);
