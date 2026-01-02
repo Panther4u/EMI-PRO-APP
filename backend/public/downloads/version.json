@@ -1,6 +1,0 @@
-{
-    "version": "1.1.4",
-    "admin_apk": "https://emi-pro-app.onrender.com/downloads/app-user-v1.1.4.apk",
-    "user_apk": "https://emi-pro-app.onrender.com/downloads/app-user-v1.1.4.apk",
-    "releaseNotes": "Fixed: QR Scanner now appears on first launch. Auto-update from Render hosting."
-}
