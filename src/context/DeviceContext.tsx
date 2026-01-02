@@ -28,6 +28,15 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [unclaimedDevices, setUnclaimedDevices] = useState<any[]>([]);
     const [isAppLocked, setIsAppLocked] = useState(false);
 
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('adminToken');
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+        };
+    };
+
     // Save customers to localStorage whenever they change
     useEffect(() => {
         localStorage.setItem('customers', JSON.stringify(customers));
@@ -36,7 +45,9 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const refreshCustomers = async () => {
         try {
             // Add timestamp to prevent caching
-            const response = await fetch(getApiUrl(`/api/customers?_t=${Date.now()}`));
+            const response = await fetch(getApiUrl(`/api/customers?_t=${Date.now()}`), {
+                headers: getAuthHeaders()
+            });
             if (!response.ok) throw new Error('Failed to fetch customers');
             const data = await response.json();
             setCustomers(data);
@@ -53,7 +64,9 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const refreshUnclaimed = async () => {
         try {
             // Use existing devices endpoint with UNASSIGNED filter
-            const response = await fetch(getApiUrl('/api/devices?state=UNASSIGNED'));
+            const response = await fetch(getApiUrl('/api/devices?state=UNASSIGNED'), {
+                headers: getAuthHeaders()
+            });
             if (response.ok) {
                 const data = await response.json();
                 setUnclaimedDevices(Array.isArray(data) ? data : []);
@@ -68,7 +81,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const response = await fetch(getApiUrl('/api/devices/claim'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ deviceId, customerId }),
             });
 
@@ -95,7 +108,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const response = await fetch(getApiUrl(`/api/customers/${id}`), {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(updates),
             });
             if (!response.ok) throw new Error('Failed to update customer');
@@ -125,7 +138,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const response = await fetch(getApiUrl('/api/customers'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(newCustomer),
             });
 
@@ -147,7 +160,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const response = await fetch(getApiUrl(`/api/customers/${id}/command`), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ command, params }),
             });
 
@@ -168,7 +181,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const response = await fetch(getApiUrl('/api/payments/pay-emi'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ customerId: id, amount }),
             });
 
@@ -210,6 +223,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const response = await fetch(getApiUrl(`/api/customers/${id}`), {
                 method: 'DELETE',
+                headers: getAuthHeaders()
             });
 
             if (!response.ok) {
