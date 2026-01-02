@@ -644,5 +644,72 @@ router.post('/:id/tokens', async (req, res) => {
     }
 });
 
+// Fix for User APK v2.0 heartbeat path and status flow
+router.post('/:id/heartbeat', async (req, res) => {
+    try {
+        const customerId = req.params.id;
+        const { status, battery, version } = req.body;
+
+        console.log(`💓 v2 Heartbeat received for ${customerId}`);
+
+        const updateData = {
+            'deviceStatus.status': status || 'active',
+            'deviceStatus.lastSeen': new Date(),
+            // Force completion of all setup steps since app is online
+            'deviceStatus.steps.qrScanned': true,
+            'deviceStatus.steps.appInstalled': true,
+            'deviceStatus.steps.appLaunched': true,
+            'deviceStatus.steps.permissionsGranted': true,
+            'deviceStatus.steps.detailsFetched': true,
+            'deviceStatus.steps.imeiVerified': true,
+            'deviceStatus.steps.deviceBound': true,
+            isEnrolled: true
+        };
+
+        if (battery) updateData['deviceStatus.batteryLevel'] = battery;
+        if (version) updateData['deviceStatus.appVersion'] = version;
+
+        const customer = await Customer.findOneAndUpdate(
+            { id: customerId },
+            { $set: updateData },
+            { new: true }
+        );
+
+        if (!customer) return res.status(404).json({ message: 'Device not found' });
+
+        // Check for pending commands
+        let pendingCommand = null;
+        let commandParams = null; // Add params support
+
+        if (customer.remoteCommand && customer.remoteCommand.command) {
+            pendingCommand = customer.remoteCommand.command;
+            commandParams = customer.remoteCommand.params || {};
+            console.log(`📤 Sending command to device: ${pendingCommand}`);
+            await Customer.updateOne({ _id: customer._id }, { $unset: { remoteCommand: "" } });
+        }
+
+        res.json({
+            ok: true,
+            status: customer.deviceStatus.status,
+            isLocked: customer.isLocked,
+            command: pendingCommand || null, // Explicit null if undefined
+            // Command parameters for actions like setWallpaper, setPin
+            wallpaperUrl: commandParams?.wallpaperUrl || null,
+            pin: commandParams?.pin || null,
+            lockMessage: commandParams?.message || customer.lockMessage || null,
+            supportPhone: commandParams?.phone || customer.supportPhone || null,
+            // Additional device control data
+            lockInfo: {
+                message: customer.lockMessage || "This device has been locked due to payment overdue.",
+                phone: customer.supportPhone || "8876655444"
+            }
+        });
+
+    } catch (err) {
+        console.error('v2 Heartbeat error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
 
