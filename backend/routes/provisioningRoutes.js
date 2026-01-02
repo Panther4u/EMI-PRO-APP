@@ -12,7 +12,7 @@ router.get('/payload/:customerId', (req, res) => {
         // TODO: Switch back to GitHub Releases after uploading APK
         const protocol = req.protocol;
         const host = req.get('host');
-        const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
+        const baseUrl = 'https://emi-pro-app.onrender.com';
 
         // For now, serve from Render (need to restore APK file)
         const apkFileName = 'securefinance-user-v2.0.1.apk';
