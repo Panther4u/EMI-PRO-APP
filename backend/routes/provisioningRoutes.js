@@ -26,6 +26,11 @@ router.get('/payload/:customerId', (req, res) => {
         console.log(`📦 APK Download URL: ${downloadUrl}`);
         console.log(`🔐 APK Checksum: ${checksum}`);
 
+        // Get base URL for serverUrl in admin extras
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
+
         // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
