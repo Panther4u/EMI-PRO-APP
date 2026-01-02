@@ -21,7 +21,7 @@ router.get('/payload/:customerId', (req, res) => {
 
         // Calculate checksum from local file OR use Verified Hardcoded Fallback
         // Verified for Admin v2.0.4 (rebuilt with <queries> fix)
-        const VERIFIED_CHECKSUM = '-dB9W9NSNyz5jAhSpeBP-03q7QNqlhinSJHPRqh3cAo';
+        const VERIFIED_CHECKSUM = 'x7tSNiRyjx3vwIsV4b1ialFzvYBX3BT6PDVqD3NE6NY';
 
         // Prefer dynamic if file exists, but fallback to verified if fails
         let checksum = VERIFIED_CHECKSUM;
