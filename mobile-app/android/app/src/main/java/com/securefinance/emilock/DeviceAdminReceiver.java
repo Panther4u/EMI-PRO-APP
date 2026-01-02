@@ -30,7 +30,7 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
         String serverUrl = null;
 
         try {
-            android.os.Bundle extras = intent
+            android.os.PersistableBundle extras = intent
                     .getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE);
             if (extras != null) {
                 customerId = extras.getString("customerId");
