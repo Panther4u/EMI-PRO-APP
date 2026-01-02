@@ -16,7 +16,7 @@ interface DeviceContextType {
     unclaimedDevices: any[];
     refreshUnclaimed: () => Promise<void>;
     claimDevice: (deviceId: string, customerId: string) => Promise<void>;
-    sendRemoteCommand: (id: string, command: 'lock' | 'unlock' | 'wipe' | 'reset') => Promise<void>;
+    sendRemoteCommand: (id: string, command: string, params?: any) => Promise<void>;
     collectEmi: (id: string, amount: number) => Promise<void>;
 }
 
@@ -142,12 +142,12 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     };
 
-    const sendRemoteCommand = async (id: string, command: 'lock' | 'unlock' | 'wipe' | 'reset') => {
+    const sendRemoteCommand = async (id: string, command: string, params: any = {}) => {
         try {
             const response = await fetch(getApiUrl(`/api/customers/${id}/command`), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command }),
+                body: JSON.stringify({ command, params }),
             });
 
             if (!response.ok) {

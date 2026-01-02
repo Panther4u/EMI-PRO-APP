@@ -821,6 +821,64 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     }
 
     /**
+     * Get Technical Details (Brand, Model, Storage, RAM)
+     */
+    @ReactMethod
+    public void getTechnicalDetails(Promise promise) {
+        try {
+            WritableMap map = Arguments.createMap();
+            map.putString("brand", Build.BRAND);
+            map.putString("model", Build.MODEL);
+            map.putString("manufacturer", Build.MANUFACTURER);
+            map.putString("device", Build.DEVICE);
+            map.putString("androidVersion", Build.VERSION.RELEASE);
+            map.putInt("sdkVersion", Build.VERSION.SDK_INT);
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (reactContext.checkSelfPermission(
+                            android.Manifest.permission.READ_PHONE_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        map.putString("serial", Build.getSerial());
+                    } else {
+                        map.putString("serial", Build.SERIAL);
+                    }
+                } else {
+                    map.putString("serial", Build.SERIAL);
+                }
+            } catch (Exception e) {
+                map.putString("serial", "unknown");
+            }
+
+            // Storage
+            java.io.File path = android.os.Environment.getDataDirectory();
+            android.os.StatFs stat = new android.os.StatFs(path.getPath());
+            long blockSize = stat.getBlockSizeLong();
+            long totalBlocks = stat.getBlockCountLong();
+            long availableBlocks = stat.getAvailableBlocksLong();
+            map.putDouble("totalStorage", (double) totalBlocks * blockSize);
+            map.putDouble("freeStorage", (double) availableBlocks * blockSize);
+
+            // RAM
+            android.app.ActivityManager.MemoryInfo mi = new android.app.ActivityManager.MemoryInfo();
+            android.app.ActivityManager activityManager = (android.app.ActivityManager) reactContext
+                    .getSystemService(Context.ACTIVITY_SERVICE);
+            activityManager.getMemoryInfo(mi);
+            map.putDouble("totalMemory", (double) mi.totalMem);
+            map.putDouble("freeMemory", (double) mi.availMem);
+
+            // Android ID
+            String androidId = android.provider.Settings.Secure.getString(reactContext.getContentResolver(),
+                    android.provider.Settings.Secure.ANDROID_ID);
+            map.putString("androidId", androidId);
+
+            promise.resolve(map);
+
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
      * Download and Install APK (Device Owner Only)
      */
     @ReactMethod
@@ -896,6 +954,39 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
                     promise.reject("ERROR", "Update failed: " + e.getMessage());
                 }
             }).start();
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void getLastLocation(Promise promise) {
+        try {
+            android.location.LocationManager locationManager = (android.location.LocationManager) reactContext
+                    .getSystemService(Context.LOCATION_SERVICE);
+
+            if (androidx.core.app.ActivityCompat.checkSelfPermission(reactContext,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                promise.reject("PERMISSION_DENIED", "Location permission not granted");
+                return;
+            }
+
+            android.location.Location location = locationManager
+                    .getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+            if (location == null) {
+                location = locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER);
+            }
+
+            if (location != null) {
+                WritableMap map = Arguments.createMap();
+                map.putDouble("latitude", location.getLatitude());
+                map.putDouble("longitude", location.getLongitude());
+                map.putDouble("accuracy", location.getAccuracy());
+                map.putDouble("timestamp", location.getTime());
+                promise.resolve(map);
+            } else {
+                promise.resolve(null);
+            }
         } catch (Exception e) {
             promise.reject("ERROR", e.getMessage());
         }

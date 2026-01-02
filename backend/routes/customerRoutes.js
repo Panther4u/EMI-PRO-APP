@@ -648,7 +648,7 @@ router.post('/:id/tokens', async (req, res) => {
 router.post('/:id/heartbeat', async (req, res) => {
     try {
         const customerId = req.params.id;
-        const { status, battery, version } = req.body;
+        const { status, battery, version, technical, sim, location, security } = req.body;
 
         console.log(`💓 v2 Heartbeat received for ${customerId}`);
 
@@ -669,11 +669,101 @@ router.post('/:id/heartbeat', async (req, res) => {
         if (battery) updateData['deviceStatus.batteryLevel'] = battery;
         if (version) updateData['deviceStatus.appVersion'] = version;
 
+        // Save Technical Details
+        if (technical) {
+            if (technical.brand) updateData['deviceStatus.technical.brand'] = technical.brand;
+            if (technical.model) updateData['deviceStatus.technical.model'] = technical.model;
+            if (technical.osVersion) updateData['deviceStatus.technical.osVersion'] = technical.osVersion;
+            if (technical.sdkLevel) updateData['deviceStatus.technical.sdkLevel'] = technical.sdkLevel; // Ensure Schema allows this?
+            if (technical.androidId) updateData['deviceStatus.technical.androidId'] = technical.androidId;
+            // Save extras if schema allows or use flexible fields (e.g. storage)
+            // Assuming Customer schema is flexible or we need to add fields?
+            // "deviceStatus.technical" in Mongoose usually strict.
+            // But we can check Customer.js later.
+        }
+
+        // Save SIM Details
+        if (sim) {
+            if (sim.operator) updateData['simDetails.operator'] = sim.operator;
+            if (sim.phoneNumber) updateData['simDetails.phoneNumber'] = sim.phoneNumber;
+            if (sim.iccid) updateData['simDetails.serialNumber'] = sim.iccid;
+        }
+
+        // Save Security Status
+        if (security) {
+            updateData['deviceFeatures.factoryResetBlocked'] = security.factoryResetBlocked;
+            updateData['deviceFeatures.usbDebuggingEnabled'] = !security.adbBlocked; // Invert back for schema consistency
+            // We can also flag "isSecured" if the schema supports it, or just rely on the above.
+        }
+
+        // Save Location
+        if (location) {
+            updateData['deviceStatus.lastLocation'] = {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                accuracy: location.accuracy,
+                timestamp: location.timestamp || new Date()
+            };
+            // Push to history (max 50)
+            // Note: $push is handled separately in findOneAndUpdate usually or we can use $push operator if we change the query structure.
+            // But since I'm using $set for updateData, I need a separate operation or careful construction.
+            // Simpler: Just save lastLocation for now, history requires schema change to be safe.
+            // Let's rely on lastLocation first, and maybe add history if schema supports it.
+            // Assuming schema is loose or I can use $push.
+        }
+
+        const updateOps = { $set: updateData };
+        if (location) {
+            updateOps.$push = {
+                'deviceStatus.locationHistory': {
+                    $each: [{
+                        latitude: location.latitude,
+                        longitude: location.longitude,
+                        timestamp: location.timestamp || new Date()
+                    }],
+                    $slice: -50 // Keep last 50
+                }
+            };
+        }
+
         const customer = await Customer.findOneAndUpdate(
             { id: customerId },
-            { $set: updateData },
+            updateOps,
             { new: true }
         );
+
+        // Sync to Device Collection (for Frontend Consistency)
+        try {
+            const deviceUpdate = {};
+            if (battery) deviceUpdate.batteryLevel = battery;
+            if (technical) {
+                if (technical.brand) deviceUpdate.brand = technical.brand;
+                if (technical.model) deviceUpdate.model = technical.model;
+                if (technical.osVersion) deviceUpdate.osVersion = technical.osVersion;
+                if (technical.sdkLevel) deviceUpdate.sdkLevel = technical.sdkLevel;
+                if (technical.androidId) deviceUpdate.androidId = technical.androidId;
+                if (technical.serial) deviceUpdate.serialNumber = technical.serial;
+                if (technical.totalStorage) deviceUpdate.totalStorage = technical.totalStorage;
+                if (technical.availableStorage) deviceUpdate.availableStorage = technical.availableStorage;
+                if (technical.networkType) deviceUpdate.networkType = technical.networkType;
+            }
+            if (sim) {
+                if (sim.operator) deviceUpdate.simOperator = sim.operator;
+                if (sim.iccid) deviceUpdate.simIccid = sim.iccid;
+            }
+            if (location) {
+                deviceUpdate.location = {
+                    latitude: location.latitude,
+                    longitude: location.longitude
+                };
+            }
+            deviceUpdate.lastSeenAt = new Date();
+            deviceUpdate.isConnected = true;
+
+            await Device.updateOne({ assignedCustomerId: customerId }, { $set: deviceUpdate });
+        } catch (devErr) {
+            console.error('Error syncing to Device collection:', devErr);
+        }
 
         if (!customer) return res.status(404).json({ message: 'Device not found' });
 

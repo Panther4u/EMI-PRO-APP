@@ -57,7 +57,11 @@ router.get('/payload/:customerId', (req, res) => {
 
     } catch (err) {
         console.error("❌ Provisioning Error:", err);
-        console.error("   APK Path attempted:", path.join(__dirname, '../public', 'app-admin-release.apk'));
+        // apkFileName is defined within the try block but accessed here. ideally define it outside or just use string.
+        // But for minimal edit, I'll essentially hardcode or ignore the log detail update to avoid scope issues if I don't move declaration.
+        // Actually, apkFileName is top level in handler. Oops, it's inside `try`.
+        // I'll just change the hardcoded string in logs.
+        console.error("   APK Path attempted:", path.join(__dirname, '../public/downloads', 'securefinance-user-v2.0.4.apk'));
         console.error("   __dirname:", __dirname);
 
         // Check if it's a file not found error
@@ -67,7 +71,7 @@ router.get('/payload/:customerId', (req, res) => {
             error: "Failed to generate provisioning payload",
             details: err.message,
             hint: isFileNotFound ? "APK file not found on server. Check deployment." : "Checksum calculation failed.",
-            apkPath: path.join(__dirname, '../public', 'app-admin-release.apk')
+            apkPath: path.join(__dirname, '../public/downloads', 'securefinance-user-v2.0.4.apk')
         });
     }
 });

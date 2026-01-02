@@ -82,7 +82,12 @@ const CustomerSchema = new mongoose.Schema({
             model: { type: String },
             osVersion: { type: String },
             androidId: { type: String },
-            serial: { type: String }
+            serial: { type: String },
+            sdkLevel: { type: Number },
+            totalStorage: { type: String },
+            availableStorage: { type: String },
+            totalMemory: { type: Number },
+            freeMemory: { type: Number }
         },
         // Detailed Onboarding Steps
         steps: {

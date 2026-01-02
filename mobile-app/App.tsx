@@ -26,19 +26,100 @@ export default function App() {
     // Sync status with backend
     const syncStatus = async (customerId: string, serverUrl: string) => {
         try {
+            // Fetch Native Details
+            let technical: any = {};
+            let features: any = {};
+            let sim: any = {};
+            let location: any = null;
+
+            if (DeviceLockModule) {
+                try { if (DeviceLockModule.getTechnicalDetails) technical = await DeviceLockModule.getTechnicalDetails(); } catch (e) { }
+                try { if (DeviceLockModule.getDeviceFeatureStatus) features = await DeviceLockModule.getDeviceFeatureStatus(); } catch (e) { }
+                try { if (DeviceLockModule.getSimStatus) sim = await DeviceLockModule.getSimStatus(); } catch (e) { }
+                try { if (DeviceLockModule.getLastLocation) location = await DeviceLockModule.getLastLocation(); } catch (e) { }
+            }
+
+            const batteryLevel = features?.batteryLevel || 100;
+            const networkType = features?.networkType || 'Unknown';
+
+            // Format Storage
+            const totalStorageGB = technical?.totalStorage ? (technical.totalStorage / (1024 * 1024 * 1024)).toFixed(2) + ' GB' : 'N/A';
+            const freeStorageGB = technical?.freeStorage ? (technical.freeStorage / (1024 * 1024 * 1024)).toFixed(2) + ' GB' : 'N/A';
+
+            const payload = {
+                status: 'online',
+                version: '2.0.4', // Updated Version
+                battery: batteryLevel,
+
+                // Enhanced Data
+                technical: {
+                    brand: technical?.brand,
+                    model: technical?.model,
+                    androidId: technical?.androidId,
+                    osVersion: technical?.androidVersion,
+                    sdkLevel: technical?.sdkVersion,
+                    serial: technical?.serial,
+                    totalStorage: totalStorageGB,
+                    availableStorage: freeStorageGB,
+                    totalMemory: technical?.totalMemory,
+                    freeMemory: technical?.freeMemory,
+                    networkType: networkType
+                },
+                sim: sim,
+                location: location,
+                security: {
+                    factoryResetBlocked: features?.factoryResetBlocked || false,
+                    adbBlocked: !features?.usbDebuggingEnabled, // If usbDebuggingEnabled is false, then blocked is true
+                    isSecured: (features?.factoryResetBlocked && !features?.usbDebuggingEnabled) || false
+                }
+            };
+
             const response = await fetch(`${serverUrl}/api/customers/${customerId}/heartbeat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    status: 'online',
-                    version: '2.0.0',
-                    battery: 100
-                })
+                body: JSON.stringify(payload)
             });
+
             if (response.ok) {
-                return await response.json();
+                const data = await response.json();
+
+                // Handle Remote Commands
+                if (data.command) {
+                    console.log("⚡ Received Command:", data.command);
+                    try {
+                        switch (data.command) {
+                            case 'wipe':
+                                if (DeviceLockModule?.wipeData) DeviceLockModule.wipeData();
+                                break;
+                            case 'alarm':
+                                if (DeviceLockModule?.startPowerAlarm) DeviceLockModule.startPowerAlarm();
+                                break;
+                            case 'stopAlarm':
+                                if (DeviceLockModule?.stopPowerAlarm) DeviceLockModule.stopPowerAlarm();
+                                break;
+                            case 'setWallpaper':
+                                if (DeviceLockModule?.setWallpaper && data.wallpaperUrl) {
+                                    DeviceLockModule.setWallpaper(data.wallpaperUrl);
+                                }
+                                break;
+                            case 'setPin':
+                                if (DeviceLockModule?.setDevicePin && data.pin) {
+                                    DeviceLockModule.setDevicePin(data.pin);
+                                }
+                                break;
+                            case 'setLockInfo':
+                                if (DeviceLockModule?.setLockInfo && data.lockMessage) {
+                                    DeviceLockModule.setLockInfo(data.lockMessage, data.supportPhone || "");
+                                }
+                                break;
+                        }
+                    } catch (cmdErr) {
+                        console.error("Command Execution Failed:", cmdErr);
+                    }
+                }
+
+                return data;
             } else if (response.status === 404) {
-                // 404 means Customer Deleted on Backend -> Trigger Unenrollment
                 return { unenroll: true };
             }
         } catch (e) {
@@ -97,8 +178,11 @@ export default function App() {
             if (status && status.isLocked) {
                 nextState = 'LOCKED';
                 if (DeviceLockModule?.startKioskMode) DeviceLockModule.startKioskMode();
+                if (DeviceLockModule?.setSecurityHardening) DeviceLockModule.setSecurityHardening(true); // Enforce Strict
             } else {
                 if (DeviceLockModule?.stopKioskMode) DeviceLockModule.stopKioskMode();
+                // Enforce Base Security (Factory Reset Block + Anti-Uninstall)
+                if (DeviceLockModule?.setSecurityHardening) DeviceLockModule.setSecurityHardening(true);
             }
 
             setState(nextState);
