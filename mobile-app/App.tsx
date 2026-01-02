@@ -135,6 +135,26 @@ export default function App() {
         return false;
     };
 
+    const checkUpdate = async (serverUrl: string) => {
+        try {
+            const response = await fetch(`${serverUrl}/version`);
+            if (response.ok) {
+                const data = await response.json();
+                const currentVersion = '2.0.4'; // Match package.json
+                if (data.version !== currentVersion && data.type === 'user-app') {
+                    console.log(`🚀 New Update Found: ${data.version}`);
+                    // Trigger native update if available
+                    if (DeviceLockModule?.downloadAndInstallApk) {
+                        const apkUrl = `${serverUrl}/downloads/${data.apk}`;
+                        DeviceLockModule.downloadAndInstallApk(apkUrl);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Update check failed:", e);
+        }
+    };
+
     // Main Boot Logic
     const checkState = async () => {
         try {
@@ -146,8 +166,39 @@ export default function App() {
                 return;
             }
 
-            // 2. Check Enrollment
-            const enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
+            // 2. Check Enrollment (AsyncStorage first, then Native Bridge)
+            let enrollmentDataStr = await AsyncStorage.getItem('enrollment_data');
+
+            // A1. Check for App Updates (Silent) using potential enrollment data
+            if (enrollmentDataStr) {
+                try {
+                    const data = JSON.parse(enrollmentDataStr);
+                    checkUpdate(data.serverUrl);
+                } catch (e) { }
+            } else {
+                // If not enrolled yet, check default server (e.g. for updates during setup)
+                checkUpdate("https://emi-pro-app.onrender.com");
+            }
+
+            // If not found in JS, check if Native Provisioning just happened (QR Scan)
+            if (!enrollmentDataStr) {
+                try {
+                    const nativeData = await DeviceLockModule.getProvisioningData();
+                    if (nativeData && nativeData.isProvisioned) {
+                        console.log("📥 Retrieved Native Provisioning Data:", nativeData);
+                        const newEnrollment = {
+                            customerId: nativeData.customerId,
+                            serverUrl: nativeData.serverUrl,
+                            timestamp: new Date().toISOString()
+                        };
+                        enrollmentDataStr = JSON.stringify(newEnrollment);
+                        await AsyncStorage.setItem('enrollment_data', enrollmentDataStr);
+                        console.log("✅ Native data synced to AsyncStorage");
+                    }
+                } catch (e) {
+                    console.warn("Failed to check native provisioning:", e);
+                }
+            }
 
             if (!enrollmentDataStr) {
                 setState('UNLINKED');
