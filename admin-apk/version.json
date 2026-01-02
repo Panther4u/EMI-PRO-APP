@@ -1,12 +1,12 @@
 {
-    "version": "1.1.1",
-    "versionCode": 9,
+    "version": "2.0.4",
+    "versionCode": 24,
     "releaseDate": "2026-01-02",
-    "downloadUrl": "https://github.com/Panther4u/EMI-PRO-APP/raw/main/admin-apk/app-admin-release.apk",
+    "downloadUrl": "https://emi-pro-app.onrender.com/downloads/securefinance-admin-v2.0.4.apk",
     "changelog": [
-        "WebView auto-updates from Render",
-        "No rebuild needed for web UI changes",
-        "Permission handling improvements"
+        "Major Update: Admin DPC Only Architecture",
+        "Includes Device Owner Provisioning features",
+        "Auto-configuration of server URL"
     ],
     "minAndroidVersion": "8.0",
     "packageName": "com.securefinance.emilock.admin"
