@@ -11,7 +11,7 @@ router.get('/payload/:customerId', (req, res) => {
         // 🎯 USER APK: The APK installed by QR is the USER app (for customer devices)
         // Admin APK is separate and only for admin dashboard access
         const apkFileName = 'app-user-release.apk';
-        const apkPath = path.join(__dirname, '../public', apkFileName);
+        const apkPath = path.join(__dirname, '../public/downloads', apkFileName);
 
         // Determine Base URL dynamically or from ENV
         const protocol = req.protocol;
