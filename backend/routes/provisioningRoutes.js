@@ -8,30 +8,23 @@ router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
 
-        // 🎯 USER APK: The APK installed by QR is the USER app (for customer devices)
-        // Admin APK is separate and only for admin dashboard access
-        const apkFileName = 'app-user-release.apk';
-        const apkPath = path.join(__dirname, '../public/downloads', apkFileName);
+        // 🎯 USER APK: Now hosted on GitHub Releases for better reliability
+        // GitHub CDN provides faster downloads than Render
+        const GITHUB_RELEASE_VERSION = process.env.GITHUB_RELEASE_VERSION || 'v1.1.1';
+        const GITHUB_APK_URL = process.env.GITHUB_APK_URL ||
+            `https://github.com/Panther4u/EMI-PRO-APP/releases/download/${GITHUB_RELEASE_VERSION}/app-user-release.apk`;
 
-        // Determine Base URL dynamically or from ENV
-        const protocol = req.protocol;
-        const host = req.get('host');
-        // Prefer PROVISIONING_BASE_URL env var if set (for production behind proxies), otherwise request host
-        // FORCE HTTPS: Android 12+ provisioning BLOCKS http downloads.
-        const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
-        const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
+        // APK Checksum (calculated from the release APK)
+        // Update this when uploading a new release
+        const APK_CHECKSUM = process.env.APK_CHECKSUM ||
+            'zbj4PFFs7A6IZDB6ZJ+G6SZ+5Z/YpGV9enA7W944QX8=';
 
-        // Check if APK exists before calculating checksum
-        const fs = require('fs');
-        if (!fs.existsSync(apkPath)) {
-            console.error(`❌ APK NOT FOUND: ${apkPath}`);
-            const publicFiles = fs.readdirSync(path.join(__dirname, '../public'));
-            console.error(`   Files in public/:`, publicFiles);
-            throw new Error(`APK file not found: ${apkFileName}. Build it first!`);
-        }
+        // Use GitHub URL for download
+        const downloadUrl = GITHUB_APK_URL;
+        const checksum = APK_CHECKSUM;
 
-        // Calculate Checksum
-        const checksum = getApkChecksum(apkPath);
+        console.log(`📦 APK Download URL: ${downloadUrl}`);
+        console.log(`🔐 APK Checksum: ${checksum}`);
 
         // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
