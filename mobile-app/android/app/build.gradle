@@ -9,8 +9,8 @@ android {
         applicationId "com.securefinance.emilock"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 23
-        versionName "2.0.3"
+        versionCode 24
+        versionName "2.0.4"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", "false"
         buildConfigField "boolean", "IS_HERMES_ENABLED", "true"
         ndk {

@@ -819,4 +819,85 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", e.getMessage());
         }
     }
+
+    /**
+     * Download and Install APK (Device Owner Only)
+     */
+    @ReactMethod
+    public void downloadAndInstallApk(String urlString, Promise promise) {
+        try {
+            if (!isDeviceOwner()) {
+                promise.reject("ERROR", "Not Device Owner");
+                return;
+            }
+
+            new Thread(() -> {
+                try {
+                    java.net.URL url = new java.net.URL(urlString);
+                    java.io.File file = new java.io.File(reactContext.getExternalCacheDir(), "update.apk");
+                    if (file.exists())
+                        file.delete();
+
+                    java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                    connection.connect();
+                    java.io.InputStream input = new java.io.BufferedInputStream(url.openStream());
+                    java.io.FileOutputStream output = new java.io.FileOutputStream(file);
+
+                    byte[] dlBuffer = new byte[65536];
+                    int dlC;
+                    while ((dlC = input.read(dlBuffer)) != -1) {
+                        output.write(dlBuffer, 0, dlC);
+                    }
+                    output.close();
+                    input.close();
+
+                    android.content.pm.PackageInstaller packageInstaller = reactContext.getPackageManager()
+                            .getPackageInstaller();
+                    android.content.pm.PackageInstaller.SessionParams params = new android.content.pm.PackageInstaller.SessionParams(
+                            android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+
+                    // Allow replacing existing app
+                    params.setAppPackageName(reactContext.getPackageName());
+
+                    int sessionId = packageInstaller.createSession(params);
+                    android.content.pm.PackageInstaller.Session session = packageInstaller.openSession(sessionId);
+
+                    try {
+                        java.io.OutputStream out = session.openWrite("COSU", 0, -1);
+                        java.io.FileInputStream in = new java.io.FileInputStream(file);
+                        byte[] buffer = new byte[65536];
+                        int c;
+                        while ((c = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, c);
+                        }
+                        session.fsync(out);
+                        in.close();
+                        out.close();
+
+                        // Create intent for result status
+                        Intent intent = new Intent(reactContext, DeviceAdminReceiver.class);
+                        intent.setAction("PACKAGE_INSTALLED");
+                        android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(
+                                reactContext,
+                                sessionId,
+                                intent,
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? android.app.PendingIntent.FLAG_MUTABLE
+                                        : 0);
+
+                        session.commit(pendingIntent.getIntentSender());
+                        session.close();
+
+                        promise.resolve(true);
+                    } catch (Exception e) {
+                        session.abandon();
+                        promise.reject("ERROR", e.getMessage());
+                    }
+                } catch (Exception e) {
+                    promise.reject("ERROR", "Update failed: " + e.getMessage());
+                }
+            }).start();
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 }

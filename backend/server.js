@@ -61,9 +61,9 @@ app.get('/health', (req, res) => {
 // Version Info
 app.get('/version', (req, res) => {
     res.json({
-        apk: 'securefinance-user-v2.0.2.apk',
+        apk: 'securefinance-user-v2.0.4.apk',
         type: 'user-app',
-        version: '2.0.2'
+        version: '2.0.4'
     });
 });
 
