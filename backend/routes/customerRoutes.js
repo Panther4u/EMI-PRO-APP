@@ -12,7 +12,7 @@ router.get('/', auth, async (req, res) => {
         // Build filter based on role
         const filter = req.user.role === 'SUPER_ADMIN'
             ? {}
-            : { dealerId: req.user.dealerId };
+            : { dealerId: req.user._id };
 
         // Return newest customers first
         const customers = await Customer.find(filter).sort({ createdAt: -1 }).lean();
@@ -39,7 +39,7 @@ router.post('/', auth, checkDeviceLimit, async (req, res) => {
         const customerData = req.body;
 
         // Auto-assign dealerId from authenticated user
-        customerData.dealerId = req.user.dealerId;
+        customerData.dealerId = req.user._id;
 
         // Check if IMEI already exists - UPDATE instead of rejecting
         const existing = await Customer.findOne({ imei1: customerData.imei1 });
@@ -59,8 +59,9 @@ router.post('/', auth, checkDeviceLimit, async (req, res) => {
 
         logger.logSystemEvent('CUSTOMER_CREATED', {
             customerId: newCustomer.id,
-            dealerId: req.user.dealerId,
-            createdBy: req.user._id
+            dealerId: req.user._id,
+            createdBy: req.user._id,
+            deviceStats: req.deviceStats
         });
 
         res.status(201).json(newCustomer);
@@ -79,7 +80,7 @@ router.patch('/:id', auth, async (req, res) => {
         // Build filter with ownership check
         const filter = { id: req.params.id };
         if (req.user.role !== 'SUPER_ADMIN') {
-            filter.dealerId = req.user.dealerId;
+            filter.dealerId = req.user._id;
         }
 
         const customer = await Customer.findOneAndUpdate(filter, req.body, { new: true });
@@ -98,7 +99,7 @@ router.delete('/:id', auth, async (req, res) => {
         // Build filter with ownership check
         const filter = { id: req.params.id };
         if (req.user.role !== 'SUPER_ADMIN') {
-            filter.dealerId = req.user.dealerId;
+            filter.dealerId = req.user._id;
         }
 
         const customer = await Customer.findOneAndDelete(filter);
