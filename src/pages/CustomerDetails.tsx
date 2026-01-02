@@ -23,6 +23,7 @@ export default function CustomerDetails() {
     const [loading, setLoading] = useState(false);
     const [showQRModal, setShowQRModal] = useState(false);
     const [qrData, setQrData] = useState<string>('');
+    const [apkName, setApkName] = useState<string>('securefinance-admin-v2.0.5.apk'); // Default fallback
     const [showEditModal, setShowEditModal] = useState(false);
     const [editForm, setEditForm] = useState({
         name: '',
@@ -135,12 +136,19 @@ export default function CustomerDetails() {
         }
     };
 
-    // Fetch QR data when modal opens
+    // Fetch QR data & Version when modal opens
     useEffect(() => {
-        if (showQRModal && !qrData) {
-            fetchQRData();
+        if (showQRModal) {
+            if (!qrData) fetchQRData();
+            // Fetch latest APK name
+            fetch(getApiUrl('/api/version'))
+                .then(res => res.json())
+                .then(data => {
+                    if (data.apk) setApkName(data.apk);
+                })
+                .catch(err => console.error("Failed to fetch version", err));
         }
-    }, [showQRModal, qrData, fetchQRData]); // Added fetchQRData to dependency array
+    }, [showQRModal, qrData, fetchQRData]);
 
     if (!customer) return <div className="p-10 text-center text-slate-400">Loading details...</div>;
 
@@ -729,7 +737,7 @@ export default function CustomerDetails() {
                             </p>
                         </div>
 
-                        <Button variant="outline" className="w-full" onClick={() => window.open(`https://emi-pro-app.onrender.com/downloads/securefinance-admin-v2.0.4.apk`)}>
+                        <Button variant="outline" className="w-full" onClick={() => window.open(`https://emi-pro-app.onrender.com/downloads/${apkName}`)}>
                             <Download className="w-4 h-4 mr-2" /> Download APK Directly
                         </Button>
                     </div>

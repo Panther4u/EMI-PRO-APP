@@ -13,6 +13,7 @@ import {
 
 // Pages - Lazy loaded or direct import
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import AddCustomer from './pages/AddCustomer';
@@ -93,6 +94,7 @@ export default function App() {
                             <AppLayout>
                                 <Routes>
                                     <Route path="/login" element={<Login />} />
+                                    <Route path="/admin/login" element={<AdminLogin />} />
 
                                     <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                                     <Route path="/mobile" element={<Navigate to="/" replace />} /> {/* Redirect legacy mobile route */}

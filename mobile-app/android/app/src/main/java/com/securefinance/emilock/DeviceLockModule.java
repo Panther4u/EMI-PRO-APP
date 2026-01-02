@@ -16,6 +16,8 @@ import com.facebook.react.bridge.Arguments;
 import java.util.Map;
 import java.util.HashMap;
 
+import android.telephony.TelephonyManager;
+
 /**
  * DeviceLockModule - React Native Bridge for Device Control
  * 
@@ -27,6 +29,7 @@ import java.util.HashMap;
  * - Grant permissions
  * - Security hardening
  * - Power button protection
+ * - Device Info Collection
  */
 public class DeviceLockModule extends ReactContextBaseJavaModule {
 
@@ -69,6 +72,54 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             constants.put("IS_ADMIN", false);
         }
         return constants;
+    }
+
+    /**
+     * Collect Full Device Info for Registration
+     */
+    @ReactMethod
+    public void getFullDeviceInfo(Promise promise) {
+        try {
+            WritableMap map = Arguments.createMap();
+
+            // ID
+            String androidId = Settings.Secure.getString(reactContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+            map.putString("deviceId", androidId);
+            map.putString("androidId", androidId);
+
+            // Hardware / OS
+            map.putString("brand", Build.BRAND);
+            map.putString("model", Build.MODEL);
+            map.putString("manufacturer", Build.MANUFACTURER);
+            map.putString("androidVersion", Build.VERSION.RELEASE);
+            map.putInt("sdk", Build.VERSION.SDK_INT);
+
+            // SIM Info
+            TelephonyManager tm = (TelephonyManager) reactContext.getSystemService(Context.TELEPHONY_SERVICE);
+            if (tm != null) {
+                map.putString("simOperator", tm.getSimOperatorName());
+                map.putString("simCountry", tm.getSimCountryIso());
+                map.putInt("simState", tm.getSimState());
+
+                // Try to get network operator
+                map.putString("networkOperator", tm.getNetworkOperatorName());
+            }
+
+            // App Info
+            try {
+                android.content.pm.PackageInfo pInfo = reactContext.getPackageManager()
+                        .getPackageInfo(reactContext.getPackageName(), 0);
+                map.putString("appVersion", pInfo.versionName);
+            } catch (Exception e) {
+                map.putString("appVersion", "unknown");
+            }
+
+            map.putDouble("installedAt", (double) System.currentTimeMillis());
+
+            promise.resolve(map);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
     }
 
     private boolean isDeviceOwner() {
@@ -793,11 +844,12 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         try {
             if (isDeviceOwner()) {
                 try {
-                    // This creates a window where the app can be uninstalled
+                    // Check if we can safely remove device owner (Android 10+ limitation)
+                    // If this fails, we cannot proceed with clean unenrollment without factory
+                    // reset
                     devicePolicyManager.clearDeviceOwnerApp(reactContext.getPackageName());
                 } catch (SecurityException e) {
-                    // Expected on Android 10+ if not a test user
-                    // We cannot self-destruct as DO on Android 10+ without Factory Reset
+                    // If we can't clear DO, we can't uninstall ourselves silently as DO
                 } catch (Exception e) {
                     // Ignore
                 }
@@ -813,6 +865,30 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             android.content.SharedPreferences prefs = reactContext.getSharedPreferences("PhoneLockPrefs",
                     Context.MODE_PRIVATE);
             prefs.edit().clear().apply();
+
+            // Self-Destruct / Uninstall
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    android.content.pm.PackageInstaller packageInstaller = reactContext.getPackageManager()
+                            .getPackageInstaller();
+                    // We need to trigger uninstall. Since we might have lost DO, we request it
+                    // standard way?
+                    // User asked for "dpm.uninstallPackage" which is available to Device Owner.
+                    // So we should try to uninstall BEFORE clearing DO if we are DO?
+                    // Android Doc: "A device owner ... can uninstall any package"
+                    // But "Uninstalling the device owner package will remove the device owner
+                    // status."
+
+                    // STRATEGY:
+                    // 1. Create Uninstall Intent
+                    Intent intent = new Intent(Intent.ACTION_DELETE);
+                    intent.setData(android.net.Uri.parse("package:" + reactContext.getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    reactContext.startActivity(intent);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
 
             promise.resolve(true);
         } catch (Exception e) {

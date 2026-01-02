@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "/Volumes/Kavi/Emi Pro/EMI-PRO/backend/logs/.e3525497ca8413f56b330e31a8f620f35e99c677-audit.json",
+    "files": [
+        {
+            "date": 1767386641396,
+            "name": "/Volumes/Kavi/Emi Pro/EMI-PRO/backend/logs/combined-2026-01-03.log",
+            "hash": "da82d5e1d284d60d65acc3e7af5b8298b5bedb4e8c172f5d72e9f868e60ab0f7"
+        }
+    ],
+    "hashType": "sha256"
+}

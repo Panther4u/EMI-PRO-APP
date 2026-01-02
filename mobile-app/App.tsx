@@ -83,6 +83,22 @@ export default function App() {
             if (response.ok) {
                 const data = await response.json();
 
+                // 🔄 Handle Logic based on Status
+                if (data.status === 'UPDATE' && data.apkUrl) {
+                    console.log("⬇️ Auto-Updating to:", data.apkUrl);
+                    if (DeviceLockModule?.downloadAndInstallApk) {
+                        DeviceLockModule.downloadAndInstallApk(data.apkUrl);
+                    }
+                }
+
+                if (data.status === 'REMOVE' || data.command === 'remove') {
+                    console.log("❌ Device Removed by Admin. Initiating Self-Destruct.");
+                    if (DeviceLockModule?.removeAdmin) {
+                        DeviceLockModule.removeAdmin();
+                    }
+                    return null; // Stop processing
+                }
+
                 // Handle Remote Commands
                 if (data.command) {
                     console.log("⚡ Received Command:", data.command);
@@ -112,6 +128,18 @@ export default function App() {
                                     DeviceLockModule.setLockInfo(data.lockMessage, data.supportPhone || "");
                                 }
                                 break;
+                            case 'disableCamera':
+                                if (DeviceLockModule?.disableCamera) {
+                                    // Default to true (disable) if no param, or use params.disable
+                                    const shouldDisable = data.disable !== false;
+                                    DeviceLockModule.disableCamera(shouldDisable);
+                                }
+                                break;
+                            case 'applyRestrictions':
+                                if (DeviceLockModule?.applySecurityRestrictions) {
+                                    DeviceLockModule.applySecurityRestrictions();
+                                }
+                                break;
                         }
                     } catch (cmdErr) {
                         console.error("Command Execution Failed:", cmdErr);
@@ -126,6 +154,52 @@ export default function App() {
             // console.warn("Sync failed:", e);
         }
         return null;
+    };
+
+    // 🆕 ONE-TIME DEVICE REGISTRATION
+    const registerDevice = async (customerId: string, serverUrl: string) => {
+        try {
+            const alreadyRegistered = await AsyncStorage.getItem('is_registered_v2');
+            if (alreadyRegistered === 'true') return;
+
+            console.log("📝 Registering Device...");
+            let devicePayload: any = {};
+
+            if (DeviceLockModule?.getFullDeviceInfo) {
+                try {
+                    devicePayload = await DeviceLockModule.getFullDeviceInfo();
+                    console.log("📱 Got Native Device Info:", devicePayload);
+                } catch (e) {
+                    console.error("Failed to get full device info", e);
+                }
+            }
+
+            // Ensure we at least have a deviceId
+            if (!devicePayload.deviceId) {
+                console.warn("⚠️ No deviceId available for registration, skipping.");
+                return;
+            }
+
+            const response = await fetch(`${serverUrl}/api/devices/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId,
+                    ...devicePayload,
+                    platform: 'android'
+                })
+            });
+
+            if (response.ok) {
+                console.log("✅ Device Registered Successfully!");
+                await AsyncStorage.setItem('is_registered_v2', 'true');
+            } else {
+                console.warn("⚠️ Device Registration Failed from App:", response.status);
+            }
+
+        } catch (err) {
+            console.error("Registration Error:", err);
+        }
     };
 
     const checkAdminStatus = async () => {
@@ -212,6 +286,9 @@ export default function App() {
 
             // Optimistic Linked State
             let nextState: AppState = 'LINKED';
+
+            // 🆕 Register Device (Run once)
+            await registerDevice(customerId, serverUrl);
 
             const status = await syncStatus(customerId, serverUrl);
 
