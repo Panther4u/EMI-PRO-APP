@@ -14,11 +14,11 @@ app.use(express.json());
 // Define MIME types (handled in setHeaders below)
 // express.static.mime.define({ 'application/vnd.android.package-archive': ['apk'] });
 
-// Serve APK downloads from public folder
+// Serve APK downloads from public/downloads folder
 app.use('/downloads', (req, res, next) => {
     console.log(`Download request: ${req.url}`);
     next();
-}, express.static(path.join(__dirname, 'public'), {
+}, express.static(path.join(__dirname, 'public/downloads'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.apk')) {
             res.set('Content-Type', 'application/vnd.android.package-archive');
