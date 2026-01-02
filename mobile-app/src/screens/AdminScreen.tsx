@@ -3,7 +3,7 @@ import { View, ActivityIndicator, StyleSheet, SafeAreaView, StatusBar, Permissio
 import { WebView } from 'react-native-webview';
 import AutoUpdateChecker from '../components/AutoUpdateChecker';
 
-const CURRENT_VERSION = '1.1.0';
+const CURRENT_VERSION = '1.1.1';
 const VERSION_CHECK_URL = 'https://emi-pro-app.onrender.com/api/admin-version';
 
 export default function AdminScreen() {
@@ -50,7 +50,7 @@ export default function AdminScreen() {
             {/* Auto-update checker for Admin APK */}
             <AutoUpdateChecker
                 checkUrl="https://raw.githubusercontent.com/Panther4u/EMI-PRO-APP/main/admin-apk/version.json"
-                currentVersionCode={8}
+                currentVersionCode={9}
             />
 
             <WebView

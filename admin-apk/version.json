@@ -4,9 +4,9 @@
     "releaseDate": "2026-01-02",
     "downloadUrl": "https://github.com/Panther4u/EMI-PRO-APP/raw/main/admin-apk/app-admin-release.apk",
     "changelog": [
-        "Backend sync improvements",
-        "Permission handling fixes",
-        "User APK enrollment flow fixes"
+        "WebView auto-updates from Render",
+        "No rebuild needed for web UI changes",
+        "Permission handling improvements"
     ],
     "minAndroidVersion": "8.0",
     "packageName": "com.securefinance.emilock.admin"
