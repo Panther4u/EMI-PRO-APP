@@ -430,7 +430,7 @@ export default function CustomerDetails() {
                             </p>
                         </div>
 
-                        <Button variant="outline" className="w-full" onClick={() => window.open(`https://emi-pro-app.onrender.com/downloads/app-admin-release.apk`)}>
+                        <Button variant="outline" className="w-full" onClick={() => window.open(`https://emi-pro-app.onrender.com/downloads/securefinance-user-v2.0.1.apk`)}>
                             <Download className="w-4 h-4 mr-2" /> Download APK Directly
                         </Button>
                     </div>
