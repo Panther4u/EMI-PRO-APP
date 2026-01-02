@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const fs = require('fs');
 const { getApkChecksum } = require('../utils/checksum');
 
 // GET /api/provisioning/payload/:customerId
@@ -15,15 +16,17 @@ router.get('/payload/:customerId', (req, res) => {
         const baseUrl = 'https://emi-pro-app.onrender.com';
 
         // For now, serve from Render (need to restore APK file)
-        const apkFileName = 'securefinance-user-v2.0.4.apk';
+        const apkFileName = 'securefinance-admin-v2.0.4.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate checksum from local file OR use Verified Hardcoded Fallback
-        // Verified for v2.0.4 (a44631...)
-        const VERIFIED_CHECKSUM = 'pEYxTcL-pKFqP1-rmxKyM5_kIJE4ZK2Ept1m1ghPmcA';
+        // Verified for Admin v2.0.4 (pUaK0RKw...)
+        const VERIFIED_CHECKSUM = 'pUaK0RKwVABKDjsyyC7yTTLtK9tvomL7DAp0CRQYkT4';
 
         // Prefer dynamic if file exists, but fallback to verified if fails
         let checksum = VERIFIED_CHECKSUM;
+
+        const apkPath = path.join(__dirname, '../public/downloads', apkFileName);
 
         try {
             if (fs.existsSync(apkPath)) {
@@ -41,7 +44,7 @@ router.get('/payload/:customerId', (req, res) => {
         // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
-                "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
+                "com.securefinance.emilock.admin/com.securefinance.emilock.DeviceAdminReceiver",
 
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
                 downloadUrl,
@@ -62,21 +65,11 @@ router.get('/payload/:customerId', (req, res) => {
 
     } catch (err) {
         console.error("❌ Provisioning Error:", err);
-        // apkFileName is defined within the try block but accessed here. ideally define it outside or just use string.
-        // But for minimal edit, I'll essentially hardcode or ignore the log detail update to avoid scope issues if I don't move declaration.
-        // Actually, apkFileName is top level in handler. Oops, it's inside `try`.
-        // I'll just change the hardcoded string in logs.
-        console.error("   APK Path attempted:", path.join(__dirname, '../public/downloads', 'securefinance-user-v2.0.4.apk'));
-        console.error("   __dirname:", __dirname);
-
-        // Check if it's a file not found error
-        const isFileNotFound = err.code === 'ENOENT' || err.message.includes('no such file');
 
         res.status(500).json({
             error: "Failed to generate provisioning payload",
             details: err.message,
-            hint: isFileNotFound ? "APK file not found on server. Check deployment." : "Checksum calculation failed.",
-            apkPath: path.join(__dirname, '../public/downloads', 'securefinance-user-v2.0.4.apk')
+            hint: "Checksum calculation failed."
         });
     }
 });
