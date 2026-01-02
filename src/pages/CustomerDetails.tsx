@@ -66,7 +66,13 @@ export default function CustomerDetails() {
 
     const fetchDeviceInfo = async (customerId: string) => {
         try {
-            const response = await fetch(getApiUrl(`/api/devices?customerId=${customerId}`));
+            const token = localStorage.getItem('adminToken');
+            const response = await fetch(getApiUrl(`/api/devices?customerId=${customerId}`), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                }
+            });
             if (response.ok) {
                 const devices = await response.json();
                 if (devices && devices.length > 0) {
