@@ -15,7 +15,7 @@ router.get('/payload/:customerId', (req, res) => {
         const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
 
         // For now, serve from Render (need to restore APK file)
-        const apkFileName = 'app-user-v1.1.3.apk';
+        const apkFileName = 'app-user-v1.1.4.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate checksum from local file
