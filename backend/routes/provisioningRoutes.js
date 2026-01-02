@@ -8,28 +8,29 @@ router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
 
-        // 🎯 USER APK: Now hosted on GitHub Releases for better reliability
-        // GitHub CDN provides faster downloads than Render
-        const GITHUB_RELEASE_VERSION = process.env.GITHUB_RELEASE_VERSION || 'v1.1.1';
-        const GITHUB_APK_URL = process.env.GITHUB_APK_URL ||
-            `https://github.com/Panther4u/EMI-PRO-APP/releases/download/${GITHUB_RELEASE_VERSION}/app-user-release.apk`;
-
-        // APK Checksum (calculated from the release APK)
-        // Update this when uploading a new release
-        const APK_CHECKSUM = process.env.APK_CHECKSUM ||
-            'zbj4PFFs7A6IZDB6ZJ+G6SZ+5Z/YpGV9enA7W944QX8=';
-
-        // Use GitHub URL for download
-        const downloadUrl = GITHUB_APK_URL;
-        const checksum = APK_CHECKSUM;
-
-        console.log(`📦 APK Download URL: ${downloadUrl}`);
-        console.log(`🔐 APK Checksum: ${checksum}`);
-
-        // Get base URL for serverUrl in admin extras
+        // 🎯 TEMPORARY: Using Render hosting until GitHub Release is created
+        // TODO: Switch back to GitHub Releases after uploading APK
         const protocol = req.protocol;
         const host = req.get('host');
         const baseUrl = process.env.PROVISIONING_BASE_URL || `https://${host}`;
+
+        // For now, serve from Render (need to restore APK file)
+        const downloadUrl = `${baseUrl}/downloads/app-user-release.apk`;
+
+        // Calculate checksum from local file
+        const apkPath = path.join(__dirname, '../public/downloads/app-user-release.apk');
+        const fs = require('fs');
+
+        let checksum;
+        if (fs.existsSync(apkPath)) {
+            checksum = getApkChecksum(apkPath);
+        } else {
+            // Fallback checksum if file doesn't exist
+            checksum = 'zbj4PFFs7A6IZDB6ZJ+G6SZ+5Z/YpGV9enA7W944QX8=';
+        }
+
+        console.log(`📦 APK Download URL: ${downloadUrl}`);
+        console.log(`🔐 APK Checksum: ${checksum}`);
 
         // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
