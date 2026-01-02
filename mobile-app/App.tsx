@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APP_VERSION } from './src/config';
 
 import SetupScreen from './src/screens/SetupScreen';
-import HomeScreen from './src/screens/HomeScreen';
 import LockedScreen from './src/screens/LockedScreen';
 import PermissionsScreen from './src/screens/PermissionsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -187,19 +186,39 @@ export default function App() {
             let backendLockStatus = false;
 
             if (enrollmentDataStr) {
-                setIsEnrolled(true);
-                const enrollmentData = JSON.parse(enrollmentDataStr);
-                currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
+                try {
+                    const enrollmentData = JSON.parse(enrollmentDataStr);
+                    currentServerUrl = enrollmentData.serverUrl || currentServerUrl;
 
-                // Sync with backend and GET LOCK STATUS
-                const syncResponse = await syncStatus(enrollmentData.customerId, currentServerUrl);
-                if (syncResponse && typeof syncResponse.isLocked === 'boolean') {
-                    backendLockStatus = syncResponse.isLocked;
-                    console.log(`🔒 Backend Lock Status: ${backendLockStatus}`);
+                    // Verify enrollment is still valid by syncing with backend
+                    const syncResponse = await syncStatus(enrollmentData.customerId, currentServerUrl);
+
+                    if (syncResponse && syncResponse.success !== false) {
+                        // Valid enrollment
+                        setIsEnrolled(true);
+
+                        if (typeof syncResponse.isLocked === 'boolean') {
+                            backendLockStatus = syncResponse.isLocked;
+                            console.log(`🔒 Backend Lock Status: ${backendLockStatus}`);
+                        }
+
+                        // Verify device
+                        verifyDevice(enrollmentData.customerId, currentServerUrl);
+                    } else {
+                        // Invalid or stale enrollment data - clear it
+                        console.log("⚠️ Invalid enrollment data detected - clearing AsyncStorage");
+                        await AsyncStorage.removeItem('enrollment_data');
+                        setIsEnrolled(false);
+                    }
+                } catch (parseError) {
+                    // Corrupted enrollment data - clear it
+                    console.warn("Corrupted enrollment data:", parseError);
+                    await AsyncStorage.removeItem('enrollment_data');
+                    setIsEnrolled(false);
                 }
-
-                // Verify device
-                verifyDevice(enrollmentData.customerId, currentServerUrl);
+            } else {
+                // No enrollment data - ensure isEnrolled is false
+                setIsEnrolled(false);
             }
 
             // FINAL LOCK STATE DECISION - Only use backend status for User APK
