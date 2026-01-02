@@ -784,4 +784,39 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", e.getMessage());
         }
     }
+
+    /**
+     * Remove Device Admin and Owner status if possible
+     */
+    @ReactMethod
+    public void removeAdmin(Promise promise) {
+        try {
+            if (isDeviceOwner()) {
+                try {
+                    // This creates a window where the app can be uninstalled
+                    devicePolicyManager.clearDeviceOwnerApp(reactContext.getPackageName());
+                } catch (SecurityException e) {
+                    // Expected on Android 10+ if not a test user
+                    // We cannot self-destruct as DO on Android 10+ without Factory Reset
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+
+            if (devicePolicyManager != null && adminComponent != null) {
+                if (devicePolicyManager.isAdminActive(adminComponent)) {
+                    devicePolicyManager.removeActiveAdmin(adminComponent);
+                }
+            }
+
+            // Clear preferences
+            android.content.SharedPreferences prefs = reactContext.getSharedPreferences("PhoneLockPrefs",
+                    Context.MODE_PRIVATE);
+            prefs.edit().clear().apply();
+
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
 }

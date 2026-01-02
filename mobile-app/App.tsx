@@ -37,6 +37,9 @@ export default function App() {
             });
             if (response.ok) {
                 return await response.json();
+            } else if (response.status === 404) {
+                // 404 means Customer Deleted on Backend -> Trigger Unenrollment
+                return { unenroll: true };
             }
         } catch (e) {
             // console.warn("Sync failed:", e);
@@ -79,6 +82,18 @@ export default function App() {
             let nextState: AppState = 'LINKED';
 
             const status = await syncStatus(customerId, serverUrl);
+
+            // Handle Unenrollment (Customer Deleted)
+            if (status && status.unenroll) {
+                console.log("⚠️ Device unenrolled by admin. Removing controls...");
+                if (DeviceLockModule?.stopKioskMode) await DeviceLockModule.stopKioskMode();
+                if (DeviceLockModule?.removeAdmin) await DeviceLockModule.removeAdmin();
+
+                await AsyncStorage.clear();
+                setState('UNLINKED');
+                return;
+            }
+
             if (status && status.isLocked) {
                 nextState = 'LOCKED';
                 if (DeviceLockModule?.startKioskMode) DeviceLockModule.startKioskMode();
