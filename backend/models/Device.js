@@ -18,6 +18,14 @@ const DeviceSchema = new mongoose.Schema({
         index: true
     },
 
+    // Multi-tenant support
+    dealerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AdminUser',
+        required: true,
+        index: true
+    },
+
     // Platform
     platform: {
         type: String,

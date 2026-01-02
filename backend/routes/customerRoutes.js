@@ -2,15 +2,23 @@ const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer');
 const Device = require('../models/Device');
+const logger = require('../config/logger');
+const auth = require('../middleware/auth');
+const checkDeviceLimit = require('../middleware/checkDeviceLimit');
 
-// Get all customers
-router.get('/', async (req, res) => {
+// Get all customers (filtered by dealer)
+router.get('/', auth, async (req, res) => {
     try {
+        // Build filter based on role
+        const filter = req.user.role === 'SUPER_ADMIN'
+            ? {}
+            : { dealerId: req.user.dealerId };
+
         // Return newest customers first
-        const customers = await Customer.find().sort({ createdAt: -1 }).lean();
+        const customers = await Customer.find(filter).sort({ createdAt: -1 }).lean();
         res.json(customers);
     } catch (err) {
-        console.error('Error fetching customers:', err);
+        logger.error('Error fetching customers', { error: err.message });
         res.status(500).json({ message: err.message });
     }
 });
@@ -26,9 +34,12 @@ router.delete('/danger/delete-all', async (req, res) => {
 });
 
 // Create a new customer with duplicate check
-router.post('/', async (req, res) => {
+router.post('/', auth, checkDeviceLimit, async (req, res) => {
     try {
         const customerData = req.body;
+
+        // Auto-assign dealerId from authenticated user
+        customerData.dealerId = req.user.dealerId;
 
         // Check if IMEI already exists - UPDATE instead of rejecting
         const existing = await Customer.findOne({ imei1: customerData.imei1 });
@@ -39,12 +50,19 @@ router.post('/', async (req, res) => {
                 { $set: customerData },
                 { new: true }
             );
-            console.log(`✅ Updated existing customer: ${updatedCustomer.name}`);
+            logger.info('Customer updated', { customerId: updatedCustomer.id, name: updatedCustomer.name });
             return res.status(200).json(updatedCustomer);
         }
 
         const customer = new Customer(customerData);
         const newCustomer = await customer.save();
+
+        logger.logSystemEvent('CUSTOMER_CREATED', {
+            customerId: newCustomer.id,
+            dealerId: req.user.dealerId,
+            createdBy: req.user._id
+        });
+
         res.status(201).json(newCustomer);
     } catch (err) {
         if (err.code === 11000) {
@@ -56,10 +74,18 @@ router.post('/', async (req, res) => {
 });
 
 // Update a customer
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', auth, async (req, res) => {
     try {
-        const customer = await Customer.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
-        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+        // Build filter with ownership check
+        const filter = { id: req.params.id };
+        if (req.user.role !== 'SUPER_ADMIN') {
+            filter.dealerId = req.user.dealerId;
+        }
+
+        const customer = await Customer.findOneAndUpdate(filter, req.body, { new: true });
+        if (!customer) return res.status(404).json({ message: 'Customer not found or access denied' });
+
+        logger.info('Customer updated', { customerId: customer.id, updatedBy: req.user._id });
         res.json(customer);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -67,15 +93,25 @@ router.patch('/:id', async (req, res) => {
 });
 
 // Delete a customer
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
-        const customer = await Customer.findOneAndDelete({ id: req.params.id });
-        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+        // Build filter with ownership check
+        const filter = { id: req.params.id };
+        if (req.user.role !== 'SUPER_ADMIN') {
+            filter.dealerId = req.user.dealerId;
+        }
+
+        const customer = await Customer.findOneAndDelete(filter);
+        if (!customer) return res.status(404).json({ message: 'Customer not found or access denied' });
 
         // Cascade delete associated devices to prevent orphans
         await Device.deleteMany({ assignedCustomerId: req.params.id });
 
-        console.log(`✅ Deleted customer ${req.params.id}`);
+        logger.logSystemEvent('CUSTOMER_DELETED', {
+            customerId: req.params.id,
+            deletedBy: req.user._id
+        });
+
         res.json({ message: 'Customer and associated devices deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -279,7 +315,7 @@ router.post('/:id/verify', async (req, res) => {
 // Heartbeat endpoint - User App sends status every few seconds
 router.post('/heartbeat', async (req, res) => {
     try {
-        const { deviceId, customerId, status, appInstalled, lastSeen, location } = req.body;
+        const { deviceId, customerId, status, appInstalled, lastSeen, location, version } = req.body;
 
         const updateData = {
             'deviceStatus.status': status || 'active',
@@ -322,6 +358,43 @@ router.post('/heartbeat', async (req, res) => {
             return res.status(404).json({ message: 'Device not found' });
         }
 
+        // CHECK IF DEVICE IS REMOVED (Admin Unenrollment)
+        if (customer.deviceStatus.status === 'removed' || customer.deviceStatus.status === 'REMOVED') {
+            return res.json({
+                ok: true,
+                status: 'REMOVE',
+                isLocked: false,
+                command: 'remove'
+            });
+        }
+
+        // CHECK FOR UPDATES (Auto-Update Logic)
+        let updateStatus = customer.deviceStatus.status;
+        let apkUrl = null;
+
+        try {
+            const path = require('path');
+            const fs = require('fs');
+            // Check Server Version vs Device Version
+            const versionPath = path.join(__dirname, '../../backend/public/downloads/version.json');
+            if (fs.existsSync(versionPath)) {
+                const serverVersionData = require(versionPath);
+                // Simple string comparison for now. Ideally use semantic versioning.
+                // If device version is lower than server version, trigger update.
+                if (version && serverVersionData.version && serverVersionData.version > version) {
+                    logger.logDeviceEvent('UPDATE_AVAILABLE', customer.id, customer.id, {
+                        customerName: customer.name,
+                        currentVersion: version,
+                        newVersion: serverVersionData.version
+                    });
+                    updateStatus = 'UPDATE';
+                    apkUrl = `https://emi-pro-app.onrender.com/downloads/${serverVersionData.apk}`;
+                }
+            }
+        } catch (vErr) {
+            logger.error('Version check failed', { error: vErr.message });
+        }
+
         // Check for pending commands
         let pendingCommand = null;
         let commandParams = null;
@@ -336,7 +409,8 @@ router.post('/heartbeat', async (req, res) => {
 
         res.json({
             ok: true,
-            status: customer.deviceStatus.status,
+            status: updateStatus,
+            apkUrl: apkUrl, // Send URL if update needed
             isLocked: customer.isLocked, // ✅ Return lock status
             command: pendingCommand,
             // Command parameters for actions like setWallpaper, setPin
@@ -397,6 +471,12 @@ router.post('/:id/command', async (req, res) => {
                 reason: params?.reason || 'Remote lock by admin',
                 timestamp: new Date().toISOString()
             };
+
+            // Log critical event
+            logger.logDeviceEvent('DEVICE_LOCKED', customer.id, customer.id, {
+                customerName: customer.name,
+                reason: params?.reason || 'Remote lock by admin'
+            });
         }
 
         if (command === 'unlock') {
@@ -410,6 +490,12 @@ router.post('/:id/command', async (req, res) => {
                 reason: params?.reason || 'Remote unlock by admin',
                 timestamp: new Date().toISOString()
             };
+
+            // Log critical event
+            logger.logDeviceEvent('DEVICE_UNLOCKED', customer.id, customer.id, {
+                customerName: customer.name,
+                reason: params?.reason || 'Remote unlock by admin'
+            });
         }
 
         // Handle 'remove' command - marks device as removed but KEEPS customer data
@@ -439,7 +525,12 @@ router.post('/:id/command', async (req, res) => {
                     changedAt: new Date()
                 });
                 await device.save();
-                console.log(`📱 Device ${device.deviceId} synced to REMOVED status`);
+
+                // Log critical event
+                logger.logDeviceEvent('DEVICE_REMOVED', device.deviceId, req.params.id, {
+                    customerName: customer.name,
+                    reason: params?.reason || 'Removed via Dashboard'
+                });
             }
 
             console.log(`🗑️ Device ${req.params.id} marked as REMOVED (customer data preserved)`);

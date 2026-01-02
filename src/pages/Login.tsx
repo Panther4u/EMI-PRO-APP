@@ -1,30 +1,70 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
 import { Shield, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 export default function Login() {
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [passcode, setPasscode] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!email || !passcode) {
+            toast.error('Please enter email and passcode');
+            return;
+        }
+
+        if (!/^\d{4}$/.test(passcode)) {
+            toast.error('Passcode must be exactly 4 digits');
+            return;
+        }
+
         setLoading(true);
+
         try {
-            // Updated to pass only passcode as expected by AuthContext
-            const success = await login(password);
-            if (success) {
-                navigate('/');
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, passcode }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                localStorage.setItem('adminToken', data.token);
+                localStorage.setItem('adminUser', JSON.stringify(data.user));
+
+                // Set sessionStorage for AuthContext compatibility
+                sessionStorage.setItem('isAdminAuthenticated', 'true');
+                sessionStorage.setItem('currentAdmin', JSON.stringify({
+                    id: data.user._id,
+                    username: data.user.name,
+                    pin: passcode,
+                    isActivated: true,
+                    isLocked: false,
+                    customerCount: 0,
+                    createdAt: data.user.createdAt || new Date().toISOString()
+                }));
+
+                toast.success(`Welcome ${data.user.name}!`);
+
+                // Use window.location for full page reload to pick up sessionStorage
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 500);
             } else {
-                toast.error('Invalid passcode');
+                toast.error(data.message || 'Invalid credentials');
             }
-        } catch (err) {
-            toast.error('Login failed');
+        } catch (error) {
+            console.error('Login error:', error);
+            toast.error('Failed to connect to server');
         } finally {
             setLoading(false);
         }
@@ -50,15 +90,35 @@ export default function Login() {
                 <form onSubmit={handleSubmit} className="space-y-5 bg-white/60 backdrop-blur-md p-8 rounded-[32px] border border-white/60 shadow-xl shadow-slate-200/50">
                     <div className="space-y-4">
                         <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pl-3">Email</label>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="pl-11 h-12 bg-white border-slate-200 rounded-2xl focus:ring-primary/20 transition-all font-semibold"
+                                    placeholder="admin@emilock.com"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pl-3">Passcode</label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <Input
                                     type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="pl-11 h-12 bg-white border-slate-200 rounded-2xl focus:ring-primary/20 transition-all font-semibold"
-                                    placeholder="••••••"
+                                    value={passcode}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, '');
+                                        setPasscode(value);
+                                    }}
+                                    maxLength={4}
+                                    className="pl-11 h-12 bg-white border-slate-200 rounded-2xl focus:ring-primary/20 transition-all font-semibold text-center text-2xl tracking-widest"
+                                    placeholder="••••"
+                                    required
                                 />
                             </div>
                         </div>
@@ -76,6 +136,27 @@ export default function Login() {
                         )}
                     </Button>
                 </form>
+
+                {/* Default Credentials Display */}
+                <div className="space-y-3">
+                    <div className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Default Credentials
+                    </div>
+
+                    <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-3 shadow-sm">
+                        <div className="text-[10px] font-bold text-blue-900 uppercase tracking-wider mb-1">Super Admin</div>
+                        <div className="text-sm font-mono font-semibold text-blue-700">
+                            admin@emilock.com / 1234
+                        </div>
+                    </div>
+
+                    <div className="bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-2xl p-3 shadow-sm">
+                        <div className="text-[10px] font-bold text-green-900 uppercase tracking-wider mb-1">Admin (100 devices)</div>
+                        <div className="text-sm font-mono font-semibold text-green-700">
+                            dealer@emilock.com / 9999
+                        </div>
+                    </div>
+                </div>
 
                 <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-60">
                     Version 2.0 • Build 2402
