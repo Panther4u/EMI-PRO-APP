@@ -192,19 +192,8 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     const toggleLock = async (id: string, status: boolean, reason: string = 'Manual override') => {
-        const customer = customers.find(c => c.id === id);
-        if (!customer) return;
-
         // 1. Optimistic UI update
-        // We calculate what history would look like
-        const newHistory = {
-            id: Date.now().toString(),
-            action: status ? 'locked' : 'unlocked' as const,
-            timestamp: new Date().toISOString(),
-            reason
-        };
-
-        const updatedLockHistory = [...customer.lockHistory, newHistory];
+        setCustomers(prev => prev.map(c => c.id === id ? { ...c, isLocked: status } : c));
 
         // 2. Call the new command API instead of just patching DB
         await sendRemoteCommand(id, status ? 'lock' : 'unlock');
