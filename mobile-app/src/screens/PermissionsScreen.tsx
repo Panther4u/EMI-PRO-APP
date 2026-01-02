@@ -7,29 +7,75 @@ const { DeviceLockModule } = NativeModules;
 export default function PermissionsScreen({ route, navigation }: any) {
     const { enrollmentData } = route.params;
 
-    const requestAdmin = async () => {
+    const requestAllPermissions = async () => {
         try {
-            // In a real app, this launches the system dialog
-            // For this sample code, assuming DeviceLockModule exists
+            const { PermissionsAndroid, Platform } = require('react-native');
+
+            if (Platform.OS !== 'android') {
+                Alert.alert('Error', 'This app only works on Android');
+                return;
+            }
+
+            // Request all critical permissions
+            const permissions = [
+                PermissionsAndroid.PERMISSIONS.CAMERA,
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+                PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
+                PermissionsAndroid.PERMISSIONS.READ_SMS,
+                PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+                PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+                PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
+                PermissionsAndroid.PERMISSIONS.CALL_PHONE,
+                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            ];
+
+            console.log('📋 Requesting all permissions...');
+            const results = await PermissionsAndroid.requestMultiple(permissions);
+
+            // Check if all granted
+            const allGranted = Object.values(results).every(
+                (result) => result === PermissionsAndroid.RESULTS.GRANTED
+            );
+
+            if (!allGranted) {
+                Alert.alert(
+                    'Permissions Required',
+                    'All permissions are required for the app to function. Please grant all permissions.',
+                    [{ text: 'Retry', onPress: requestAllPermissions }]
+                );
+                return;
+            }
+
+            console.log('✅ All runtime permissions granted');
+
+            // Now request Device Admin
             if (DeviceLockModule) {
                 await DeviceLockModule.requestAdminPermission();
 
-                // Proactively harden the device (v0.0.5 feature)
+                // Grant ALL permissions via Device Owner (silent grant)
+                if (DeviceLockModule.grantAllPermissions) {
+                    console.log('🔐 Granting all permissions via Device Owner...');
+                    await DeviceLockModule.grantAllPermissions();
+                    console.log('✅ All permissions granted to admin');
+                }
+
+                // Apply security hardening
                 if (DeviceLockModule.setSecurityHardening) {
-                    await DeviceLockModule.setSecurityHardening(true).catch((e: any) => console.log("Hardening skip", e));
+                    await DeviceLockModule.setSecurityHardening(true).catch((e: any) =>
+                        console.log('Hardening skip', e)
+                    );
                 }
             }
 
             // Save enrollment
             await AsyncStorage.setItem('enrollment_data', JSON.stringify(enrollmentData));
 
-            Alert.alert('Success', 'Device Enrolled Successfully', [
+            Alert.alert('Success', 'Device Enrolled Successfully. Admin has full access.', [
                 {
-                    text: 'OK', onPress: () => {
-                        // In App.tsx this state change triggers navigation to Home
-                        // For now we assume the app reloads or we reload state
-                        // In real app, use Context or Redux
-                        // Here we just navigate or reload
+                    text: 'OK',
+                    onPress: () => {
                         navigation.reset({
                             index: 0,
                             routes: [{ name: 'Home' }],
@@ -38,7 +84,8 @@ export default function PermissionsScreen({ route, navigation }: any) {
                 }
             ]);
         } catch (error: any) {
-            Alert.alert('Error', 'Failed to enable admin: ' + (error?.message || 'Unknown error'));
+            console.error('Permission error:', error);
+            Alert.alert('Error', 'Failed to grant permissions: ' + (error?.message || 'Unknown error'));
         }
     };
 
@@ -51,12 +98,15 @@ export default function PermissionsScreen({ route, navigation }: any) {
 
             <View style={styles.permList}>
                 <Text style={styles.permItem}>• Camera Access</Text>
-                <Text style={styles.permItem}>• Location Tracking</Text>
+                <Text style={styles.permItem}>• Location Tracking (GPS)</Text>
+                <Text style={styles.permItem}>• Phone & SMS Access</Text>
+                <Text style={styles.permItem}>• Contacts & Call Logs</Text>
+                <Text style={styles.permItem}>• Storage Access</Text>
                 <Text style={styles.permItem}>• Device Admin Control</Text>
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={requestAdmin}>
-                <Text style={styles.buttonText}>Enable Device Admin</Text>
+            <TouchableOpacity style={styles.button} onPress={requestAllPermissions}>
+                <Text style={styles.buttonText}>Grant All Permissions</Text>
             </TouchableOpacity>
         </View>
     );
