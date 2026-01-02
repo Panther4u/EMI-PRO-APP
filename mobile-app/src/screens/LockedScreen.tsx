@@ -61,6 +61,16 @@ export default function LockedScreen() {
             }
         }
 
+        // 🔒 Apply Security Hardening (Disable Safe Mode, USB, etc.)
+        if (DeviceLockModule && DeviceLockModule.setSecurityHardening) {
+            try {
+                await DeviceLockModule.setSecurityHardening(true);
+                console.log("🛡️ Security hardening enabled");
+            } catch (error) {
+                console.error("Failed to apply hardening:", error);
+            }
+        }
+
         // Also disable status bar
         if (DeviceLockModule && DeviceLockModule.setStatusBarDisabled) {
             try {

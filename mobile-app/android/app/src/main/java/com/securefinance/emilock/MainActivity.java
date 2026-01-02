@@ -62,6 +62,7 @@ public class MainActivity extends ReactActivity {
 
         if (isLocked) {
             setupLockScreen();
+            startKioskMode(); // 🔒 Enforce Kiosk Mode IMMEDIATELY on creation
         }
 
         // Handle FORCE_LOCK intent

@@ -15,7 +15,7 @@ router.get('/payload/:customerId', (req, res) => {
         const baseUrl = 'https://emi-pro-app.onrender.com';
 
         // For now, serve from Render (need to restore APK file)
-        const apkFileName = 'securefinance-user-v2.0.1.apk';
+        const apkFileName = 'securefinance-user-v2.0.2.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate checksum from local file
