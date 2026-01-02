@@ -1,6 +1,6 @@
 {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "admin_apk": "https://emi-pro-app.onrender.com/downloads/app-user-release.apk",
     "user_apk": "https://emi-pro-app.onrender.com/downloads/app-user-release.apk",
-    "releaseNotes": "Critical Fix: Manual QR Scan Required on First Launch. Fixed connecting loop."
+    "releaseNotes": "Fixed: QR Scanner now appears on first launch. All permissions requested properly."
 }
