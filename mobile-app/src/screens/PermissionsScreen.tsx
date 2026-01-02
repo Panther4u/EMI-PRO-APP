@@ -76,10 +76,9 @@ export default function PermissionsScreen({ route, navigation }: any) {
                 {
                     text: 'OK',
                     onPress: () => {
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'Home' }],
-                        });
+                        // Exit app - user will reopen and App.tsx will detect enrollment
+                        const { BackHandler } = require('react-native');
+                        BackHandler.exitApp();
                     }
                 }
             ]);
