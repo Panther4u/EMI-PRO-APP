@@ -49,8 +49,8 @@ export default function AdminScreen() {
 
             {/* Auto-update checker for Admin APK */}
             <AutoUpdateChecker
-                checkUrl="https://raw.githubusercontent.com/Panther4u/EMI-PRO-APP/main/admin-apk/version.json"
-                currentVersionCode={9}
+                checkUrl="https://emi-pro-app.onrender.com/downloads/version.json"
+                currentVersionCode={24}
             />
 
             <WebView
