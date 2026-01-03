@@ -24,8 +24,8 @@ router.get('/payload/:customerId', (req, res) => {
         const apkFileName = 'securefinance-user.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
-        // Verified for User Release APK
-        const VERIFIED_CHECKSUM = 'JfdtHWuytoe5zTSMmMBsJF2KptJBkEA1/kRcC+Vh02o=';
+        // Verified for User Release APK (Latest build)
+        const VERIFIED_CHECKSUM = 'yeWPX99VD07dtdpGrWl/tOLdr2dBMEVGfNZf+RUeqII=';
 
         // Prefer dynamic if file exists, but fallback to verified if fails
         let checksum = VERIFIED_CHECKSUM;
