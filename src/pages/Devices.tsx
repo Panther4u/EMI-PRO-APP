@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -292,96 +293,98 @@ export default function DevicesPage() {
     };
 
     return (
-        <div className="h-full bg-background">
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h1 className="text-xl font-bold text-foreground">Devices</h1>
-                        <p className="text-xs text-muted-foreground">
-                            Click any device to view details
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
+        <div className="h-full bg-background" id="devices-page-container">
+            <PullToRefresh onRefresh={handleRefresh}>
+                <div className="max-w-4xl mx-auto p-4 min-h-screen">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4 mb-6 pt-4">
+                        <div>
+                            <h1 className="text-xl font-bold text-foreground">Devices</h1>
+                            <p className="text-xs text-muted-foreground">
+                                Click any device to view details
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
 
-                        <Button variant="outline" size="sm" onClick={handleRefresh}>
-                            <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
-                        </Button>
-                        <Button size="sm" onClick={() => navigate('/add-customer')}>
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add
-                        </Button>
+                            <Button variant="outline" size="sm" onClick={handleRefresh}>
+                                <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+                            </Button>
+                            <Button size="sm" onClick={() => navigate('/add-customer')}>
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add
+                            </Button>
+                        </div>
                     </div>
-                </div>
 
-                {/* Stats */}
-                {stats && (
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                        <StatCard label="Total" value={stats.total} state={null} />
-                        <StatCard label="Active" value={stats.ACTIVE} state="ACTIVE" />
-                        <StatCard label="Locked" value={stats.LOCKED} state="LOCKED" />
-                        <StatCard label="Pending" value={stats.PENDING} state="PENDING" />
-                        <StatCard label="Removed" value={stats.REMOVED} state="REMOVED" />
-                        <StatCard label="Unassigned" value={stats.UNASSIGNED} state="UNASSIGNED" />
-                    </div>
-                )}
+                    {/* Stats */}
+                    {stats && (
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                            <StatCard label="Total" value={stats.total} state={null} />
+                            <StatCard label="Active" value={stats.ACTIVE} state="ACTIVE" />
+                            <StatCard label="Locked" value={stats.LOCKED} state="LOCKED" />
+                            <StatCard label="Pending" value={stats.PENDING} state="PENDING" />
+                            <StatCard label="Removed" value={stats.REMOVED} state="REMOVED" />
+                            <StatCard label="Unassigned" value={stats.UNASSIGNED} state="UNASSIGNED" />
+                        </div>
+                    )}
 
-                {/* Search */}
-                <div className="flex gap-2 mb-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search devices..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10"
-                        />
+                    {/* Search */}
+                    <div className="flex gap-2 mb-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search devices..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+                        {filterState && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setFilterState(null)}
+                            >
+                                Clear
+                            </Button>
+                        )}
                     </div>
-                    {filterState && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setFilterState(null)}
-                        >
-                            Clear
-                        </Button>
+
+                    {/* Device List */}
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
+                            {[1, 2, 3, 4].map(i => (
+                                <Card key={i} className="animate-pulse">
+                                    <CardContent className="p-4 h-24" />
+                                </Card>
+                            ))}
+                        </div>
+                    ) : filteredDevices.length === 0 ? (
+                        <div className="text-center py-12">
+                            <Smartphone className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-foreground mb-2">No devices found</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                {filterState
+                                    ? `No "${filterState}" devices`
+                                    : searchQuery
+                                        ? 'No matches'
+                                        : 'Add a customer to get started'
+                                }
+                            </p>
+                            <Button onClick={() => navigate('/add-customer')}>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Customer
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3 pb-20">
+                            {filteredDevices.map(device => (
+                                <DeviceCard key={device._id} device={device} />
+                            ))}
+                        </div>
                     )}
                 </div>
-
-                {/* Device List */}
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
-                        {[1, 2, 3, 4].map(i => (
-                            <Card key={i} className="animate-pulse">
-                                <CardContent className="p-4 h-24" />
-                            </Card>
-                        ))}
-                    </div>
-                ) : filteredDevices.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Smartphone className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-foreground mb-2">No devices found</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            {filterState
-                                ? `No "${filterState}" devices`
-                                : searchQuery
-                                    ? 'No matches'
-                                    : 'Add a customer to get started'
-                            }
-                        </p>
-                        <Button onClick={() => navigate('/add-customer')}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Customer
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
-                        {filteredDevices.map(device => (
-                            <DeviceCard key={device._id} device={device} />
-                        ))}
-                    </div>
-                )}
-            </div>
+            </PullToRefresh>
 
             {/* Device Details Modal */}
             <DeviceDetailsModal

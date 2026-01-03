@@ -4,6 +4,7 @@ import { Shield, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { getApiUrl } from '@/config/api';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/admin/login', {
+            const response = await fetch(getApiUrl('/api/admin/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

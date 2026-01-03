@@ -5,6 +5,7 @@ import { ArrowLeft, Search, Filter, MoreHorizontal, Smartphone, Lock, RotateCcw 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 export default function Customers() {
     const navigate = useNavigate();
@@ -82,112 +83,116 @@ export default function Customers() {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
-                {filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                            <Search className="w-6 h-6 text-slate-300" />
-                        </div>
-                        <p className="text-sm font-bold text-slate-400">No devices found</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
-                        {filtered.map((c: any) => (
-                            <div
-                                key={c.id}
-                                onClick={() => navigate(`/customers/${c.id}`)}
-                                className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 active:scale-[0.99] transition-all hover:shadow-md cursor-pointer group"
-                            >
-                                {/* Header: Name + Badge */}
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn(
-                                            "w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-black uppercase transition-colors",
-                                            c.isLocked ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-600 group-hover:bg-blue-100"
-                                        )}>
-                                            {c.name?.[0] || 'U'}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-sm font-bold text-slate-900 leading-tight">{c.name}</h3>
-                                            <p className="text-xs font-medium text-slate-400 mt-0.5">{c.phoneNo}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                refreshCustomers?.();
-                                                toast.success('Refreshing device status...');
-                                            }}
-                                            className="p-1.5 rounded-full bg-slate-50 text-slate-400 hover:bg-white hover:text-primary hover:shadow-sm border border-transparent hover:border-slate-100 transition-all"
-                                            title="Refresh Device Data"
-                                        >
-                                            <RotateCcw className="w-3.5 h-3.5" />
-                                        </button>
-                                        <div className={cn(
-                                            "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                            c.isLocked
-                                                ? "bg-red-50 text-red-600 border-red-100"
-                                                : "bg-emerald-50 text-emerald-600 border-emerald-100"
-                                        )}>
-                                            {c.isLocked ? 'Locked' : 'Active'}
-                                        </div>
-                                    </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24" id="scrollableDiv">
+                <PullToRefresh onRefresh={async () => refreshCustomers?.()}>
+                    <>
+                        {filtered.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center">
+                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                    <Search className="w-6 h-6 text-slate-300" />
                                 </div>
-
-                                {/* Admin Badge for Super Admin */}
-                                {isSuperAdmin && c.dealerId && (
-                                    <div className="mb-3 px-2.5 py-1.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Admin:</span>
-                                        <span className="text-xs font-bold text-slate-700">{c.dealerId.name}</span>
-                                    </div>
-                                )}
-
-                                {/* Details Grid */}
-                                <div className="grid grid-cols-2 gap-3 mb-4">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Device</p>
-                                        <p className="text-xs font-bold text-slate-700 truncate">
-                                            {c.deviceName || (c.brand && c.modelName ? `${c.brand} ${c.modelName}` : c.brand || c.modelName || 'Unknown')}
-                                        </p>
-                                        <p className="text-[10px] text-slate-400 truncate">
-                                            Android {c.deviceStatus?.technical?.osVersion || 'N/A'} • {c.deviceStatus?.technical?.totalMemory || 'N/A'}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IMEI</p>
-                                        <p className="text-xs font-mono font-bold text-slate-600 truncate">
-                                            {c.imei1 || c.deviceStatus?.technical?.imei1 || 'N/A'}
-                                        </p>
-                                        <p className="text-[10px] text-slate-400 truncate">
-                                            {c.simDetails?.operator || c.simStatus?.operator || 'No SIM'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Footer: Location & Time */}
-                                <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5 overflow-hidden">
-                                        {c.deviceStatus?.lastLocation ? (
-                                            <>
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                                                <span className="text-[10px] font-bold text-slate-500 truncate">
-                                                    {c.deviceStatus.lastLocation.latitude?.toFixed(4)}, {c.deviceStatus.lastLocation.longitude?.toFixed(4)}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <span className="text-[10px] text-slate-400 italic">No GPS</span>
-                                        )}
-                                    </div>
-                                    <div className="text-[10px] font-medium text-slate-400 whitespace-nowrap">
-                                        {c.deviceStatus?.lastSeen ? new Date(c.deviceStatus.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Never'}
-                                    </div>
-                                </div>
+                                <p className="text-sm font-bold text-slate-400">No devices found</p>
                             </div>
-                        ))}
-                    </div>
-                )}
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+                                {filtered.map((c: any) => (
+                                    <div
+                                        key={c.id}
+                                        onClick={() => navigate(`/customers/${c.id}`)}
+                                        className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 active:scale-[0.99] transition-all hover:shadow-md cursor-pointer group"
+                                    >
+                                        {/* Header: Name + Badge */}
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn(
+                                                    "w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-black uppercase transition-colors",
+                                                    c.isLocked ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-600 group-hover:bg-blue-100"
+                                                )}>
+                                                    {c.name?.[0] || 'U'}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-sm font-bold text-slate-900 leading-tight">{c.name}</h3>
+                                                    <p className="text-xs font-medium text-slate-400 mt-0.5">{c.phoneNo}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        refreshCustomers?.();
+                                                        toast.success('Refreshing device status...');
+                                                    }}
+                                                    className="p-1.5 rounded-full bg-slate-50 text-slate-400 hover:bg-white hover:text-primary hover:shadow-sm border border-transparent hover:border-slate-100 transition-all"
+                                                    title="Refresh Device Data"
+                                                >
+                                                    <RotateCcw className="w-3.5 h-3.5" />
+                                                </button>
+                                                <div className={cn(
+                                                    "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                    c.isLocked
+                                                        ? "bg-red-50 text-red-600 border-red-100"
+                                                        : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                                                )}>
+                                                    {c.isLocked ? 'Locked' : 'Active'}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Admin Badge for Super Admin */}
+                                        {isSuperAdmin && c.dealerId && (
+                                            <div className="mb-3 px-2.5 py-1.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Admin:</span>
+                                                <span className="text-xs font-bold text-slate-700">{c.dealerId.name}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Details Grid */}
+                                        <div className="grid grid-cols-2 gap-3 mb-4">
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Device</p>
+                                                <p className="text-xs font-bold text-slate-700 truncate">
+                                                    {c.deviceName || (c.brand && c.modelName ? `${c.brand} ${c.modelName}` : c.brand || c.modelName || 'Unknown')}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 truncate">
+                                                    Android {c.deviceStatus?.technical?.osVersion || 'N/A'} • {c.deviceStatus?.technical?.totalMemory || 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IMEI</p>
+                                                <p className="text-xs font-mono font-bold text-slate-600 truncate">
+                                                    {c.imei1 || c.deviceStatus?.technical?.imei1 || 'N/A'}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 truncate">
+                                                    {c.simDetails?.operator || c.simStatus?.operator || 'No SIM'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Footer: Location & Time */}
+                                        <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5 overflow-hidden">
+                                                {c.deviceStatus?.lastLocation ? (
+                                                    <>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                                                        <span className="text-[10px] font-bold text-slate-500 truncate">
+                                                            {c.deviceStatus.lastLocation.latitude?.toFixed(4)}, {c.deviceStatus.lastLocation.longitude?.toFixed(4)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-[10px] text-slate-400 italic">No GPS</span>
+                                                )}
+                                            </div>
+                                            <div className="text-[10px] font-medium text-slate-400 whitespace-nowrap">
+                                                {c.deviceStatus?.lastSeen ? new Date(c.deviceStatus.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Never'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                </PullToRefresh>
             </div>
         </div>
     );

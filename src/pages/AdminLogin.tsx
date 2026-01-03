@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 const AdminLogin = () => {
     const [email, setEmail] = useState('');
@@ -38,8 +39,8 @@ const AdminLogin = () => {
         setLoading(true);
 
         try {
-            // Use relative URL to work with proxy
-            const response = await fetch('/api/admin/login', {
+            // Use getApiUrl to work with Capacitor apps
+            const response = await fetch(getApiUrl('/api/admin/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

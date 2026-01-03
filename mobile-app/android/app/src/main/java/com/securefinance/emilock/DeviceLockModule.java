@@ -220,6 +220,20 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void enforceDeviceLock(Promise promise) {
+        try {
+            if (isDeviceOwner() && devicePolicyManager.isAdminActive(adminComponent)) {
+                devicePolicyManager.lockNow();
+                promise.resolve(true);
+            } else {
+                promise.reject("ERROR", "Not device owner or admin inactive");
+            }
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    @ReactMethod
     public void lockDevice(Promise promise) {
         try {
             if (isDeviceOwner() && devicePolicyManager.isAdminActive(adminComponent)) {
@@ -492,6 +506,27 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
                     Context.MODE_PRIVATE);
             prefs.edit().putString("OFFLINE_LOCK_TOKEN", token).apply();
             promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject("ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Set Server Config (URL & ID) for Native Service
+     */
+    @ReactMethod
+    public void setConfig(String serverUrl, String customerId, Promise promise) {
+        try {
+            android.content.SharedPreferences prefs = reactContext.getSharedPreferences("PhoneLockPrefs",
+                    Context.MODE_PRIVATE);
+            prefs.edit()
+                    .putString("SERVER_URL", serverUrl)
+                    .putString("CUSTOMER_ID", customerId)
+                    .putBoolean("IS_PROVISIONED", true)
+                    .apply();
+
+            // Also ensure service is running
+            startLockService(promise);
         } catch (Exception e) {
             promise.reject("ERROR", e.getMessage());
         }

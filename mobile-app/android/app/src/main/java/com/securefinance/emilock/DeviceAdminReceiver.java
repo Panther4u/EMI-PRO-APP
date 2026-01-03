@@ -139,11 +139,8 @@ public class DeviceAdminReceiver extends android.app.admin.DeviceAdminReceiver {
         DeviceInfoCollector.collectAndSend(context, null, null);
 
         // Start lock service
-        // Start lock service ONLY if locked
-        android.content.SharedPreferences prefs = context.getSharedPreferences("PhoneLockPrefs", Context.MODE_PRIVATE);
-        if (prefs.getBoolean("DEVICE_LOCKED", false)) {
-            startLockService(context);
-        }
+        // Start lock service ALWAYS to ensure heartbeat is running
+        startLockService(context);
     }
 
     @Override

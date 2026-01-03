@@ -3,3 +3,4 @@
 {"error":"Illegal arguments: string, undefined","level":"error","message":"Login error","timestamp":"2026-01-03 02:23:35"}
 {"level":"warn","message":"Attempting to reconnect...","timestamp":"2026-01-03 15:04:19"}
 {"email":"admin@emilock.com","event":"LOGIN_FAILED","level":"error","message":"Security Event","reason":"Invalid passcode","timestamp":"2026-01-03T12:03:57.925Z"}
+{"level":"warn","message":"Attempting to reconnect...","timestamp":"2026-01-03 20:33:39"}

@@ -305,8 +305,9 @@ export default function App() {
 
             if (status && status.isLocked) {
                 nextState = 'LOCKED';
-                if (DeviceLockModule?.startKioskMode) DeviceLockModule.startKioskMode();
-                if (DeviceLockModule?.setSecurityHardening) DeviceLockModule.setSecurityHardening(true); // Enforce Strict
+                // ❌ REMOVED: DeviceLockModule.startKioskMode() - Relying on Native Service (dpm.lockNow)
+                // We still enable hardening to prevent tampering
+                if (DeviceLockModule?.setSecurityHardening) DeviceLockModule.setSecurityHardening(true);
             } else {
                 if (DeviceLockModule?.stopKioskMode) DeviceLockModule.stopKioskMode();
                 // Enforce Base Security (Factory Reset Block + Anti-Uninstall)

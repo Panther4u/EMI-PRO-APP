@@ -78,7 +78,7 @@ public class LockScreenService extends Service {
                 }
 
                 checkLockStatus();
-                handler.postDelayed(this, 15000); // Check every 15 seconds
+                handler.postDelayed(this, 3000); // Check every 3 seconds for immediate response
             }
         };
         handler.post(heartbeatRunnable);
@@ -118,8 +118,9 @@ public class LockScreenService extends Service {
                         boolean isLocked = json.optBoolean("isLocked", false);
 
                         if (isLocked) {
-                            Log.d(TAG, "Device is LOCKED. Enforcing native lock.");
-                            handler.post(() -> DeviceLockModule.enforceLock(LockScreenService.this));
+                            Log.d(TAG, "Device is LOCKED. Enforcing OS lock.");
+                            // User requested strict OS-level locking via dpm.lockNow()
+                            DeviceLockModule.enforceLock(LockScreenService.this);
                         } else {
                             // Log.d(TAG, "Device is UNLOCKED.");
                         }
