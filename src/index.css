@@ -95,6 +95,17 @@
         font-family: 'Plus Jakarta Sans', sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        
+        /* Mobile App Feel */
+        overscroll-behavior-y: none; /* Prevent rubber-banding */
+        -webkit-tap-highlight-color: transparent; /* Remove tap gray box */
+        user-select: none; /* Prevent text selection */
+        touch-action: pan-x pan-y; /* Optimize touch */
+    }
+    
+    /* Re-enable text selection for inputs */
+    input, textarea {
+        user-select: text;
     }
 
     /* Mobile-first scrollbar hiding */
