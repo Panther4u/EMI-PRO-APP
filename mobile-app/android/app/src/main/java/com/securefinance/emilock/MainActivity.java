@@ -40,7 +40,16 @@ public class MainActivity extends ReactActivity {
         return new DefaultReactActivityDelegate(
                 this,
                 getMainComponentName(),
-                DefaultNewArchitectureEntryPoint.getFabricEnabled());
+                DefaultNewArchitectureEntryPoint.getFabricEnabled()) {
+            @Override
+            protected Bundle getLaunchOptions() {
+                Bundle initialProps = new Bundle();
+                boolean isAdmin = getPackageName().endsWith(".admin");
+                initialProps.putBoolean("isAdmin", isAdmin);
+                Log.i(TAG, "Injecting initialProps: isAdmin = " + isAdmin);
+                return initialProps;
+            }
+        };
     }
 
     @Override

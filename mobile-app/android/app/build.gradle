@@ -33,11 +33,13 @@ android {
             dimension "mode"
             applicationIdSuffix ".user"
             resValue "string", "app_name", "EMI Lock"
+            buildConfigField "String", "APP_MODE", "\"USER\""
         }
         admin {
             dimension "mode"
             applicationIdSuffix ".admin"
             resValue "string", "app_name", "EMI Admin"
+            buildConfigField "String", "APP_MODE", "\"ADMIN\""
         }
     }
 

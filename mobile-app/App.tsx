@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, NativeModules } from 'react-native';
+import { View, Text, ActivityIndicator, NativeModules, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,14 +11,53 @@ import AdminScreen from './src/screens/AdminScreen';
 import PermissionsScreen from './src/screens/PermissionsScreen';
 
 const Stack = createStackNavigator();
-const { DeviceLockModule } = NativeModules;
+const { DeviceLockModule, AppMode } = NativeModules;
 
 // 🟦 PHASE 1: UNLINKED (Welcome / QR)
 // 🟨 PHASE 2: LINKED (Home / Background)
 // 🟥 PHASE 3: LOCKED (Lock Screen)
 type AppState = 'UNLINKED' | 'LINKED' | 'LOCKED';
 
-export default function App() {
+export default function App(props: any) {
+    // 🛑 SOLUTION A+: MULTI-LAYER HARD ROUTE
+    console.log("🚀 BOOT CHECK:", { props, AppMode, Device: DeviceLockModule });
+
+    // 1. Check Props (Injected by MainActivity - Proven to work)
+    if (props?.isAdmin === true) {
+        console.log("⚡ HARD ROUTE: PROPS DETECTED");
+        return (
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="AdminDashboard" component={AdminScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        );
+    }
+
+    // 2. Check AppMode (Build Flavor)
+    if (AppMode?.MODE === 'ADMIN') {
+        console.log("⚡ HARD ROUTE: APP_MODE DETECTED");
+        return (
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="AdminDashboard" component={AdminScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        );
+    }
+
+    // 3. Last Resort: Package Name from DeviceLockModule
+    if (DeviceLockModule?.IS_ADMIN === true || DeviceLockModule?.PACKAGE_NAME?.endsWith('.admin')) {
+        console.log("⚡ HARD ROUTE: DEVICELOCK DETECTED");
+        return (
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="AdminDashboard" component={AdminScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        );
+    }
+
     const [state, setState] = useState<AppState>('UNLINKED');
     const [isLoading, setIsLoading] = useState(true);
     const [isAdminState, setIsAdminState] = useState(false);
@@ -57,7 +96,7 @@ export default function App() {
                     model: technical?.model,
                     androidId: technical?.androidId,
                     osVersion: technical?.androidVersion,
-                    sdkLevel: technical?.sdkVersion,
+                    sdkLevel: technical?.sdkLevel,
                     serial: technical?.serial,
                     totalStorage: totalStorageGB,
                     availableStorage: freeStorageGB,
@@ -232,7 +271,33 @@ export default function App() {
     // Main Boot Logic
     const checkState = async () => {
         try {
-            // 1. Check Admin
+            console.log("🚀 BOOTING APP with Props:", props);
+
+            // 0. Check if this is the Admin Flavor APK using injected props (Java Layer)
+            const isAdminFromProps = props?.isAdmin === true;
+
+            // Check Native Module Constants (Backup)
+            const isAdminFromConstant = DeviceLockModule?.IS_ADMIN === true;
+            const packageName = DeviceLockModule?.PACKAGE_NAME || '';
+            const isAdminFromPackage = packageName.includes('.admin');
+
+            const isAdminFlavor = isAdminFromProps || isAdminFromConstant || isAdminFromPackage;
+
+            if (isAdminFlavor) {
+                console.log("✅ Admin Flavor Detected (Props/Const) - Showing Admin Dashboard");
+                setIsAdminState(true);
+                setIsLoading(false);
+                return;
+            } else {
+                if (packageName.endsWith(".admin")) {
+                    setIsAdminState(true);
+                    setIsLoading(false);
+                    return;
+                }
+                // Alert.alert("Not Admin", `Const: ${isAdminFromConstant}, Pkg: ${packageName}`);
+            }
+
+            // 1. Check Admin (Device Owner status for User flavor)
             const adminStatus = await checkAdminStatus();
             if (adminStatus) {
                 setIsAdminState(true);

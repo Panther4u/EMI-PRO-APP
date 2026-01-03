@@ -154,7 +154,7 @@ export default function SetupScreen({ navigation }) {
                 </TouchableOpacity>
 
                 <TouchableOpacity style={{ marginTop: 20, padding: 20 }} onPress={handleTap}>
-                    <Text style={{ color: '#ccc' }}>Version 1.0.1</Text>
+                    <Text style={{ color: '#ccc' }}>Version 2.0.4 (Admin Fix)</Text>
                 </TouchableOpacity>
             </View>
         );

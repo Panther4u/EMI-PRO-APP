@@ -20,6 +20,7 @@ public class DeviceLockPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
         modules.add(new DeviceLockModule(reactContext));
+        modules.add(new AppModeModule(reactContext));
         return modules;
     }
 }
