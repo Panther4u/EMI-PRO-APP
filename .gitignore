@@ -6,9 +6,15 @@ node_modules/
 # Build outputs
 dist/
 build/
-*.apk
+
+# Ignore APKs in build directories but allow in backend/public/downloads
+mobile-app/**/*.apk
+android/**/*.apk
 *.aab
 *.ipa
+
+# Allow production APKs in backend/public/downloads
+!backend/public/downloads/*.apk
 
 # Android build artifacts
 mobile-app/android/.gradle/
