@@ -9,6 +9,11 @@
             "date": 1767386641396,
             "name": "/Volumes/Kavi/Emi Pro/EMI-PRO/backend/logs/combined-2026-01-03.log",
             "hash": "da82d5e1d284d60d65acc3e7af5b8298b5bedb4e8c172f5d72e9f868e60ab0f7"
+        },
+        {
+            "date": 1767465230787,
+            "name": "/Volumes/Kavi/Emi Pro/EMI-PRO/backend/logs/combined-2026-01-04.log",
+            "hash": "585f21e956791e7127f69375603ce951bd88fe0dcbe0d9c468450004c3d3c1c1"
         }
     ],
     "hashType": "sha256"
