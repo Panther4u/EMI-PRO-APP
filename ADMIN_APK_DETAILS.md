@@ -24,6 +24,6 @@ Although they share the same codebase, the **Product Flavors** ensure they are b
 
 - **Build**: `v2.1.2`
 - **Installed**: Yes, on device.
-- **Location**: `backend/public/downloads/securefinance-admin-v2.1.2.apk`
+- **Location**: `./Admin-Dashboard.apk` (Project Root)
 
 You should verify you are opening the app named **"EMI Admin"** (Blue Icon).

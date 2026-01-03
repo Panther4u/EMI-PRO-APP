@@ -16,13 +16,12 @@ router.get('/payload/:customerId', (req, res) => {
 
         const baseUrl = isLocal ? `${protocol}://${host}` : 'https://emi-pro-app.onrender.com';
 
-        // Current APK version
-        const apkFileName = 'securefinance-admin-v2.1.2.apk';
+        // Current APK version (USER FLAVOR for Customers)
+        const apkFileName = 'securefinance-user.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
-        // Calculate checksum from local file OR use Verified Hardcoded Fallback
-        // Verified for Admin v2.1.2
-        const VERIFIED_CHECKSUM = 'ztPXvzLJAngCzPrdPOluGzjdmwCMivdOq8ztei8eRng';
+        // Verified for User Release APK
+        const VERIFIED_CHECKSUM = 'JfdtHWuytoe5zTSMmMBsJF2KptJBkEA1/kRcC+Vh02o=';
 
         // Prefer dynamic if file exists, but fallback to verified if fails
         let checksum = VERIFIED_CHECKSUM;
@@ -45,7 +44,7 @@ router.get('/payload/:customerId', (req, res) => {
         // Construct Android Enterprise Provisioning Payload (Industry Standard)
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
-                "com.securefinance.emilock.admin/com.securefinance.emilock.DeviceAdminReceiver",
+                "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",
 
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
                 downloadUrl,
