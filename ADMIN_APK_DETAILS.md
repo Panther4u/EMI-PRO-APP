@@ -1,29 +1,36 @@
-# Admin Dashboard APK Details
+# Admin Dashboard APK Details (Updated)
 
-We have successfully separated the build process to output a distinct **Admin Dashboard APK**.
+We have switched to a **Native Web App** architecture for the Admin Dashboard.
 
-## 📱 Admin APK vs User APK
+## 📱 Admin APK (Capacitor / Web)
 
 | Feature | 🛡️ Admin APK (New) | 🔒 User APK (Original) |
 | :--- | :--- | :--- |
-| **App Name** | `EMI Admin` | `EMI Lock` |
-| **Package Name** | `com.securefinance.emilock.admin` | `com.securefinance.emilock.user` |
-| **Purpose** | **For Staff Only**. Shows Dashboard, Customer List, & Controls. | **For Customers**. Shows Lock Screen & Payment Info. |
-| **Icon** | 🔵 **Blue** Shield | 🔴 **Red** Lock |
-| **Interface** | **Admin Dashboard** (Login / List) | **Welcome / Setup / Lock Screen** |
-| **Install Method** | Normal APK Install | Device Owner / QR Code |
+| **Technology** | **Capacitor + Vite/React** (Web Frontend) | **React Native** (Native Modules) |
+| **App Name** | `SecurePRO Admin` | `EMI Lock` |
+| **Package Name** | `com.securefinance.admin` | `com.securefinance.emilock.user` |
+| **Content** | **Full Web Dashboard** (Local Build) | Lock Screen & Device Control |
+| **Install Method** | Manual APK Install | QR Provisioning |
 
-## 🛠️ Technical Separation
+## 🛠️ Architecture Change
 
-Although they share the same codebase, the **Product Flavors** ensure they are built as completely matching separate apps:
+Instead of sharing the React Native codebase and trying to toggle "Admin Mode", we now:
+1.  **Build the Web Frontend** (`npm run build`).
+2.  **Wrap it in Capacitor** (`npx cap sync`).
+3.  **Build a Dedicated APK** (`android/`).
 
-1.  **Forced "Admin Mode"**: The `EMI Admin` app has a hardcoded Java injection that forces the app into Admin Mode (`isAdmin=true`), bypassing all user setup screens. 
-2.  **Separate Identity**: It installs side-by-side with the User app. You can have both on one phone (User app for testing lock, Admin app for control).
+This ensures the Admin App is **identical** to the Web Dashboard, because it IS the Web Dashboard running in a native container.
 
 ## 🚀 Current Status
 
-- **Build**: `v2.1.2`
-- **Installed**: Yes, on device.
-- **Location**: `./Admin-Dashboard.apk` (Project Root)
+- **Build**: `v1.0.0` (Web Version)
+- **Installed**: Yes, on device (`com.securefinance.admin`)
+- **Location**: `backend/public/staff/EMI-Admin-Web-Dashboard.apk`
 
-You should verify you are opening the app named **"EMI Admin"** (Blue Icon).
+## 🔄 Updates
+
+To update this app:
+1. `npm run build` (in root)
+2. `npx cap sync android`
+3. `./gradlew assembleDebug` (in `android/`)
+4. Deploy APK.
