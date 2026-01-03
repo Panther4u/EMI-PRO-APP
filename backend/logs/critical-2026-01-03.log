@@ -1,3 +1,4 @@
 {"email":"admin1@emilock.com","event":"LOGIN_FAILED","level":"error","message":"Security Event","reason":"User not found","timestamp":"2026-01-02T20:47:08.252Z"}
 {"email":"admin1@emilock.com","event":"LOGIN_FAILED","level":"error","message":"Security Event","reason":"User not found","timestamp":"2026-01-02T20:48:38.129Z"}
 {"error":"Illegal arguments: string, undefined","level":"error","message":"Login error","timestamp":"2026-01-03 02:23:35"}
+{"level":"warn","message":"Attempting to reconnect...","timestamp":"2026-01-03 15:04:19"}

@@ -37,3 +37,4 @@
 {"duration":"1ms","ip":"127.0.0.1","level":"info","message":"HTTP Request","method":"GET","statusCode":401,"timestamp":"2026-01-03 02:48:12","url":"/api/customers","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
 {"email":"admin@emilock.com","event":"USER_LOGIN","level":"info","message":"System Event","role":"SUPER_ADMIN","timestamp":"2026-01-03 02:53:19","userId":"6958321160a9de327d61273d"}
 {"duration":"283ms","ip":"127.0.0.1","level":"info","message":"HTTP Request","method":"POST","statusCode":200,"timestamp":"2026-01-03 02:53:19","url":"/api/admin/login","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Attempting to reconnect...","timestamp":"2026-01-03 15:04:19"}
