@@ -44,9 +44,12 @@ const auth = async (req, res, next) => {
             email: user.email,
             name: user.name,
             role: user.role,
+            deviceLimit: user.deviceLimit || 0,
             dealerId: user.dealerId || user._id, // Use own ID if dealer, parent ID if sub-admin
             permissions: user.permissions
         };
+
+        console.log(`[AUTH DEBUG] User authenticated: ${user.email}, Role: ${user.role}, Limit: ${user.deviceLimit}`);
 
         next();
     } catch (error) {

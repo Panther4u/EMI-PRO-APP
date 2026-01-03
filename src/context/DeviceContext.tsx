@@ -144,10 +144,9 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                throw new Error(errorData.error || errorData.message || `Failed to add customer: ${response.status}`);
+                const message = errorData.message || errorData.error || `Failed to add customer: ${response.status}`;
+                throw new Error(message);
             }
-
-            toast.success('Customer registered successfully');
         } catch (error) {
             // Rollback optimistic update
             setCustomers(prev => prev.filter(c => c.id !== newCustomer.id));

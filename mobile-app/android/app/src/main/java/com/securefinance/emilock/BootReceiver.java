@@ -55,10 +55,8 @@ public class BootReceiver extends BroadcastReceiver {
                 }
                 Log.i(TAG, "✅ SIM verified - matches original");
 
-                // 3. Start lock service ONLY if locked
-                if (isLocked) {
-                    startLockService(context);
-                }
+                // 3. Start lock service ALWAYS if provisioned (to listen for lock commands)
+                startLockService(context);
 
                 // 4. 🆕 Process any queued offline commands
                 Log.i(TAG, "💾 Processing offline command queue...");

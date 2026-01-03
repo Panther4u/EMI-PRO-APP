@@ -50,9 +50,11 @@ const DeviceSchema = new mongoose.Schema({
     // Device Info
     brand: { type: String },
     model: { type: String },
+    deviceName: { type: String },
     osVersion: { type: String },
     sdkLevel: { type: String },
     serialNumber: { type: String },
+    totalMemory: { type: String },
 
     // IMEI
     imei1: { type: String },

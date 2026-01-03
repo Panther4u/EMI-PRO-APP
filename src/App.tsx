@@ -19,6 +19,7 @@ import Customers from './pages/Customers';
 import AddCustomer from './pages/AddCustomer';
 import CustomerDetails from './pages/CustomerDetails';
 import Settings from './pages/Settings';
+import Admins from './pages/Admins';
 
 // Contexts (Assuming these exist or I will create simple versions/wrappers if needed)
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -90,7 +91,7 @@ export default function App() {
             <AuthProvider>
                 <DeviceProvider>
                     <TooltipProvider>
-                        <BrowserRouter>
+                        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                             <AppLayout>
                                 <Routes>
                                     <Route path="/login" element={<Login />} />
@@ -105,6 +106,7 @@ export default function App() {
                                     <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
 
                                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                                    <Route path="/admins" element={<ProtectedRoute><Admins /></ProtectedRoute>} />
 
                                     <Route path="*" element={<Navigate to="/" replace />} />
                                 </Routes>

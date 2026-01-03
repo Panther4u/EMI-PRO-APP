@@ -18,7 +18,9 @@ const CustomerSchema = new mongoose.Schema({
     imei1: { type: String, required: true, unique: true }, // The ACTUAL IMEI from device
     expectedIMEI: { type: String }, // The IMEI admin expects (for verification)
     imei2: { type: String },
-    mobileModel: { type: String },
+    brand: { type: String },
+    modelName: { type: String },
+    mobileModel: { type: String }, // Keep for compatibility with older parts
 
     // SIM Tracking
     simDetails: {
@@ -95,7 +97,8 @@ const CustomerSchema = new mongoose.Schema({
             sdkLevel: { type: Number },
             totalStorage: { type: String },
             availableStorage: { type: String },
-            totalMemory: { type: Number },
+            totalMemory: { type: String }, // Switched to String for "6.00 GB" format
+            deviceName: { type: String },
             freeMemory: { type: Number }
         },
         // Detailed Onboarding Steps

@@ -14,12 +14,27 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Card } from '@/components/ui/card';
+import { QRCodeSVG } from 'qrcode.react';
+import { getApiUrl } from '@/config/api';
+import { Loader2, QrCode, Download, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export default function AddCustomer() {
     const navigate = useNavigate();
     const { addCustomer } = useDevice();
-    const { currentAdmin } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [newCustomerId, setNewCustomerId] = useState<string | null>(null);
+    const [qrData, setQrData] = useState<string>('');
+    const [apkName, setApkName] = useState<string>('securefinance-admin-v2.1.2.apk');
+    const { customers } = useDevice();
+
+    const adminUserStr = localStorage.getItem('adminUser');
+    const adminUser = adminUserStr ? JSON.parse(adminUserStr) : null;
+    const isSuperAdmin = adminUser?.role === 'SUPER_ADMIN';
+    const deviceLimit = adminUser?.deviceLimit || 0;
+    const currentCount = customers?.length || 0;
+    const isAtLimit = !isSuperAdmin && deviceLimit > 0 && currentCount >= deviceLimit;
 
     const [formData, setFormData] = useState({
         name: '',
@@ -44,7 +59,7 @@ export default function AddCustomer() {
         e.preventDefault();
         setLoading(true);
         try {
-            // Validation
+            // ... validation ...
             if (!formData.name || !formData.phoneNo) {
                 toast.error('Name and Phone are required');
                 setLoading(false);
@@ -57,34 +72,57 @@ export default function AddCustomer() {
                 return;
             }
 
-            if (formData.imei1.length < 15) {
-                toast.error('IMEI must be 15 digits');
-                setLoading(false);
-                return;
-            }
+            // Get current admin from localStorage
+            const adminUserStr = localStorage.getItem('adminUser');
+            const adminUser = adminUserStr ? JSON.parse(adminUserStr) : null;
+            const dealerId = adminUser?._id;
 
-            const newCustomerUser = {
-                name: formData.name,
-                username: formData.phoneNo,
-                password: 'password123',
-                role: 'user',
-                email: formData.email
-            };
+            const customerId = `CUS-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
             const payload = {
-                ...formData,
-                deviceStatus: { status: 'pending' }, // Valid enum: pending, installing, connected, online, offline, error, warning, ADMIN_INSTALLED
-                adminId: currentAdmin?.id,
-                user: newCustomerUser
+                id: customerId,
+                name: formData.name,
+                phoneNo: formData.phoneNo,
+                email: formData.email,
+                address: formData.address,
+                imei1: formData.imei1,
+                brand: formData.brand,
+                modelName: formData.modelName,
+                totalAmount: Number(formData.totalAmount),
+                downPayment: Number(formData.downPayment),
+                emiAmount: Number(formData.emiAmount),
+                totalEmis: Number(formData.emiTenure), // Map emiTenure to totalEmis
+                emiDate: new Date().getDate(),
+                deviceStatus: { status: 'pending' },
+                dealerId: dealerId,
+                photoUrl: formData.photoUrl
             };
 
             await addCustomer(payload);
-            toast.success('✅ Device Provisioned Successfully!');
-            navigate('/customers');
-        } catch (err) {
-            // Show specific error message from backend
-            const errorMessage = err instanceof Error ? err.message : 'Failed to add customer';
-            toast.error(errorMessage);
+            setNewCustomerId(customerId);
+
+            // Fetch QR Payload immediately
+            const qrResponse = await fetch(getApiUrl(`/api/provisioning/payload/${customerId}`));
+            if (qrResponse.ok) {
+                const data = await qrResponse.json();
+                setQrData(JSON.stringify(data));
+                setShowQRModal(true);
+                toast.success('🚀 Device Registered! QR Ready.');
+            } else {
+                toast.success('✅ Device Registered (QR failed, view in Details)');
+                navigate('/customers');
+            }
+        } catch (err: any) {
+            // ... catch block ...
+            const errorMessage = err?.message || 'Failed to add customer';
+
+            if (errorMessage.includes('limit reached')) {
+                toast.error('🚨 Limit Reached: ' + errorMessage);
+            } else if (errorMessage.includes('Duplicate')) {
+                toast.error('⚠️ Device Already Registered');
+            } else {
+                toast.error(errorMessage);
+            }
             console.error('Add customer error:', err);
         } finally {
             setLoading(false);
@@ -101,6 +139,17 @@ export default function AddCustomer() {
             </div>
 
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 pb-24">
+                {isAtLimit && (
+                    <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3 mb-2">
+                        <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+                        <div>
+                            <p className="text-sm font-black text-red-900">Device Limit Reached</p>
+                            <p className="text-[11px] font-bold text-red-600 mt-0.5 leading-relaxed uppercase tracking-tight">
+                                You have used {currentCount} of {deviceLimit} device slots. Contact support to increase your capacity.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="space-y-4">
                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 pl-1">Customer Info</p>
@@ -243,6 +292,55 @@ export default function AddCustomer() {
                 </Button>
 
             </form>
+
+            {/* Success QR Modal */}
+            {showQRModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative animate-in zoom-in-95 duration-300">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
+                                <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                            </div>
+                            <h2 className="text-2xl font-black text-slate-900">QR Code Generated</h2>
+                            <p className="text-sm text-slate-500 font-medium">Device Profile Created Successfully</p>
+
+                            <div className="p-6 bg-slate-50 rounded-[32px] border-2 border-slate-100 shadow-inner">
+                                {qrData ? (
+                                    <QRCodeSVG value={qrData} size={200} level="H" />
+                                ) : (
+                                    <div className="w-[200px] h-[200px] flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-4 w-full pt-4">
+                                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                                    <p className="text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">How to setup?</p>
+                                    <p className="text-[10px] text-blue-700 font-medium leading-relaxed">
+                                        Factory reset the device. On the "Welcome" screen, tap the screen **6 times** in same spot to activate QR scanner.
+                                    </p>
+                                </div>
+
+                                <Button
+                                    onClick={() => navigate('/customers')}
+                                    className="w-full h-14 rounded-2xl bg-slate-900 text-white font-bold text-lg"
+                                >
+                                    Finish & Go to Fleet
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setShowQRModal(false)}
+                                    className="w-full text-sm text-slate-400 font-bold"
+                                >
+                                    Close Preview
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

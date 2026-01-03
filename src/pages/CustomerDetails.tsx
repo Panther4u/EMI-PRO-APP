@@ -373,6 +373,17 @@ export default function CustomerDetails() {
                         </h3>
 
                         <div className="grid grid-cols-2 gap-3">
+                            {/* Device Name (Marketing Name) */}
+                            {(customer.deviceName || deviceInfo?.deviceName || customer.deviceStatus?.technical?.deviceName) && (
+                                <div className="col-span-2">
+                                    <InfoCard
+                                        label="Device Name"
+                                        value={customer.deviceName || deviceInfo?.deviceName || customer.deviceStatus?.technical?.deviceName}
+                                        icon={<Smartphone className="w-4 h-4" />}
+                                    />
+                                </div>
+                            )}
+
                             {/* Brand */}
                             <InfoCard
                                 label="Brand"
@@ -383,9 +394,27 @@ export default function CustomerDetails() {
                             {/* Model */}
                             <InfoCard
                                 label="Model"
-                                value={deviceInfo?.model || customer.deviceStatus?.technical?.model || customer.modelName || 'N/A'}
+                                value={deviceInfo?.model || customer.deviceStatus?.technical?.model || customer.modelName || customer.mobileModel || 'N/A'}
                                 icon={<Smartphone className="w-4 h-4" />}
                             />
+
+                            {/* Memory / RAM */}
+                            {(deviceInfo?.totalMemory || customer.deviceStatus?.technical?.totalMemory) && (
+                                <InfoCard
+                                    label="Memory (RAM)"
+                                    value={deviceInfo?.totalMemory || customer.deviceStatus?.technical?.totalMemory}
+                                    icon={<Smartphone className="w-4 h-4" />}
+                                />
+                            )}
+
+                            {/* Storage */}
+                            {(deviceInfo?.totalStorage || customer.deviceStatus?.technical?.totalStorage) && (
+                                <InfoCard
+                                    label="Storage"
+                                    value={`${customer.deviceStatus?.technical?.availableStorage || deviceInfo?.availableStorage || 'N/A'} / ${customer.deviceStatus?.technical?.totalStorage || deviceInfo?.totalStorage}`}
+                                    icon={<HardDrive className="w-4 h-4" />}
+                                />
+                            )}
 
                             {/* Android Version */}
                             <InfoCard
@@ -402,10 +431,10 @@ export default function CustomerDetails() {
                             />
 
                             {/* Battery */}
-                            {(deviceInfo?.batteryLevel || customer.deviceStatus?.batteryLevel) && (
+                            {(deviceInfo?.batteryLevel !== undefined || customer?.deviceFeatures?.batteryLevel !== undefined || customer?.deviceStatus?.batteryLevel !== undefined) && (
                                 <InfoCard
                                     label="Battery"
-                                    value={`${deviceInfo?.batteryLevel ?? customer.deviceStatus?.batteryLevel}%`}
+                                    value={`${deviceInfo?.batteryLevel ?? customer?.deviceFeatures?.batteryLevel ?? customer?.deviceStatus?.batteryLevel}%`}
                                     icon={<Battery className="w-4 h-4" />}
                                 />
                             )}

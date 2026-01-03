@@ -8,7 +8,9 @@ import {
     Plus,
     CheckCircle2,
     Search,
-    Bell
+    Bell,
+    TrendingUp,
+    Users
 } from 'lucide-react';
 import { useDevice } from '@/context/DeviceContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,136 +21,385 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const { customers } = useDevice();
 
+    // Get admin info
+    const adminUserStr = localStorage.getItem('adminUser');
+    const adminUser = adminUserStr ? JSON.parse(adminUserStr) : null;
+    const isSuperAdmin = adminUser?.role === 'SUPER_ADMIN';
+    const deviceLimit = adminUser?.deviceLimit || 0;
+    const currentDeviceCount = customers?.length || 0;
+    const remainingSlots = deviceLimit - currentDeviceCount;
+    const usagePercentage = deviceLimit > 0 ? (currentDeviceCount / deviceLimit * 100) : 0;
+
+    // Super Admin stats
+    const [totalAdmins, setTotalAdmins] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
+    const adminToken = localStorage.getItem('adminToken');
+
+    // Fetch admin count and refresh profile info
+    useEffect(() => {
+        const refreshData = async () => {
+            if (!adminToken) return;
+
+            // 1. Refresh profile info for current user
+            try {
+                const meRes = await fetch('/api/admin/me', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` },
+                });
+                const meData = await meRes.json();
+                if (meData.success) {
+                    localStorage.setItem('adminUser', JSON.stringify(meData.user));
+                }
+            } catch (err) {
+                console.error('Profile refresh failed:', err);
+            }
+
+            // 2. Refresh admin count if Super Admin
+            if (isSuperAdmin) {
+                try {
+                    const usersRes = await fetch('/api/admin/users', {
+                        headers: { 'Authorization': `Bearer ${adminToken}` },
+                    });
+                    const usersData = await usersRes.json();
+                    if (usersData.success) {
+                        setTotalAdmins(usersData.admins.length);
+                    }
+                } catch (err) {
+                    console.error('Error fetching admins:', err);
+                }
+            }
+        };
+
+        refreshData();
+    }, [isSuperAdmin, adminToken]);
+
     // Calculate stats on the fly
-    const activeCount = customers?.filter(c => !c.isLocked && c.deviceStatus?.status !== 'REMOVED').length || 0;
+    const activeCount = customers?.filter(c => !c.isLocked && c.deviceStatus?.status !== 'removed').length || 0;
     const lockedCount = customers?.filter(c => c.isLocked).length || 0;
     const totalCount = customers?.length || 0;
-    const warningCount = customers?.filter(c => c.deviceStatus?.status === 'REMOVED').length || 0;
+    const warningCount = customers?.filter(c => c.deviceStatus?.status === 'removed').length || 0;
+
+    // Get usage color
+    const getUsageColor = () => {
+        if (usagePercentage >= 90) return 'text-red-600 bg-red-50';
+        if (usagePercentage >= 70) return 'text-orange-600 bg-orange-50';
+        if (usagePercentage >= 50) return 'text-yellow-600 bg-yellow-50';
+        return 'text-green-600 bg-green-50';
+    };
 
     return (
         <div className="flex flex-col h-full bg-slate-50/50">
             {/* Mobile Header */}
-            <header className="px-6 pt-12 pb-4 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex justify-between items-center sticky top-0 z-40">
-                <div>
-                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Welcome Back</p>
-                    <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Admin Dashboard</h1>
+            <header className="px-6 pt-12 pb-4 bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-40 space-y-4">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Welcome Back</p>
+                        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                            {isSuperAdmin ? 'Super Admin' : 'Admin Dashboard'}
+                        </h1>
+                        {isSuperAdmin ? (
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold text-emerald-600 bg-emerald-50">
+                                    {currentDeviceCount} / Unlimited devices
+                                </span>
+                            </div>
+                        ) : deviceLimit > 0 && (
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${getUsageColor()}`}>
+                                    {currentDeviceCount}/{deviceLimit} devices
+                                </span>
+                                <span className="text-[10px] text-slate-400">
+                                    {remainingSlots} remaining
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center relative active:scale-95 transition-all">
+                        <Bell className="w-5 h-5 text-slate-600" />
+                        <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                    </button>
                 </div>
-                <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center relative active:scale-95 transition-all">
-                    <Bell className="w-5 h-5 text-slate-600" />
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                </button>
+
+                {/* Global Search for Super Admin */}
+                {isSuperAdmin && (
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search Admin, IMEI, Customer..."
+                            className="w-full h-11 pl-10 pr-4 bg-slate-100/50 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    navigate('/customers');
+                                }
+                            }}
+                        />
+                    </div>
+                )}
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 space-y-6 pt-6 pb-20 no-scrollbar">
 
-                {/* Quick Search */}
-                <div className="relative group" onClick={() => navigate('/customers')}>
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <div className="w-full bg-white h-12 rounded-2xl border border-slate-200 shadow-sm flex items-center pl-11 text-sm font-medium text-slate-400">
-                        Search devices...
+                {/* Super Admin System Overview - Primary for SA */}
+                {isSuperAdmin && (
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-12 translate-x-12"></div>
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-sm font-bold opacity-70 tracking-wider uppercase">System Health</h3>
+                                <p className="text-2xl font-black tracking-tight">Enterprise Pulse</p>
+                            </div>
+                            <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Live Monitoring</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Fleet</p>
+                                <p className="text-3xl font-black">{totalCount}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Dealers</p>
+                                <p className="text-3xl font-black">{totalAdmins}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
+                            <div className="flex justify-between items-end mb-1">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Capacity</p>
+                                    <p className="text-xs font-black text-emerald-400 uppercase tracking-widest">Unlimited Enterprise Access</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Usage</p>
+                                    <p className="text-sm font-black text-white">{currentDeviceCount} Devices</p>
+                                </div>
+                            </div>
+                            {/* Visual Progress Bar for SA (Always showing high availability) */}
+                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 w-[15%] rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"></div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Active</p>
+                                    <p className="text-sm font-bold">{activeCount}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                                    <Lock className="w-4 h-4 text-red-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Locked</p>
+                                    <p className="text-sm font-bold">{lockedCount}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Quick Actions - Realigned Grid */}
+                {isSuperAdmin && (
+                    <div className="space-y-3">
+                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-1">Quick Access</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => navigate('/admins')} className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all active:scale-95 text-left group">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    <Users className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Management</p>
+                                    <span className="text-sm font-bold text-slate-700">Dealers</span>
+                                </div>
+                            </button>
+                            <button onClick={() => navigate('/customers')} className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all active:scale-95 text-left group">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                    <Smartphone className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Inventory</p>
+                                    <span className="text-sm font-bold text-slate-700">Devices</span>
+                                </div>
+                            </button>
+                            <button onClick={() => navigate('/customers?filter=locked')} className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all active:scale-95 text-left group">
+                                <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                    <Lock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Security</p>
+                                    <span className="text-sm font-bold text-slate-700">Locked</span>
+                                </div>
+                            </button>
+                            <button onClick={() => navigate('/admins')} className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all active:scale-95 text-left group">
+                                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                                    <Shield className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Audit</p>
+                                    <span className="text-sm font-bold text-slate-700">Logs</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Device Limit Warning Banner for standard admins */}
+                {!isSuperAdmin && deviceLimit > 0 && usagePercentage >= 80 && (
+                    <div className={`rounded-2xl p-4 border ${usagePercentage >= 100
+                        ? 'bg-red-50 border-red-200'
+                        : 'bg-orange-50 border-orange-200'
+                        }`}>
+                        <div className="flex items-start gap-3">
+                            <AlertTriangle className={`w-5 h-5 mt-0.5 ${usagePercentage >= 100 ? 'text-red-600' : 'text-orange-600'
+                                }`} />
+                            <div className="flex-1">
+                                <h3 className={`text-sm font-bold ${usagePercentage >= 100 ? 'text-red-900' : 'text-orange-900'
+                                    }`}>
+                                    {usagePercentage >= 100 ? 'Device Limit Reached' : 'Approaching Device Limit'}
+                                </h3>
+                                <p className={`text-xs mt-1 ${usagePercentage >= 100 ? 'text-red-700' : 'text-orange-700'
+                                    }`}>
+                                    {usagePercentage >= 100
+                                        ? `You've used all ${deviceLimit} device slots. Contact support to increase your limit.`
+                                        : `You've used ${currentDeviceCount} of ${deviceLimit} devices (${usagePercentage.toFixed(0)}%). Only ${remainingSlots} slots remaining.`
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Primary Stats Grid - Visible to all but prioritized for standard admin */}
+                <div className="space-y-3">
+                    {!isSuperAdmin && <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-1">Real-time Stats</p>}
+                    <div className="grid grid-cols-2 gap-4">
+                        <Card
+                            className="bg-primary text-primary-foreground border-none shadow-xl shadow-primary/10 rounded-[28px] active:scale-[0.98] transition-all cursor-pointer overflow-hidden relative group"
+                            onClick={() => navigate('/customers')}
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform"></div>
+                            <CardContent className="p-5 flex flex-col justify-between h-[150px]">
+                                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-inner">
+                                    <Smartphone className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-5xl font-black tracking-tighter leading-none">{activeCount}</h3>
+                                    <p className="text-[11px] font-bold uppercase tracking-widest opacity-80 mt-1">Active Units</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card
+                            className="bg-white border-slate-100 shadow-lg shadow-slate-100/50 rounded-[28px] active:scale-[0.98] transition-all cursor-pointer group"
+                            onClick={() => navigate('/customers')}
+                        >
+                            <CardContent className="p-5 flex flex-col justify-between h-[150px]">
+                                <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all">
+                                    <Lock className="w-6 h-6 text-red-500 group-hover:text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-5xl font-black tracking-tighter text-slate-900 leading-none">{lockedCount}</h3>
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-1">Locked Cases</p>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 
-                {/* Primary Stats Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                    <Card
-                        className="bg-primary text-primary-foreground border-none shadow-xl shadow-primary/20 rounded-[24px] active:scale-[0.98] transition-all cursor-pointer overflow-hidden relative"
-                        onClick={() => navigate('/customers')}
-                    >
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -translate-y-10 translate-x-10"></div>
-                        <CardContent className="p-5 flex flex-col justify-between h-[140px]">
-                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                                <Shield className="w-5 h-5" />
+                {/* Device Limit Progress for normal admins */}
+                {!isSuperAdmin && deviceLimit > 0 && (
+                    <div className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm space-y-4">
+                        <div className="flex justify-between items-end">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Device Capacity</p>
+                                <p className="text-xl font-black text-slate-900 leading-none">{currentDeviceCount} / {deviceLimit}</p>
                             </div>
-                            <div>
-                                <h3 className="text-4xl font-black tracking-tighter">{activeCount}</h3>
-                                <p className="text-[11px] font-bold uppercase tracking-widest opacity-80">Active Units</p>
+                            <div className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${usagePercentage >= 90 ? 'bg-red-50 text-red-600' :
+                                usagePercentage >= 70 ? 'bg-orange-50 text-orange-600' :
+                                    'bg-emerald-50 text-emerald-600'
+                                }`}>
+                                {usagePercentage.toFixed(0)}% Used
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card
-                        className="bg-white border-slate-100 shadow-lg shadow-slate-100 rounded-[24px] active:scale-[0.98] transition-all cursor-pointer"
-                        onClick={() => navigate('/customers')}
-                    >
-                        <CardContent className="p-5 flex flex-col justify-between h-[140px]">
-                            <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
-                                <Lock className="w-5 h-5 text-red-500" />
-                            </div>
-                            <div>
-                                <h3 className="text-4xl font-black tracking-tighter text-slate-900">{lockedCount}</h3>
-                                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Locked</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-500 shadow-sm ${usagePercentage >= 90 ? 'bg-red-500 shadow-red-200' :
+                                    usagePercentage >= 70 ? 'bg-orange-500 shadow-orange-200' :
+                                        'bg-emerald-500 shadow-emerald-200'
+                                    }`}
+                                style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                            ></div>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                            {remainingSlots > 0 ? `${remainingSlots} slots available for enrollment` : 'Full capacity reached'}
+                        </p>
+                    </div>
+                )}
 
                 {/* Action Row */}
-                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                <div className="grid grid-cols-2 gap-3 pb-2">
                     <Button
                         onClick={() => navigate('/add-customer')}
-                        className="h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 flex-1 shadow-none"
+                        className="h-14 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 flex items-center justify-center gap-2 shadow-lg shadow-slate-200 border-none transition-all active:scale-95"
                     >
-                        <Plus className="w-4 h-4 mr-2" /> New Device
+                        <Plus className="w-5 h-5" />
+                        <span className="font-bold text-sm">New Unit</span>
                     </Button>
                     <Button
                         onClick={() => navigate('/customers')}
-                        variant="outline"
-                        className="h-12 rounded-2xl border-slate-200 text-slate-600 bg-white flex-1 shadow-sm"
+                        variant="secondary"
+                        className="h-14 rounded-2xl bg-white border border-slate-100 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
                     >
-                        <Smartphone className="w-4 h-4 mr-2" /> View All
+                        <Search className="w-4 h-4" />
+                        <span className="font-bold text-sm">Explore Fleet</span>
                     </Button>
                 </div>
 
-                {/* Secondary Stats */}
-                <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">System Status</h3>
-                        <span className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-lg">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-[10px] font-bold text-emerald-700 uppercase">Online</span>
-                        </span>
+                {/* Recent Activity Section */}
+                <div className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Recent Activity</h3>
+                        <Button variant="ghost" size="sm" className="text-[10px] font-bold text-primary" onClick={() => navigate('/admins')}>
+                            View Portal
+                        </Button>
                     </div>
 
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
-                                    <Smartphone className="w-4 h-4 text-slate-500" />
-                                </div>
-                                <span className="text-sm font-semibold text-slate-600">Total Enrolled</span>
-                            </div>
-                            <span className="font-bold text-slate-900">{totalCount}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center border border-amber-100">
-                                    <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                </div>
-                                <span className="text-sm font-semibold text-slate-600">Action Required</span>
-                            </div>
-                            <span className="font-bold text-slate-900">{warningCount}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Recent Activity (Visual Placeholder) */}
-                <div>
-                    <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3 px-1">Recent Updates</h3>
-                    <div className="space-y-3">
                         {[1, 2].map((_, i) => (
-                            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                                    <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                            <div key={i} className="flex items-start gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                <div className={cn(
+                                    "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                                    i === 0 ? "bg-blue-50 text-blue-500" : "bg-emerald-50 text-emerald-500"
+                                )}>
+                                    {i === 0 ? <TrendingUp className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                                 </div>
-                                <div>
-                                    <p className="text-xs font-bold text-slate-900">System Sync Complete</p>
-                                    <p className="text-[10px] font-medium text-slate-400">Just now • Automatic</p>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                        <p className="text-xs font-black text-slate-900">{i === 0 ? 'Fleet Sync Active' : 'Security Audit Passed'}</p>
+                                        <span className="text-[9px] font-bold text-slate-400">2M AGO</span>
+                                    </div>
+                                    <p className="text-[10px] font-medium text-slate-400 mt-0.5">
+                                        {i === 0 ? 'Synchronizing global dealer network status...' : 'All systems reporting healthy and secured.'}
+                                    </p>
                                 </div>
                             </div>
                         ))}
                     </div>
+                </div>
+
+                <div className="text-center pt-2">
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] opacity-80">
+                        Unified Management Console v2.5
+                    </p>
                 </div>
             </div>
         </div>

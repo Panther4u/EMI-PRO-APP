@@ -203,6 +203,22 @@ public class DeviceLockModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /**
+     * Enforce Immediate Lock (Static helper for Service)
+     * Called by LockScreenService to enforce lock even when app is closed
+     */
+    public static void enforceLock(Context context) {
+        try {
+            DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+            if (dpm != null && dpm.isDeviceOwnerApp(context.getPackageName())) {
+                dpm.lockNow();
+                // Optionally enforce keyguard if needed, but lockNow is usually sufficient
+            }
+        } catch (Exception e) {
+            android.util.Log.e("DeviceLockModule", "Failed to enforce lock: " + e.getMessage());
+        }
+    }
+
     @ReactMethod
     public void lockDevice(Promise promise) {
         try {

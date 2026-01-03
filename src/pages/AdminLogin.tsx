@@ -59,8 +59,10 @@ const AdminLogin = () => {
                     description: `Welcome ${data.user.name}!`,
                 });
 
-                // Redirect to dashboard
+                // Redirect based on role
                 setTimeout(() => {
+                    // Both Super Admin and regular Admin go to same dashboard
+                    // Super Admin will see additional controls in Settings
                     navigate('/');
                 }, 500);
             } else {
@@ -135,26 +137,6 @@ const AdminLogin = () => {
                             {loading ? 'Logging in...' : 'Login'}
                         </Button>
                     </form>
-
-                    <div className="mt-6 space-y-3">
-                        <div className="text-center text-sm font-medium text-muted-foreground mb-2">
-                            Default Credentials:
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <div className="text-xs font-semibold text-blue-900 mb-1">Super Admin</div>
-                            <div className="text-sm font-mono text-blue-700">
-                                admin@emilock.com / 1234
-                            </div>
-                        </div>
-
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                            <div className="text-xs font-semibold text-green-900 mb-1">Admin (100 devices)</div>
-                            <div className="text-sm font-mono text-green-700">
-                                admin1@emilock.com / 9999
-                            </div>
-                        </div>
-                    </div>
                 </CardContent>
             </Card>
         </div>

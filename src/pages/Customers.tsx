@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDevice } from '@/context/DeviceContext';
 import { ArrowLeft, Search, Filter, MoreHorizontal, Smartphone, Lock, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,14 @@ import { toast } from 'sonner';
 
 export default function Customers() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { customers, refreshCustomers } = useDevice();
     const [search, setSearch] = useState('');
-    const [filter, setFilter] = useState<'all' | 'active' | 'locked'>('all');
+    const [filter, setFilter] = useState<'all' | 'active' | 'locked'>((searchParams.get('filter') as any) || 'all');
+
+    const adminUserStr = localStorage.getItem('adminUser');
+    const adminUser = adminUserStr ? JSON.parse(adminUserStr) : null;
+    const isSuperAdmin = adminUser?.role === 'SUPER_ADMIN';
 
     useEffect(() => {
         refreshCustomers?.();
@@ -130,15 +135,24 @@ export default function Customers() {
                                     </div>
                                 </div>
 
+                                {/* Admin Badge for Super Admin */}
+                                {isSuperAdmin && c.dealerId && (
+                                    <div className="mb-3 px-2.5 py-1.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Admin:</span>
+                                        <span className="text-xs font-bold text-slate-700">{c.dealerId.name}</span>
+                                    </div>
+                                )}
+
                                 {/* Details Grid */}
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Device</p>
                                         <p className="text-xs font-bold text-slate-700 truncate">
-                                            {c.modelName || c.deviceStatus?.technical?.model || 'Unknown'}
+                                            {c.deviceName || (c.brand && c.modelName ? `${c.brand} ${c.modelName}` : c.brand || c.modelName || 'Unknown')}
                                         </p>
                                         <p className="text-[10px] text-slate-400 truncate">
-                                            Android {c.deviceStatus?.technical?.osVersion || 'N/A'}
+                                            Android {c.deviceStatus?.technical?.osVersion || 'N/A'} • {c.deviceStatus?.technical?.totalMemory || 'N/A'}
                                         </p>
                                     </div>
                                     <div className="space-y-1">

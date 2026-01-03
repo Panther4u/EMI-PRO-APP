@@ -58,6 +58,10 @@ const AdminUserSchema = new mongoose.Schema({
         default: true
     },
 
+    profilePhoto: {
+        type: String, // URL or Base64
+    },
+
     // Metadata
     lastLogin: Date,
     createdBy: {

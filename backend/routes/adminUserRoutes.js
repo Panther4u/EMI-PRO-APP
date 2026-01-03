@@ -113,7 +113,7 @@ router.post('/login', async (req, res) => {
  */
 router.post('/users', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
     try {
-        const { name, email, phone, passcode, deviceLimit } = req.body;
+        const { name, email, phone, passcode, deviceLimit, profilePhoto } = req.body;
 
         if (!name || !email || !passcode) {
             return res.status(400).json({
@@ -144,6 +144,7 @@ router.post('/users', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
             passcode,
             role: 'ADMIN',
             deviceLimit: deviceLimit || 0,
+            profilePhoto,
             createdBy: req.user._id
         });
 
@@ -155,6 +156,10 @@ router.post('/users', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
             newAdminEmail: newUser.email,
             deviceLimit: newUser.deviceLimit
         });
+
+        // Audit log
+        const { logAdminCreation } = require('../middleware/auditLog');
+        await logAdminCreation(req, newUser);
 
         res.status(201).json({
             success: true,
@@ -246,6 +251,7 @@ router.put('/users/:id/limit', auth, checkRole('SUPER_ADMIN'), async (req, res) 
             });
         }
 
+        const oldLimit = admin.deviceLimit;
         admin.deviceLimit = deviceLimit;
         await admin.save();
 
@@ -254,6 +260,10 @@ router.put('/users/:id/limit', auth, checkRole('SUPER_ADMIN'), async (req, res) 
             adminId: admin._id,
             newLimit: deviceLimit
         });
+
+        // Audit log
+        const { logAdminLimitUpdate } = require('../middleware/auditLog');
+        await logAdminLimitUpdate(req, admin, oldLimit, deviceLimit);
 
         res.json({
             success: true,
@@ -285,11 +295,12 @@ router.put('/users/:id', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
             });
         }
 
-        const { name, phone, isActive } = req.body;
+        const { name, phone, isActive, profilePhoto } = req.body;
 
         if (name) admin.name = name;
         if (phone) admin.phone = phone;
         if (typeof isActive === 'boolean') admin.isActive = isActive;
+        if (profilePhoto) admin.profilePhoto = profilePhoto;
 
         await admin.save();
 
@@ -413,6 +424,234 @@ router.get('/me', auth, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch profile'
+        });
+    }
+});
+
+/**
+ * @route   GET /api/admin/audit-logs
+ * @desc    Get audit logs (SUPER_ADMIN only)
+ * @access  Private (SUPER_ADMIN)
+ */
+router.get('/audit-logs', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
+    try {
+        const AuditLog = require('../models/AuditLog');
+
+        const {
+            limit = 50,
+            skip = 0,
+            action,
+            actorId,
+            startDate,
+            endDate
+        } = req.query;
+
+        // Build query
+        const query = {};
+
+        if (action) {
+            query.action = action;
+        }
+
+        if (actorId) {
+            query.actorId = actorId;
+        }
+
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) {
+                query.createdAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                query.createdAt.$lte = new Date(endDate);
+            }
+        }
+
+        // Fetch logs
+        const logs = await AuditLog.find(query)
+            .sort({ createdAt: -1 })
+            .limit(parseInt(limit))
+            .skip(parseInt(skip));
+
+        const total = await AuditLog.countDocuments(query);
+
+        res.json({
+            success: true,
+            logs: logs.map(log => log.toDisplay()),
+            pagination: {
+                total,
+                limit: parseInt(limit),
+                skip: parseInt(skip),
+                hasMore: total > (parseInt(skip) + parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('Audit logs fetch error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch audit logs'
+        });
+    }
+});
+
+/**
+ * @route   GET /api/admin/users/:adminId/devices
+ * @desc    Get all devices for a specific admin (SUPER_ADMIN only)
+ * @access  Private (SUPER_ADMIN)
+ */
+router.get('/users/:adminId/devices', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
+    try {
+        const { adminId } = req.params;
+
+        // Verify admin exists
+        const admin = await AdminUser.findById(adminId);
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: 'Admin not found'
+            });
+        }
+
+        // Get all customers for this admin
+        const customers = await Customer.find({ dealerId: adminId })
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            admin: {
+                id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                deviceLimit: admin.deviceLimit
+            },
+            devices: customers,
+            count: customers.length
+        });
+    } catch (error) {
+        console.error('Admin devices fetch error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch admin devices'
+        });
+    }
+});
+
+/**
+ * @route   POST /api/admin/devices/:customerId/lock
+ * @desc    Force lock any device (SUPER_ADMIN only)
+ * @access  Private (SUPER_ADMIN)
+ */
+router.post('/devices/:customerId/lock', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
+    try {
+        const { customerId } = req.params;
+        const { reason } = req.body;
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Device not found'
+            });
+        }
+
+        customer.isLocked = true;
+        customer.lockReason = reason || 'Locked by Super Admin';
+        customer.lockedAt = new Date();
+        customer.lockedBy = req.user._id;
+        await customer.save();
+
+        // Log the action
+        const { logDeviceLock } = require('../middleware/auditLog');
+        await logDeviceLock(req, customer, true);
+
+        res.json({
+            success: true,
+            message: 'Device locked successfully',
+            customer
+        });
+    } catch (error) {
+        console.error('Device lock error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to lock device'
+        });
+    }
+});
+
+/**
+ * @route   POST /api/admin/devices/:customerId/unlock
+ * @desc    Force unlock any device (SUPER_ADMIN only)
+ * @access  Private (SUPER_ADMIN)
+ */
+router.post('/devices/:customerId/unlock', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
+    try {
+        const { customerId } = req.params;
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Device not found'
+            });
+        }
+
+        customer.isLocked = false;
+        customer.lockReason = null;
+        customer.unlockedAt = new Date();
+        customer.unlockedBy = req.user._id;
+        await customer.save();
+
+        // Log the action
+        const { logDeviceLock } = require('../middleware/auditLog');
+        await logDeviceLock(req, customer, false);
+
+        res.json({
+            success: true,
+            message: 'Device unlocked successfully',
+            customer
+        });
+    } catch (error) {
+        console.error('Device unlock error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to unlock device'
+        });
+    }
+});
+
+/**
+ * @route   DELETE /api/admin/devices/:customerId
+ * @desc    Force remove any device (SUPER_ADMIN only)
+ * @access  Private (SUPER_ADMIN)
+ */
+router.delete('/devices/:customerId', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
+    try {
+        const { customerId } = req.params;
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Device not found'
+            });
+        }
+
+        // Log before deletion
+        const { logCustomerRemoval } = require('../middleware/auditLog');
+        await logCustomerRemoval(req, customer);
+
+        // Delete the customer
+        await Customer.findByIdAndDelete(customerId);
+
+        res.json({
+            success: true,
+            message: 'Device removed successfully'
+        });
+    } catch (error) {
+        console.error('Device removal error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to remove device'
         });
     }
 });

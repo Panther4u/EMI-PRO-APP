@@ -55,8 +55,10 @@ export default function Login() {
 
                 toast.success(`Welcome ${data.user.name}!`);
 
-                // Use window.location for full page reload to pick up sessionStorage
+                // Redirect based on role
                 setTimeout(() => {
+                    // Both Super Admin and regular Admin go to same dashboard
+                    // Super Admin will see additional controls in Settings
                     window.location.href = '/';
                 }, 500);
             } else {
@@ -136,27 +138,6 @@ export default function Login() {
                         )}
                     </Button>
                 </form>
-
-                {/* Default Credentials Display */}
-                <div className="space-y-3">
-                    <div className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        Default Credentials
-                    </div>
-
-                    <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-3 shadow-sm">
-                        <div className="text-[10px] font-bold text-blue-900 uppercase tracking-wider mb-1">Super Admin</div>
-                        <div className="text-sm font-mono font-semibold text-blue-700">
-                            admin@emilock.com / 1234
-                        </div>
-                    </div>
-
-                    <div className="bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-2xl p-3 shadow-sm">
-                        <div className="text-[10px] font-bold text-green-900 uppercase tracking-wider mb-1">Admin (100 devices)</div>
-                        <div className="text-sm font-mono font-semibold text-green-700">
-                            dealer@emilock.com / 9999
-                        </div>
-                    </div>
-                </div>
 
                 <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-60">
                     Version 2.0 • Build 2402

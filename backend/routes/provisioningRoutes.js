@@ -9,11 +9,12 @@ router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
 
-        // 🎯 TEMPORARY: Using Render hosting until GitHub Release is created
-        // TODO: Switch back to GitHub Releases after uploading APK
+        // 🎯 DYNAMIC: Use current host to support both Local and Production testing
         const protocol = req.protocol;
         const host = req.get('host');
-        const baseUrl = 'https://emi-pro-app.onrender.com';
+        const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.startsWith('192.168.');
+
+        const baseUrl = isLocal ? `${protocol}://${host}` : 'https://emi-pro-app.onrender.com';
 
         // Current APK version
         const apkFileName = 'securefinance-admin-v2.1.2.apk';

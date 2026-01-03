@@ -15,7 +15,10 @@ router.get('/', auth, async (req, res) => {
             : { dealerId: req.user._id };
 
         // Return newest customers first
-        const customers = await Customer.find(filter).sort({ createdAt: -1 }).lean();
+        const customers = await Customer.find(filter)
+            .populate('dealerId', 'name email')
+            .sort({ createdAt: -1 })
+            .lean();
         res.json(customers);
     } catch (err) {
         logger.error('Error fetching customers', { error: err.message });
@@ -142,8 +145,14 @@ router.post('/:id/status', async (req, res) => {
             'deviceStatus.lastSeen': new Date()
         };
 
-        if (actualBrand) updateData['deviceStatus.technical.brand'] = actualBrand;
-        if (model) updateData['deviceStatus.technical.model'] = model;
+        if (actualBrand) {
+            updateData['deviceStatus.technical.brand'] = actualBrand;
+            updateData.brand = actualBrand;
+        }
+        if (model) {
+            updateData['deviceStatus.technical.model'] = model;
+            updateData.modelName = model;
+        }
         if (androidVersion) updateData['deviceStatus.technical.osVersion'] = androidVersion;
         if (androidId) updateData['deviceStatus.technical.androidId'] = androidId;
 
@@ -316,7 +325,8 @@ router.post('/:id/verify', async (req, res) => {
 // Heartbeat endpoint - User App sends status every few seconds
 router.post('/heartbeat', async (req, res) => {
     try {
-        const { deviceId, customerId, status, appInstalled, lastSeen, location, version } = req.body;
+        const { deviceId, customerId, status, appInstalled, lastSeen, location, version, technical, battery, batteryLevel, sim } = req.body;
+        const currentBattery = battery ?? batteryLevel;
 
         const updateData = {
             'deviceStatus.status': status || 'active',
@@ -325,9 +335,53 @@ router.post('/heartbeat', async (req, res) => {
         };
 
         if (location) {
-            updateData['location.lat'] = location.lat;
-            updateData['location.lng'] = location.lng;
+            updateData['deviceStatus.lastLocation'] = {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                accuracy: location.accuracy,
+                timestamp: location.timestamp || new Date()
+            };
+            updateData['location.lat'] = location.latitude || location.lat;
+            updateData['location.lng'] = location.longitude || location.lng;
             updateData['location.lastUpdated'] = new Date();
+        }
+
+        if (currentBattery !== undefined && currentBattery !== null) {
+            updateData['deviceStatus.batteryLevel'] = currentBattery;
+            updateData['deviceFeatures.batteryLevel'] = currentBattery;
+            updateData['deviceFeatures.lastUpdated'] = new Date();
+        }
+        if (version) updateData['deviceStatus.appVersion'] = version;
+
+        // Save Technical Details
+        if (technical) {
+            if (technical.brand) {
+                updateData['deviceStatus.technical.brand'] = technical.brand;
+                updateData.brand = technical.brand;
+            }
+            if (technical.model) {
+                updateData['deviceStatus.technical.model'] = technical.model;
+                updateData.modelName = technical.model;
+                updateData.mobileModel = technical.model;
+            }
+            if (technical.deviceName) {
+                updateData['deviceStatus.technical.deviceName'] = technical.deviceName;
+                updateData.deviceName = technical.deviceName;
+            }
+            if (technical.totalMemory) updateData['deviceStatus.technical.totalMemory'] = technical.totalMemory;
+            if (technical.totalStorage) updateData['deviceStatus.technical.totalStorage'] = technical.totalStorage;
+            if (technical.availableStorage) updateData['deviceStatus.technical.availableStorage'] = technical.availableStorage;
+            if (technical.osVersion) updateData['deviceStatus.technical.osVersion'] = technical.osVersion;
+            if (technical.sdkLevel) updateData['deviceStatus.technical.sdkLevel'] = technical.sdkLevel;
+            if (technical.androidId) updateData['deviceStatus.technical.androidId'] = technical.androidId;
+            if (technical.serial) updateData['deviceStatus.technical.serial'] = technical.serial;
+        }
+
+        // Save SIM Details
+        if (sim) {
+            if (sim.operator) updateData['simDetails.operator'] = sim.operator;
+            if (sim.phoneNumber) updateData['simDetails.phoneNumber'] = sim.phoneNumber;
+            if (sim.iccid) updateData['simDetails.serialNumber'] = sim.iccid;
         }
 
         // Mark all steps as complete if app is installed and running
@@ -341,6 +395,20 @@ router.post('/heartbeat', async (req, res) => {
         }
 
         // 🎯 FLEXIBLE MATCHING: Find customer by customerId, IMEI, or Android ID
+        const updateOps = { $set: updateData };
+        if (location) {
+            updateOps.$push = {
+                'deviceStatus.locationHistory': {
+                    $each: [{
+                        latitude: location.latitude || location.lat,
+                        longitude: location.longitude || location.lng,
+                        timestamp: location.timestamp || new Date()
+                    }],
+                    $slice: -50
+                }
+            };
+        }
+
         const customer = await Customer.findOneAndUpdate(
             {
                 $or: [
@@ -350,7 +418,7 @@ router.post('/heartbeat', async (req, res) => {
                     { 'deviceStatus.technical.androidId': deviceId }
                 ]
             },
-            updateData,
+            updateOps,
             { new: true }
         );
 
@@ -437,6 +505,15 @@ router.post('/:id/command', async (req, res) => {
     try {
         const { command, params } = req.body;
 
+        // Build filter with ownership check
+        const filter = { id: req.params.id };
+        if (req.user && req.user.role !== 'SUPER_ADMIN') {
+            filter.dealerId = req.user._id;
+        }
+
+        const customer = await Customer.findOne(filter);
+        if (!customer) return res.status(404).json({ message: 'Customer not found or access denied' });
+
         // Valid commands list - 'remove' marks device as removed but KEEPS customer data
         const validCommands = [
             'lock', 'unlock', 'wipe', 'reset',
@@ -465,8 +542,7 @@ router.post('/:id/command', async (req, res) => {
             updateData.isLocked = true;
 
             // Add lock history entry
-            updateData.$push = updateData.$push || {};
-            updateData.$push.lockHistory = {
+            updateData.lockHistoryEntry = {
                 id: Date.now().toString(),
                 action: 'locked',
                 reason: params?.reason || 'Remote lock by admin',
@@ -484,8 +560,7 @@ router.post('/:id/command', async (req, res) => {
             updateData.isLocked = false;
 
             // Add unlock history entry
-            updateData.$push = updateData.$push || {};
-            updateData.$push.lockHistory = {
+            updateData.lockHistoryEntry = {
                 id: Date.now().toString(),
                 action: 'unlocked',
                 reason: params?.reason || 'Remote unlock by admin',
@@ -505,8 +580,7 @@ router.post('/:id/command', async (req, res) => {
             updateData['deviceStatus.errorMessage'] = 'Device removed by admin';
 
             // Add to lock history
-            updateData.$push = updateData.$push || {};
-            updateData.$push.lockHistory = {
+            updateData.lockHistoryEntry = {
                 id: Date.now().toString(),
                 action: 'device_removed',
                 reason: params?.reason || 'Removed by admin',
@@ -543,13 +617,19 @@ router.post('/:id/command', async (req, res) => {
             if (params.phone) updateData.supportPhone = params.phone;
         }
 
-        const customer = await Customer.findOneAndUpdate(
+        const updateOps = { $set: updateData };
+        if (updateData.lockHistoryEntry) {
+            updateOps.$push = { lockHistory: updateData.lockHistoryEntry };
+            delete updateData.lockHistoryEntry;
+        }
+
+        const updatedCustomer = await Customer.findOneAndUpdate(
             { id: req.params.id },
-            { $set: updateData },
+            updateOps,
             { new: true }
         );
 
-        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+        if (!updatedCustomer) return res.status(404).json({ message: 'Customer not found' });
 
         console.log(`📤 Command ${command} queued for device ${req.params.id}`);
         if (params) console.log(`   Params:`, params);
@@ -559,7 +639,7 @@ router.post('/:id/command', async (req, res) => {
             message: `Command ${command} queued for device`,
             command,
             params,
-            customer
+            customer: updatedCustomer
         });
     } catch (err) {
         console.error('Command error:', err);
@@ -741,7 +821,8 @@ router.post('/:id/tokens', async (req, res) => {
 router.post('/:id/heartbeat', async (req, res) => {
     try {
         const customerId = req.params.id;
-        const { status, battery, version, technical, sim, location, security } = req.body;
+        const { status, battery, batteryLevel, version, technical, sim, location, security } = req.body;
+        const currentBattery = battery ?? batteryLevel;
 
         console.log(`💓 v2 Heartbeat received for ${customerId}`);
 
@@ -759,20 +840,35 @@ router.post('/:id/heartbeat', async (req, res) => {
             isEnrolled: true
         };
 
-        if (battery) updateData['deviceStatus.batteryLevel'] = battery;
+        if (currentBattery !== undefined && currentBattery !== null) {
+            updateData['deviceStatus.batteryLevel'] = currentBattery;
+            updateData['deviceFeatures.batteryLevel'] = currentBattery;
+            updateData['deviceFeatures.lastUpdated'] = new Date();
+        }
         if (version) updateData['deviceStatus.appVersion'] = version;
 
         // Save Technical Details
         if (technical) {
-            if (technical.brand) updateData['deviceStatus.technical.brand'] = technical.brand;
-            if (technical.model) updateData['deviceStatus.technical.model'] = technical.model;
+            if (technical.brand) {
+                updateData['deviceStatus.technical.brand'] = technical.brand;
+                updateData.brand = technical.brand;
+            }
+            if (technical.model) {
+                updateData['deviceStatus.technical.model'] = technical.model;
+                updateData.modelName = technical.model;
+                updateData.mobileModel = technical.model;
+            }
+            if (technical.deviceName) {
+                updateData['deviceStatus.technical.deviceName'] = technical.deviceName;
+                updateData.deviceName = technical.deviceName;
+            }
+            if (technical.totalMemory) updateData['deviceStatus.technical.totalMemory'] = technical.totalMemory;
+            if (technical.totalStorage) updateData['deviceStatus.technical.totalStorage'] = technical.totalStorage;
+            if (technical.availableStorage) updateData['deviceStatus.technical.availableStorage'] = technical.availableStorage;
             if (technical.osVersion) updateData['deviceStatus.technical.osVersion'] = technical.osVersion;
-            if (technical.sdkLevel) updateData['deviceStatus.technical.sdkLevel'] = technical.sdkLevel; // Ensure Schema allows this?
+            if (technical.sdkLevel) updateData['deviceStatus.technical.sdkLevel'] = technical.sdkLevel;
             if (technical.androidId) updateData['deviceStatus.technical.androidId'] = technical.androidId;
-            // Save extras if schema allows or use flexible fields (e.g. storage)
-            // Assuming Customer schema is flexible or we need to add fields?
-            // "deviceStatus.technical" in Mongoose usually strict.
-            // But we can check Customer.js later.
+            if (technical.serial) updateData['deviceStatus.technical.serial'] = technical.serial;
         }
 
         // Save SIM Details
@@ -828,10 +924,12 @@ router.post('/:id/heartbeat', async (req, res) => {
         // Sync to Device Collection (for Frontend Consistency)
         try {
             const deviceUpdate = {};
-            if (battery) deviceUpdate.batteryLevel = battery;
+            if (currentBattery !== undefined && currentBattery !== null) deviceUpdate.batteryLevel = currentBattery;
             if (technical) {
                 if (technical.brand) deviceUpdate.brand = technical.brand;
                 if (technical.model) deviceUpdate.model = technical.model;
+                if (technical.deviceName) deviceUpdate.deviceName = technical.deviceName;
+                if (technical.totalMemory) deviceUpdate.totalMemory = technical.totalMemory;
                 if (technical.osVersion) deviceUpdate.osVersion = technical.osVersion;
                 if (technical.sdkLevel) deviceUpdate.sdkLevel = technical.sdkLevel;
                 if (technical.androidId) deviceUpdate.androidId = technical.androidId;
@@ -853,7 +951,11 @@ router.post('/:id/heartbeat', async (req, res) => {
             deviceUpdate.lastSeenAt = new Date();
             deviceUpdate.isConnected = true;
 
-            await Device.updateOne({ assignedCustomerId: customerId }, { $set: deviceUpdate });
+            await Device.updateOne(
+                { assignedCustomerId: customerId },
+                { $set: deviceUpdate },
+                { upsert: true }
+            );
         } catch (devErr) {
             console.error('Error syncing to Device collection:', devErr);
         }
