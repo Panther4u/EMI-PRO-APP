@@ -65,16 +65,6 @@ router.get('/payload/:customerId', (req, res) => {
             }
         };
 
-        // Add Wi-Fi configuration if provided
-        if (wifiSsid) {
-            payload["android.app.extra.PROVISIONING_WIFI_SSID"] = wifiSsid;
-            if (wifiPassword) {
-                payload["android.app.extra.PROVISIONING_WIFI_PASSWORD"] = wifiPassword;
-            }
-            // Default to WPA if not specified, but usually it's inferred or defaults
-            // payload["android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE"] = wifiSecurityType || "WPA"; 
-        }
-
         res.json(payload);
 
     } catch (err) {
