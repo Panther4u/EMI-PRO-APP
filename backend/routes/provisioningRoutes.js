@@ -15,13 +15,13 @@ router.get('/payload/:customerId', (req, res) => {
         const host = req.get('host');
         const baseUrl = 'https://emi-pro-app.onrender.com';
 
-        // For now, serve from Render (need to restore APK file)
-        const apkFileName = 'securefinance-admin-v2.0.4.apk';
+        // Current APK version
+        const apkFileName = 'securefinance-admin-v2.1.2.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
         // Calculate checksum from local file OR use Verified Hardcoded Fallback
-        // Verified for Admin v2.0.4 (rebuilt with <queries> fix)
-        const VERIFIED_CHECKSUM = '4khxUxKimRao-T099IigN3y3C0YTmOCbZ73PH3bOoaY';
+        // Verified for Admin v2.1.2
+        const VERIFIED_CHECKSUM = 'ztPXvzLJAngCzPrdPOluGzjdmwCMivdOq8ztei8eRng';
 
         // Prefer dynamic if file exists, but fallback to verified if fails
         let checksum = VERIFIED_CHECKSUM;
