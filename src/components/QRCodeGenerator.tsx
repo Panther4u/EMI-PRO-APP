@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import {
   QrCode, Download, Copy, CheckCircle, CreditCard,
   ChevronDown, Check, ChevronsUpDown, User, Phone, FileText, MapPin, IndianRupee, Calendar,
-  Loader2, RefreshCw
+  Loader2, RefreshCw, Wifi
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -112,6 +113,8 @@ interface QRFormData {
   totalAmount: string;
   emiAmount: string;
   totalEmis: string;
+  wifiSsid?: string;
+  wifiPassword?: string;
 }
 
 interface InputFieldProps {
@@ -180,6 +183,8 @@ export const QRCodeGenerator = () => {
     totalAmount: '',
     emiAmount: '',
     totalEmis: '',
+    wifiSsid: '',
+    wifiPassword: ''
   });
   const [qrGenerated, setQrGenerated] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -282,7 +287,12 @@ export const QRCodeGenerator = () => {
           totalAmount: formData.totalAmount,
           emiAmount: formData.emiAmount,
           totalEmis: formData.totalEmis,
-        }
+        },
+        API_BASE_URL,
+        formData.wifiSsid ? {
+          ssid: formData.wifiSsid,
+          password: formData.wifiPassword || ''
+        } : undefined
       );
       setQrData(data);
     } catch (error) {
@@ -401,6 +411,37 @@ export const QRCodeGenerator = () => {
         </div>
       </div>
 
+      <div className="glass-card p-6">
+        <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
+          <Wifi className="w-5 h-5 text-primary" />
+          Wi-Fi Configuration (Optional)
+        </h2>
+        <div className="grid grid-cols-1 gap-4">
+          <InputField
+            label="Wi-Fi SSID (Network Name)"
+            field="wifiSsid"
+            value={formData.wifiSsid || ''}
+            onChange={handleInputChange}
+            placeholder="e.g. Office_WiFi"
+            id="wifiSsid"
+            icon={Wifi}
+          />
+          <InputField
+            label="Wi-Fi Password"
+            field="wifiPassword"
+            value={formData.wifiPassword || ''}
+            onChange={handleInputChange}
+            placeholder="Enter password"
+            id="wifiPassword"
+            type="text"
+            icon={Wifi}
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            Providing Wi-Fi details allows the device to connect automatically during the factory reset provisioning process.
+          </p>
+        </div>
+      </div>
+
       {/* EMI Details */}
       <div className="glass-card p-6">
         <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
@@ -478,8 +519,8 @@ export const QRCodeGenerator = () => {
                 ) : qrData ? (
                   <QRCodeSVG
                     value={qrData}
-                    size={200}
-                    level="H"
+                    size={240}
+                    level="M"
                     includeMargin={true}
                     className="rounded-lg"
                   />

@@ -28,6 +28,24 @@ import { TooltipProvider } from './components/ui/tooltip';
 
 const queryClient = new QueryClient();
 
+// Add ScrollToTop component
+const ScrollToTop = () => {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        // Scroll window to top
+        window.scrollTo(0, 0);
+
+        // Also find any internal scrollable containers (like our dashboard/admins pages)
+        const scrollableDiv = document.getElementById('scrollableDiv');
+        if (scrollableDiv) {
+            scrollableDiv.scrollTo(0, 0);
+        }
+    }, [pathname]);
+
+    return null;
+};
+
 // --- Components for Layout ---
 
 const BottomNav = () => {
@@ -92,6 +110,7 @@ export default function App() {
                 <DeviceProvider>
                     <TooltipProvider>
                         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                            <ScrollToTop />
                             <AppLayout>
                                 <Routes>
                                     <Route path="/login" element={<Login />} />

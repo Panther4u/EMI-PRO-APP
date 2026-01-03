@@ -13,6 +13,16 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 import { getApiUrl } from '@/config/api';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 
 export default function CustomerDetails() {
@@ -26,6 +36,9 @@ export default function CustomerDetails() {
     const [qrData, setQrData] = useState<string>('');
     const [apkName, setApkName] = useState<string>('securefinance-admin-v2.0.5.apk'); // Default fallback
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showWipeDialog, setShowWipeDialog] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [editForm, setEditForm] = useState({
         name: '',
         phoneNo: '',
@@ -112,13 +125,16 @@ export default function CustomerDetails() {
     };
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to remove this device permanently?')) return;
         try {
+            setDeleteLoading(true);
             await deleteCustomer(id!);
-            toast.success('Device removed');
+            toast.success('Device removed successfully');
             navigate('/customers');
         } catch (e) {
-            toast.error('Delete failed');
+            toast.error('Failed to remove device');
+            setShowDeleteDialog(false);
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -290,11 +306,7 @@ export default function CustomerDetails() {
 
                                 <Button
                                     variant="outline"
-                                    onClick={() => {
-                                        if (confirm("Are you sure you want to FACTORY RESET this device? This cannot be undone.")) {
-                                            sendRemoteCommand(customer.id, 'wipe');
-                                        }
-                                    }}
+                                    onClick={() => setShowWipeDialog(true)}
                                     className="h-32 flex flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-slate-100 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-700 text-slate-600 font-bold transition-all shadow-sm hover:shadow-md group"
                                 >
                                     <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
@@ -338,7 +350,7 @@ export default function CustomerDetails() {
                         </div>
 
                         {/* Provisioning Progress */}
-                        <div className="bg-white rounded-[28px] p-6 border border-slate-100 shadow-sm space-y-4">
+                        <div className="bg-white rounded-[28px] p-6 border border-slate-100 shadow-sm space-y-4 mt-4">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Setup Progress</h3>
                                 <span className="text-xs font-bold text-primary">{completedSteps}/{totalSteps} Steps</span>
@@ -353,7 +365,7 @@ export default function CustomerDetails() {
                             </div>
 
                             {/* Steps List */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 mt-4">
                                 {provisioningSteps.map((step, index) => (
                                     <div key={step.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
                                         {step.completed ? (
@@ -556,7 +568,7 @@ export default function CustomerDetails() {
                         )}
 
                         {/* Last Seen */}
-                        <div className="bg-white rounded-[28px] p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div className="bg-white rounded-[28px] mt-4 p-5 border border-slate-100 shadow-sm flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Clock className="w-5 h-5 text-slate-400" />
                                 <div>
@@ -636,16 +648,16 @@ export default function CustomerDetails() {
                                 });
                                 setShowEditModal(true);
                             }}
-                            className="w-full h-12 rounded-xl border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold"
+                            className="w-full h-12 rounded-xl mt-4 border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold"
                         >
-                            <Edit className="w-4 h-4 mr-2" /> Edit Customer Details
+                            <Edit className="w-4 h-4 mr-2 " /> Edit Customer Details
                         </Button>
 
                         {/* QR Code Button */}
                         <Button
                             variant="outline"
                             onClick={() => setShowQRModal(true)}
-                            className="w-full h-12 rounded-xl border-2 border-dashed"
+                            className="w-full h-12 mt-4 rounded-xl border-2 border-dashed"
                         >
                             <QrCode className="w-4 h-4 mr-2" /> View Setup QR Code
                         </Button>
@@ -653,14 +665,76 @@ export default function CustomerDetails() {
                         {/* Danger Zone */}
                         <Button
                             variant="ghost"
-                            onClick={handleDelete}
-                            className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 h-12 rounded-xl"
+                            onClick={() => setShowDeleteDialog(true)}
+                            className="w-full text-red-500 mt-4 hover:text-red-600 hover:bg-red-50 h-10 rounded-xl text-xs font-bold"
                         >
-                            <Trash2 className="w-4 h-4 mr-2" /> Delete Device
+                            <Trash2 className="w-3.5 h-3.5 mr-2" /> Unregister & Delete Device
                         </Button>
                     </>
                 </PullToRefresh>
             </div>
+
+            {/* Premium Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent className="w-[90%] max-w-sm rounded-[40px] p-8 border-none shadow-2xl animate-in zoom-in-95 duration-200">
+                    <AlertDialogHeader className="flex flex-col items-center text-center space-y-4">
+                        <div className="w-16 h-16 rounded-3xl bg-rose-50 flex items-center justify-center text-rose-600 shadow-inner">
+                            <Trash2 className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <AlertDialogTitle className="text-xl font-black text-slate-900 leading-tight">Destroy Record?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-xs font-medium text-slate-400">
+                                This will permanently remove <span className="text-rose-600 font-bold">{customer.name}</span>'s deployment. This action is irreversible.
+                            </AlertDialogDescription>
+                        </div>
+                    </AlertDialogHeader>
+
+                    <div className="flex flex-col gap-3 mt-6">
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            disabled={deleteLoading}
+                            className="w-full h-14 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-rose-200 active:scale-95 transition-all"
+                        >
+                            {deleteLoading ? 'Processing...' : 'Confirm Deletion'}
+                        </AlertDialogAction>
+                        <AlertDialogCancel className="w-full h-12 rounded-xl border-none text-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-50">
+                            Keep Device
+                        </AlertDialogCancel>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Premium Wipe Confirmation Dialog */}
+            <AlertDialog open={showWipeDialog} onOpenChange={setShowWipeDialog}>
+                <AlertDialogContent className="w-[90%] max-w-sm rounded-[40px] p-8 border-none shadow-2xl animate-in zoom-in-95 duration-200">
+                    <AlertDialogHeader className="flex flex-col items-center text-center space-y-4">
+                        <div className="w-16 h-16 rounded-3xl bg-orange-50 flex items-center justify-center text-orange-600 shadow-inner">
+                            <RotateCcw className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <AlertDialogTitle className="text-xl font-black text-slate-900 leading-tight">Wipe Hardware?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-xs font-medium text-slate-400">
+                                This will perform a total factory reset on <span className="text-orange-600 font-bold">{customer.name}</span>'s device. All data will be lost.
+                            </AlertDialogDescription>
+                        </div>
+                    </AlertDialogHeader>
+
+                    <div className="flex flex-col gap-3 mt-6">
+                        <AlertDialogAction
+                            onClick={() => {
+                                sendRemoteCommand(customer.id, 'wipe');
+                                setShowWipeDialog(false);
+                            }}
+                            className="w-full h-14 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-200 active:scale-95 transition-all"
+                        >
+                            Execute Wipe
+                        </AlertDialogAction>
+                        <AlertDialogCancel className="w-full h-12 rounded-xl border-none text-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-50">
+                            Abort Reset
+                        </AlertDialogCancel>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Edit Modal */}
             {showEditModal && (
@@ -770,8 +844,9 @@ export default function CustomerDetails() {
                             {qrData ? (
                                 <QRCodeSVG
                                     value={qrData}
-                                    size={200}
-                                    level="H"
+                                    size={240}
+                                    level="M"
+                                    includeMargin={true}
                                 />
                             ) : (
                                 <div className="w-[200px] h-[200px] flex items-center justify-center">

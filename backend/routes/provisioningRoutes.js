@@ -8,13 +8,17 @@ const { getApkChecksum } = require('../utils/checksum');
 router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
+        const { wifiSsid, wifiPassword, wifiSecurityType } = req.query; // Get wifi details
 
         // 🎯 DYNAMIC: Use current host to support both Local and Production testing
+        // CRITICAL: Localhost/127.0.0.1 in a QR code CANNOT be scanned by a real device.
+        // We only use the local IP if it's a network IP (e.g., 192.168...).
         const protocol = req.protocol;
         const host = req.get('host');
-        const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.startsWith('192.168.');
+        const isNetworkIp = host.startsWith('192.168.') || host.startsWith('10.');
 
-        const baseUrl = isLocal ? `${protocol}://${host}` : 'https://emi-pro-app.onrender.com';
+        // If running on localhost, fallback to Render URL so the device can actually download the APK
+        const baseUrl = isNetworkIp ? `${protocol}://${host}` : 'https://emi-pro-app.onrender.com';
 
         // Current APK version (USER FLAVOR for Customers)
         const apkFileName = 'securefinance-user.apk';
@@ -60,6 +64,16 @@ router.get('/payload/:customerId', (req, res) => {
                 "serverUrl": baseUrl
             }
         };
+
+        // Add Wi-Fi configuration if provided
+        if (wifiSsid) {
+            payload["android.app.extra.PROVISIONING_WIFI_SSID"] = wifiSsid;
+            if (wifiPassword) {
+                payload["android.app.extra.PROVISIONING_WIFI_PASSWORD"] = wifiPassword;
+            }
+            // Default to WPA if not specified, but usually it's inferred or defaults
+            // payload["android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE"] = wifiSecurityType || "WPA"; 
+        }
 
         res.json(payload);
 

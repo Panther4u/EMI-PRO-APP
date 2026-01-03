@@ -83,7 +83,7 @@ export default function Customers() {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24" id="scrollableDiv">
+            <div className="flex-1 overflow-y-auto px-6 pt-4 space-y-3 pb-24 no-scrollbar" id="scrollableDiv">
                 <PullToRefresh onRefresh={async () => refreshCustomers?.()}>
                     <>
                         {filtered.length === 0 ? (

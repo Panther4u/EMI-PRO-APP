@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import {
     Dialog,
     DialogContent,
@@ -218,108 +219,140 @@ const AdminDevicesDialog = ({ admin, open, onOpenChange }: AdminDevicesDialogPro
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <Smartphone className="h-5 w-5" />
-                            {admin?.name}'s Devices
-                        </DialogTitle>
-                        <DialogDescription>
-                            {admin?.email} • Device Limit: {admin?.deviceLimit} • Current: {devices.length}
-                        </DialogDescription>
-                    </DialogHeader>
+                <DialogContent className="w-[95%] max-w-xl p-0 overflow-hidden border-none rounded-[40px] shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+                    {/* Premium Header */}
+                    <div className="bg-slate-900 px-6 pt-8 pb-10 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-12 translate-x-12"></div>
 
-                    {loading ? (
-                        <div className="flex items-center justify-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <div className="relative z-10 space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                    <Smartphone className="w-6 h-6 text-indigo-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-xl font-black tracking-tight">{admin?.name}'s Fleet</h2>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-80">{admin?.email}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-3 border border-white/5">
+                                    <p className="text-[8px] font-black uppercase text-slate-400">Total</p>
+                                    <p className="text-lg font-black">{devices.length}</p>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-3 border border-white/5">
+                                    <p className="text-[8px] font-black uppercase text-slate-400">Active</p>
+                                    <p className="text-lg font-black text-emerald-400">{devices.filter(d => !d.isLocked).length}</p>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-3 border border-white/5">
+                                    <p className="text-[8px] font-black uppercase text-slate-400">Locked</p>
+                                    <p className="text-lg font-black text-rose-400">{devices.filter(d => d.isLocked).length}</p>
+                                </div>
+                            </div>
                         </div>
-                    ) : devices.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <Smartphone className="h-12 w-12 text-slate-300 mb-3" />
-                            <p className="text-slate-600 font-medium">No devices found</p>
-                            <p className="text-slate-400 text-sm">This admin hasn't added any devices yet</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Customer</TableHead>
-                                        <TableHead>IMEI</TableHead>
-                                        <TableHead>Phone</TableHead>
-                                        <TableHead>Model</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Lock</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {devices.map((device) => (
-                                        <TableRow key={device._id}>
-                                            <TableCell className="font-medium">{device.customerName}</TableCell>
-                                            <TableCell className="font-mono text-xs">{device.imei1}</TableCell>
-                                            <TableCell>{device.phoneNumber}</TableCell>
-                                            <TableCell className="text-xs">{device.deviceModel || 'Unknown'}</TableCell>
-                                            <TableCell>
-                                                <span className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusColor(device.deviceStatus?.status)}`}>
-                                                    {device.deviceStatus?.status || 'Unknown'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                {device.isLocked ? (
-                                                    <span className="flex items-center gap-1 text-red-600 text-xs">
-                                                        <Lock className="h-3 w-3" />
-                                                        Locked
-                                                    </span>
-                                                ) : (
-                                                    <span className="flex items-center gap-1 text-green-600 text-xs">
-                                                        <Unlock className="h-3 w-3" />
-                                                        Unlocked
-                                                    </span>
+                    </div>
+
+                    <div className="p-6 bg-slate-50 min-h-[400px] max-h-[60vh] overflow-y-auto no-scrollbar -mt-6 rounded-t-[40px] relative z-20">
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                                <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Scanning Network...</p>
+                            </div>
+                        ) : devices.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                                <div className="w-20 h-20 bg-white rounded-[32px] flex items-center justify-center shadow-sm border border-slate-100">
+                                    <AlertCircle className="w-10 h-10 text-slate-200" />
+                                </div>
+                                <div>
+                                    <p className="text-base font-black text-slate-900">No active deployments</p>
+                                    <p className="text-xs font-medium text-slate-400 mt-1 px-10">This dealer hasn't provisioned any hardware yet.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {devices.map((device) => (
+                                    <div key={device._id} className="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm space-y-4 relative overflow-hidden group active:scale-[0.98] transition-all">
+                                        {/* Status Bar */}
+                                        <div className={cn(
+                                            "absolute top-0 left-0 w-full h-1",
+                                            device.isLocked ? "bg-rose-500" : "bg-emerald-500"
+                                        )} />
+
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <h4 className="text-base font-black text-slate-900 tracking-tight">{device.customerName}</h4>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{device.deviceModel || 'Unidentified Model'}</p>
+                                            </div>
+                                            <div className={cn(
+                                                "px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm border",
+                                                device.isLocked
+                                                    ? "bg-rose-50 text-rose-600 border-rose-100"
+                                                    : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                                            )}>
+                                                {device.isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                                                {device.isLocked ? 'Locked' : 'Active'}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 pb-1">
+                                            <div>
+                                                <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">IMEI Signature</p>
+                                                <p className="text-[11px] font-mono font-bold text-slate-600">{device.imei1}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">Connectivity</p>
+                                                <p className="text-[11px] font-bold text-slate-600 truncate">{device.phoneNumber || 'No SIM detected'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 border-t border-slate-50 flex items-center gap-2">
+                                            <Button
+                                                onClick={() => handleLockToggle(device)}
+                                                disabled={actionLoading}
+                                                className={cn(
+                                                    "flex-1 h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all",
+                                                    device.isLocked
+                                                        ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-50"
+                                                        : "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-50"
                                                 )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0"
-                                                        onClick={() => handleLockToggle(device)}
-                                                        disabled={actionLoading}
-                                                    >
-                                                        {device.isLocked ? (
-                                                            <Unlock className="h-4 w-4 text-green-600" />
-                                                        ) : (
-                                                            <Lock className="h-4 w-4 text-orange-600" />
-                                                        )}
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0"
-                                                        onClick={() => {
-                                                            setSelectedDevice(device);
-                                                            setDeleteDialogOpen(true);
-                                                        }}
-                                                        disabled={actionLoading}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-red-600" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
+                                            >
+                                                {device.isLocked ? (
+                                                    <><Unlock className="w-4 h-4 mr-2" /> Restore Access</>
+                                                ) : (
+                                                    <><Lock className="w-4 h-4 mr-2" /> Command Lock</>
+                                                )}
+                                            </Button>
 
-                    <div className="flex items-center justify-between pt-4 border-t">
-                        <div className="text-sm text-slate-600">
-                            {devices.length} of {admin?.deviceLimit} devices used
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                className="h-12 w-12 rounded-2xl bg-slate-100/50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                                                onClick={() => {
+                                                    setSelectedDevice(device);
+                                                    setDeleteDialogOpen(true);
+                                                }}
+                                                disabled={actionLoading}
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-white px-6 py-5 border-t border-slate-100 flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Fleet Usage</span>
+                            <span className="text-xs font-bold text-slate-900">{devices.length} / {admin?.deviceLimit ?? '0'} Slots</span>
                         </div>
-                        <Button variant="outline" onClick={() => onOpenChange(false)}>
-                            Close
+                        <Button
+                            variant="ghost"
+                            onClick={() => onOpenChange(false)}
+                            className="h-11 rounded-xl text-slate-400 font-black text-xs uppercase tracking-widest"
+                        >
+                            Finalize Sync
                         </Button>
                     </div>
                 </DialogContent>

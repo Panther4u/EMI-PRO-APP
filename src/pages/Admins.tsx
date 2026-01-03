@@ -14,7 +14,8 @@ import {
     Search,
     Camera,
     Trash2,
-    Plus
+    Plus,
+    Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -345,24 +346,24 @@ export default function Admins() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-24 no-scrollbar" id="scrollableDiv">
                 <PullToRefresh onRefresh={async () => fetchAdmins()}>
                     <div className="space-y-6">
-                        {/* Stats Summary */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col justify-between">
-                                <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mb-4">
-                                    <Users className="w-5 h-5" />
+                        {/* Stats Summary Units - Uniform Squares */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center h-40 w-full">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mb-3">
+                                    <Users className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-[32px] font-black text-slate-900 tracking-tighter leading-none">{admins.length}</p>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Dealers</p>
+                                    <p className="text-3xl font-black text-slate-900 tracking-tighter leading-none">{admins.length}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Total Dealers</p>
                                 </div>
                             </div>
-                            <div className="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col justify-between">
-                                <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-4">
-                                    <CheckCircle className="w-5 h-5" />
+                            <div className="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center h-40 w-full">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-3">
+                                    <CheckCircle className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-[32px] font-black text-slate-900 tracking-tighter leading-none">{admins.filter(a => a.isActive).length}</p>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Active Now</p>
+                                    <p className="text-3xl font-black text-slate-900 tracking-tighter leading-none">{admins.filter(a => a.isActive).length}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Active Now</p>
                                 </div>
                             </div>
                         </div>
@@ -484,19 +485,19 @@ export default function Admins() {
                             </Dialog>
                         </div>
 
-                        {/* Admins Card Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Admins Card Grid - Single Column Compact Layout */}
+                        <div className="grid grid-cols-1 gap-4">
                             {filteredAdmins.map((admin) => (
-                                <div key={admin._id} className="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden active:scale-[0.99]">
+                                <div key={admin._id} className="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden active:scale-[0.99] flex flex-col h-[250px]">
                                     {/* Status Glow Indicator */}
                                     <div className={cn(
-                                        "absolute top-0 left-0 w-1 h-full",
-                                        admin.isActive ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                                        "absolute top-0 left-0 w-full h-1",
+                                        admin.isActive ? "bg-emerald-500" : "bg-red-500"
                                     )} />
 
-                                    <div className="flex items-start justify-between mb-5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 bg-slate-100 rounded-[20px] flex items-center justify-center text-slate-900 font-black text-xl border border-slate-50 shadow-inner overflow-hidden">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-slate-100 rounded-[16px] flex items-center justify-center text-slate-900 font-black text-lg border border-slate-50 shadow-inner overflow-hidden">
                                                 {admin.profilePhoto ? (
                                                     <img src={admin.profilePhoto} alt={admin.name} className="w-full h-full object-cover" />
                                                 ) : (
@@ -504,61 +505,46 @@ export default function Admins() {
                                                 )}
                                             </div>
                                             <div className="flex flex-col">
-                                                <h4 className="font-extrabold text-slate-900 leading-tight">{admin.name}</h4>
+                                                <h4 className="font-extrabold text-slate-900 leading-tight text-base">{admin.name}</h4>
                                                 <p className="text-[11px] font-bold text-slate-400 mt-0.5 tracking-tight uppercase">
                                                     {admin.role.replace('_', ' ')}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className={cn(
-                                            "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm border",
+                                            "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm border",
                                             admin.isActive
                                                 ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                                                 : "bg-red-50 text-red-600 border-red-100"
                                         )}>
-                                            {admin.isActive ? (
-                                                <CheckCircle className="h-3 w-3" />
-                                            ) : (
-                                                <XCircle className="h-3 w-3" />
-                                            )}
                                             {admin.isActive ? 'Active' : 'Inactive'}
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 mb-6 pt-1 border-t border-slate-50 mt-4">
-                                        <div className="flex flex-col gap-1">
-                                            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Connect ID</p>
-                                            <p className="text-xs font-bold text-slate-600 truncate">{admin.email}</p>
-                                        </div>
-
+                                    <div className="flex-1 space-y-4 pt-4 border-t border-slate-50 overflow-hidden">
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1">
-                                                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Max Units</p>
+                                            <div className="flex flex-col gap-1">
+                                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Connect ID</p>
+                                                <p className="text-xs font-extrabold text-slate-600 truncate">{admin.email}</p>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Max Units</p>
                                                 <p className="text-sm font-black text-slate-900">
                                                     {admin.role === 'SUPER_ADMIN' ? 'Unlimited' : admin.deviceLimit}
-                                                </p>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Health</p>
-                                                <p className={cn(
-                                                    "text-[10px] font-black px-2 py-0.5 rounded-md inline-block",
-                                                    admin.isActive ? "text-emerald-500 bg-emerald-50" : "text-slate-400 bg-slate-100"
-                                                )}>
-                                                    {admin.isActive ? 'OPERATIONAL' : 'SUSPENDED'}
                                                 </p>
                                             </div>
                                         </div>
 
                                         {admin.deviceUsage && (
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 <div className="flex justify-between items-center text-[10px] font-black">
                                                     <span className="text-slate-400 uppercase tracking-widest">Enrollment Load</span>
-                                                    <span className="text-slate-600">{admin.deviceUsage.current} / {admin.deviceUsage.limit} units</span>
+                                                    <span className="text-slate-600">{admin.deviceUsage.percentage}%</span>
                                                 </div>
-                                                <div className="w-full bg-slate-50 h-2.5 rounded-full shadow-inner p-0.5 overflow-hidden">
+                                                <div className="w-full bg-slate-50 h-1.5 rounded-full shadow-inner overflow-hidden">
                                                     <div
                                                         className={cn(
-                                                            "h-full rounded-full transition-all duration-700 shadow-sm",
+                                                            "h-full rounded-full transition-all duration-700",
                                                             parseFloat(admin.deviceUsage.percentage) > 90 ? "bg-red-500" :
                                                                 parseFloat(admin.deviceUsage.percentage) > 70 ? "bg-orange-500" :
                                                                     "bg-blue-600"
@@ -566,61 +552,46 @@ export default function Admins() {
                                                         style={{ width: `${admin.deviceUsage.percentage}%` }}
                                                     />
                                                 </div>
-                                                <div className="flex justify-end">
-                                                    <span className={cn(
-                                                        "text-[10px] font-black",
-                                                        parseFloat(admin.deviceUsage.percentage) > 90 ? "text-red-500" : "text-blue-600"
-                                                    )}>
-                                                        {admin.deviceUsage.percentage}% Load
-                                                    </span>
-                                                </div>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="pt-4 border-t border-slate-50 flex items-center justify-between gap-2">
+                                    <div className="pt-3 border-t border-slate-50 flex items-center gap-2">
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="flex-1 h-11 text-[11px] font-black uppercase tracking-wider gap-2 hover:bg-slate-50 border-slate-100 rounded-xl"
+                                            className="flex-[2] h-10 text-[11px] font-black uppercase tracking-wider gap-2 hover:bg-slate-50 border-slate-100 rounded-xl"
                                             onClick={() => {
                                                 setSelectedAdmin(admin);
                                                 setDevicesDialogOpen(true);
                                             }}
                                         >
-                                            <Eye className="w-4 h-4 text-blue-600" />
+                                            <Eye className="w-3.5 h-3.5 text-blue-600" />
                                             Fleet Sync
                                         </Button>
-
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                className="w-11 h-11 p-0 rounded-xl bg-slate-50 hover:bg-slate-100 border-none group-hover:scale-105 transition-transform"
-                                                onClick={() => {
-                                                    setSelectedAdmin(admin);
-                                                    setEditDeviceLimit(admin.deviceLimit.toString());
-                                                    setEditDialogOpen(true);
-                                                }}
-                                                title="Edit License"
-                                            >
-                                                <Edit className="w-4 h-4 text-slate-500" />
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                className={cn(
-                                                    "w-11 h-11 p-0 rounded-xl border-none transition-all hover:scale-105 active:scale-95 shadow-sm",
-                                                    admin.isActive
-                                                        ? "bg-red-50 hover:bg-red-100 text-red-500"
-                                                        : "bg-emerald-50 hover:bg-emerald-100 text-emerald-500"
-                                                )}
-                                                onClick={() => handleToggleActive(admin)}
-                                                title={admin.isActive ? 'Deactivate Access' : 'Restore Access'}
-                                            >
-                                                <Power className="w-4 h-4" />
-                                            </Button>
-                                        </div>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center shrink-0"
+                                            onClick={() => {
+                                                setSelectedAdmin(admin);
+                                                setEditDeviceLimit(admin.deviceLimit.toString());
+                                                setEditDialogOpen(true);
+                                            }}
+                                        >
+                                            <Edit className="w-3.5 h-3.5 text-slate-500" />
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className={cn(
+                                                "h-10 w-10 p-0 rounded-xl flex items-center justify-center shrink-0 transition-all",
+                                                admin.isActive ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-500"
+                                            )}
+                                            onClick={() => handleToggleActive(admin)}
+                                        >
+                                            <Power className="w-3.5 h-3.5" />
+                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -629,41 +600,65 @@ export default function Admins() {
                 </PullToRefresh>
             </div>
 
-            {/* Edit Device Limit Dialog */}
+            {/* Edit Device Limit Dialog - Premium Redesign */}
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Edit Device Limit</DialogTitle>
-                        <DialogDescription>
-                            Update device limit for {selectedAdmin?.name}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="editLimit">Device Limit</Label>
-                            <Input
-                                id="editLimit"
-                                type="number"
-                                min="0"
-                                value={editDeviceLimit}
-                                onChange={(e) => setEditDeviceLimit(e.target.value)}
-                            />
+                <DialogContent className="w-[95%] max-w-sm rounded-[40px] p-8 border-none shadow-2xl animate-in zoom-in-95 duration-200">
+                    <DialogHeader className="flex flex-col items-center text-center space-y-4">
+                        <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+                            <Shield className="w-8 h-8" />
                         </div>
-                        <Button onClick={handleUpdateDeviceLimit} className="w-full h-12 rounded-xl font-black bg-slate-900" disabled={loading}>
-                            {loading ? 'Updating...' : 'Update License Limit'}
-                        </Button>
+                        <div className="space-y-1">
+                            <DialogTitle className="text-xl font-black text-slate-900 leading-tight">License Control</DialogTitle>
+                            <DialogDescription className="text-xs font-medium text-slate-400">
+                                Adjust quota for <span className="text-indigo-600 font-bold">{selectedAdmin?.name}</span>
+                            </DialogDescription>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="space-y-6 mt-4">
+                        <div className="space-y-3">
+                            <Label htmlFor="editLimit" className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Device Limit Quota</Label>
+                            <div className="relative">
+                                <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                                <Input
+                                    id="editLimit"
+                                    type="number"
+                                    min="0"
+                                    value={editDeviceLimit}
+                                    onChange={(e) => setEditDeviceLimit(e.target.value)}
+                                    className="h-14 pl-12 bg-slate-50 border-0 rounded-2xl font-black text-lg focus-visible:ring-indigo-500/20 shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <Button
+                                onClick={handleUpdateDeviceLimit}
+                                className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-slate-900 border-none shadow-lg shadow-slate-200 active:scale-95 transition-all"
+                                disabled={loading}
+                            >
+                                {loading ? 'Processing...' : 'Deploy Update'}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setEditDialogOpen(false)}
+                                className="w-full h-12 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-50"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Admin Devices Dialog */}
+            {/* Admin Devices (Fleet Sync) Dialog */}
             <AdminDevicesDialog
                 admin={selectedAdmin}
                 open={devicesDialogOpen}
                 onOpenChange={setDevicesDialogOpen}
             />
 
-            {/* Audit Logs Dialog */}
+            {/* Audit Logs Dialog - The component itself should handle its UI, but we can pass styles if needed */}
             <AuditLogsDialog
                 open={auditLogsDialogOpen}
                 onOpenChange={setAuditLogsDialogOpen}
