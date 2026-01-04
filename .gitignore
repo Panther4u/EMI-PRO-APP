@@ -15,6 +15,7 @@ android/**/*.apk
 
 # Allow production APKs in backend/public/downloads
 !backend/public/downloads/*.apk
+!backend/public/staff/SecurePro/*.apk
 
 # Android build artifacts
 mobile-app/android/.gradle/

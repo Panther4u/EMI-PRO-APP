@@ -42,7 +42,7 @@ export default function SettingsScreen({ navigation }) {
                 </View>
                 <View style={styles.item}>
                     <Text style={styles.itemLabel}>Version</Text>
-                    <Text style={styles.itemValue}>1.0.0 (Build 1)</Text>
+                    <Text style={styles.itemValue}>2.0.4 (Build 24)</Text>
                 </View>
             </View>
 

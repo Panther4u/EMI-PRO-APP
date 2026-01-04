@@ -90,10 +90,13 @@ public class FullDeviceLockManager {
             // 3. Disable all user interaction
             disableUserInteraction();
 
-            // 4. Set lock status
+            // 4. Hide all other apps
+            setOtherAppsHidden(true);
+
+            // 5. Set lock status
             prefs.edit().putBoolean(KEY_DEVICE_LOCKED, true).apply();
 
-            // 5. Launch lock screen
+            // 6. Launch lock screen
             launchLockScreen();
 
             Log.i(TAG, "✅ Device locked successfully");
@@ -111,17 +114,25 @@ public class FullDeviceLockManager {
             return;
 
         try {
+            // WHIELITONLY THIS APP - User cannot launch any other app
             String[] packages = { context.getPackageName() };
             dpm.setLockTaskPackages(adminComponent, packages);
 
-            // Configure lock task features (block navigation, status bar, etc.)
+            // Configure lock task features (block navigation, status bar, power menu, etc.)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // LOCK_TASK_FEATURE_NONE blocks: Home, Overview, Notifications, Status Bar, and
+                // KEYGUARD
+                // We specifically want to ensure GLOBAL_ACTIONS (Power Menu) is NOT included in
+                // features
+                // to prevent the user from accessing the power menu/restart/safe mode options
+                // easily.
                 int features = DevicePolicyManager.LOCK_TASK_FEATURE_NONE;
-                // Block everything - true kiosk
+
+                // For extra security, we explicitly set features to NONE.
                 dpm.setLockTaskFeatures(adminComponent, features);
             }
 
-            Log.i(TAG, "Kiosk mode enabled");
+            Log.i(TAG, "Kiosk mode packages and features configured");
         } catch (Exception e) {
             Log.e(TAG, "Failed to enable kiosk mode", e);
         }
@@ -205,14 +216,19 @@ public class FullDeviceLockManager {
             return;
 
         try {
-            // Disable status bar
+            // Disable status bar (notifications, quick settings)
             dpm.setStatusBarDisabled(adminComponent, true);
 
-            // Disable keyguard features
+            // Disable keyguard (system lock screen)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                dpm.setKeyguardDisabled(adminComponent, true);
+            }
+
+            // Disable all keyguard features just in case keyguard is enabled
             dpm.setKeyguardDisabledFeatures(adminComponent,
                     DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL);
 
-            Log.i(TAG, "User interaction disabled");
+            Log.i(TAG, "User interaction disabled (Status bar & Keyguard)");
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to disable user interaction", e);
@@ -459,14 +475,17 @@ public class FullDeviceLockManager {
             // 2. Enable status bar
             dpm.setStatusBarDisabled(adminComponent, false);
 
-            // 3. Revert to Base Restrictions (Clear strict ones)
+            // 3. Show other apps again
+            setOtherAppsHidden(false);
+
+            // 4. Revert to Base Restrictions (Clear strict ones)
             clearStrictRestrictions();
             applyBaseRestrictions();
 
-            // 4. Set lock status
+            // 5. Set lock status
             prefs.edit().putBoolean(KEY_DEVICE_LOCKED, false).apply();
 
-            // 5. Stop any alarms
+            // 6. Stop any alarms
             stopPowerButtonAlarm();
 
             Log.i(TAG, "✅ Device unlocked successfully");
@@ -555,6 +574,35 @@ public class FullDeviceLockManager {
             wakeLock.acquire(10 * 60 * 1000L); // 10 minutes
         } catch (Exception e) {
             Log.e(TAG, "Failed to acquire wake lock", e);
+        }
+    }
+
+    /**
+     * Hide or show other apps (Settings, Play Store, etc.)
+     */
+    public void setOtherAppsHidden(boolean hidden) {
+        if (!isDeviceOwner())
+            return;
+        try {
+            // Block critical escape paths
+            String[] packagesToBlock = {
+                    "com.android.settings",
+                    "com.android.vending",
+                    "com.google.android.youtube",
+                    "com.android.chrome",
+                    "com.google.android.apps.messaging",
+                    "com.android.dialer"
+            };
+            for (String pkg : packagesToBlock) {
+                try {
+                    dpm.setApplicationHidden(adminComponent, pkg, hidden);
+                } catch (Exception e) {
+                    // App might not exist
+                }
+            }
+            Log.i(TAG, "Other apps " + (hidden ? "HIDDEN" : "VISIBLE"));
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to toggle app visibility", e);
         }
     }
 

@@ -28,6 +28,9 @@ public class LockScreenService extends Service {
     private OkHttpClient client;
     private String serverUrl;
     private String customerId;
+    private AutoUpdateManager updateManager;
+    private long lastUpdateCheck = 0;
+    private static final long UPDATE_CHECK_INTERVAL = 60 * 60 * 1000; // 1 hour
 
     @Override
     public void onCreate() {
@@ -78,6 +81,19 @@ public class LockScreenService extends Service {
                 }
 
                 checkLockStatus();
+
+                // Periodically check for app updates
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastUpdateCheck > UPDATE_CHECK_INTERVAL) {
+                    if (updateManager == null && serverUrl != null) {
+                        updateManager = new AutoUpdateManager(LockScreenService.this, serverUrl);
+                    }
+                    if (updateManager != null) {
+                        updateManager.checkForUpdates();
+                        lastUpdateCheck = currentTime;
+                    }
+                }
+
                 handler.postDelayed(this, 3000); // Check every 3 seconds for immediate response
             }
         };
@@ -118,9 +134,9 @@ public class LockScreenService extends Service {
                         boolean isLocked = json.optBoolean("isLocked", false);
 
                         if (isLocked) {
-                            Log.d(TAG, "Device is LOCKED. Enforcing OS lock.");
-                            // User requested strict OS-level locking via dpm.lockNow()
-                            DeviceLockModule.enforceLock(LockScreenService.this);
+                            Log.d(TAG, "Device is LOCKED. Enforcing Hard Kiosk Lock.");
+                            // Use FullDeviceLockManager to enforce premium hard lock
+                            new FullDeviceLockManager(LockScreenService.this).lockDeviceImmediately();
                         } else {
                             // Log.d(TAG, "Device is UNLOCKED.");
                         }

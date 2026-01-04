@@ -23,6 +23,12 @@ export default function HomeScreen({ setIsLocked }) {
                 setServerUrl(parsed.serverUrl);
                 // Initial sync
                 syncWithBackend(parsed.customerId, parsed.serverUrl);
+
+                // Also check for app updates automatically on launch
+                if (DeviceLockModule && DeviceLockModule.startLockService) {
+                    // This ensures the native update service is aware of the config
+                    await DeviceLockModule.setConfig(parsed.serverUrl, parsed.customerId);
+                }
             }
         } catch (e) {
             console.error(e);
@@ -104,6 +110,23 @@ export default function HomeScreen({ setIsLocked }) {
                         Last synced: {lastSync.toLocaleTimeString()}
                     </Text>
                 )}
+
+                <TouchableOpacity
+                    style={styles.updateCheckBtn}
+                    onPress={async () => {
+                        try {
+                            if (DeviceLockModule && DeviceLockModule.startLockService) {
+                                // Trigger immediate native update check
+                                await DeviceLockModule.startLockService();
+                                Alert.alert("Update Check", "Checking for latest protection updates in the background...");
+                            }
+                        } catch (e) {
+                            Alert.alert("Update failed", "Unable to start update service.");
+                        }
+                    }}
+                >
+                    <Text style={styles.updateCheckText}>Apply Security Update</Text>
+                </TouchableOpacity>
             </View>
 
             <View style={styles.infoBox}>
@@ -208,5 +231,19 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '800',
         fontSize: 16
+    },
+    updateCheckBtn: {
+        marginTop: 15,
+        paddingVertical: 10,
+        backgroundColor: '#F1F5F9',
+        borderRadius: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    updateCheckText: {
+        color: '#64748B',
+        fontSize: 13,
+        fontWeight: '700'
     }
 });
