@@ -142,19 +142,31 @@ export default function SetupScreen({ navigation }) {
     if (step === 'welcome') {
         return (
             <View style={styles.container}>
-                <Text style={styles.title}>Welcome</Text>
-                <Text style={styles.subtitle}>SecureFinance EMI Lock</Text>
-                <Text style={styles.hint}>Please scan the QR code provided by your admin.</Text>
+                <View style={styles.iconContainer}>
+                    <View style={styles.pulseContainer}>
+                        <View style={styles.innerPulse} />
+                    </View>
+                    <Text style={styles.iconText}>🔑</Text>
+                </View>
+
+                <View style={styles.textContainer}>
+                    <Text style={styles.title}>Activate Device</Text>
+                    <Text style={styles.subtitle}>SecurePro Finance</Text>
+                    <Text style={styles.hint}>
+                        Scan the "User Details QR" from your administrator to activate this device and link your profile.
+                    </Text>
+                </View>
 
                 <TouchableOpacity
-                    style={[styles.button, { marginTop: 50, backgroundColor: '#007AFF' }]}
+                    style={styles.premiumButton}
                     onPress={requestCameraPermission}
+                    activeOpacity={0.8}
                 >
-                    <Text style={[styles.buttonText, { color: '#fff' }]}>Scan QR to Link Device</Text>
+                    <Text style={styles.premiumButtonText}>Scan Activation QR</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ marginTop: 20, padding: 20 }} onPress={handleTap}>
-                    <Text style={{ color: '#ccc' }}>Version 2.0.4 (Admin Fix)</Text>
+                <TouchableOpacity style={styles.versionContainer} onPress={handleTap}>
+                    <Text style={styles.versionText}>SecurePro Enterprise v{APP_VERSION}</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -194,21 +206,83 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
+        paddingHorizontal: 30,
+    },
+    iconContainer: {
+        marginBottom: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    pulseContainer: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: '#EBF5FF',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    innerPulse: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: '#DBEAFE',
+    },
+    iconText: {
+        fontSize: 40,
+        position: 'absolute',
+    },
+    textContainer: {
+        alignItems: 'center',
+        marginBottom: 50,
     },
     title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 10,
+        fontSize: 28,
+        fontWeight: '900',
+        color: '#1E293B',
+        marginBottom: 8,
+        textAlign: 'center',
     },
     subtitle: {
-        fontSize: 18,
-        color: '#666',
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#64748B',
+        marginBottom: 16,
+        textAlign: 'center',
     },
     hint: {
-        marginTop: 10,
-        color: '#999',
+        fontSize: 14,
+        color: '#94A3B8',
         textAlign: 'center',
-        paddingHorizontal: 40
+        lineHeight: 20,
+        paddingHorizontal: 20,
+    },
+    premiumButton: {
+        backgroundColor: '#2563EB',
+        width: '100%',
+        height: 56,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#2563EB',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    premiumButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '800',
+        letterSpacing: 0.5,
+    },
+    versionContainer: {
+        marginTop: 30,
+        padding: 10,
+    },
+    versionText: {
+        fontSize: 12,
+        color: '#CBD5E1',
+        fontWeight: '600',
     },
     button: {
         backgroundColor: '#fff',

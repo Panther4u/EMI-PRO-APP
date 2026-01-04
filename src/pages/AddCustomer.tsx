@@ -48,9 +48,7 @@ export default function AddCustomer() {
         totalAmount: '15000',
         downPayment: '5000',
         emiAmount: '1000',
-        emiTenure: '10',
-        wifiSsid: '',
-        wifiPassword: ''
+        emiTenure: '10'
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -103,12 +101,7 @@ export default function AddCustomer() {
             await addCustomer(payload);
             setNewCustomerId(customerId);
 
-            // Fetch QR Payload immediately
-            const params = new URLSearchParams();
-            if (formData.wifiSsid) params.append('wifiSsid', formData.wifiSsid);
-            if (formData.wifiPassword) params.append('wifiPassword', formData.wifiPassword);
-
-            const qrResponse = await fetch(getApiUrl(`/api/provisioning/payload/${customerId}?${params.toString()}`));
+            const qrResponse = await fetch(getApiUrl(`/api/provisioning/payload/${customerId}`));
             if (qrResponse.ok) {
                 const data = await qrResponse.json();
                 setQrData(JSON.stringify(data));

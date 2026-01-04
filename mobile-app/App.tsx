@@ -319,7 +319,9 @@ export default function App(props: any) {
                 checkUpdate("https://emi-pro-app.onrender.com");
             }
 
-            // If not found in JS, check if Native Provisioning just happened (QR Scan)
+            /* 
+            // 🛑 DISABLED AUTO-SYNC: Enforcing Double QR Flow per user request.
+            // User now MUST scan the second QR code on the Welcome screen.
             if (!enrollmentDataStr) {
                 try {
                     const nativeData = await DeviceLockModule.getProvisioningData();
@@ -338,6 +340,7 @@ export default function App(props: any) {
                     console.warn("Failed to check native provisioning:", e);
                 }
             }
+            */
 
             if (!enrollmentDataStr) {
                 setState('UNLINKED');

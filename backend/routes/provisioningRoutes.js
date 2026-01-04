@@ -8,11 +8,8 @@ const { getApkChecksum } = require('../utils/checksum');
 router.get('/payload/:customerId', (req, res) => {
     try {
         const { customerId } = req.params;
-        const { wifiSsid, wifiPassword, wifiSecurityType } = req.query; // Get wifi details
 
         // 🎯 DYNAMIC: Use current host to support both Local and Production testing
-        // CRITICAL: Localhost/127.0.0.1 in a QR code CANNOT be scanned by a real device.
-        // We only use the local IP if it's a network IP (e.g., 192.168...).
         const protocol = req.protocol;
         const host = req.get('host');
         const isNetworkIp = host.startsWith('192.168.') || host.startsWith('10.');
@@ -64,16 +61,6 @@ router.get('/payload/:customerId', (req, res) => {
                 "serverUrl": baseUrl
             }
         };
-
-        // Add Wi-Fi configuration if provided
-        if (wifiSsid) {
-            payload["android.app.extra.PROVISIONING_WIFI_SSID"] = wifiSsid;
-            if (wifiPassword) {
-                payload["android.app.extra.PROVISIONING_WIFI_PASSWORD"] = wifiPassword;
-            }
-            // WPA is the default, but can be specified if needed
-            // payload["android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE"] = "WPA";
-        }
 
         res.json(payload);
 

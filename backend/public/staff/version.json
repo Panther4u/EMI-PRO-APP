@@ -1,0 +1,37 @@
+{
+    "version": "2.0.4",
+    "apk": "SecurePro-Owner-Dashboard.apk",
+    "name": "SecurePro - Owner Dashboard",
+    "package": "com.securefinance.emilock.admin",
+    "buildDate": "2026-01-04",
+    "description": "Mobile version of the web dashboard for business owners and admins",
+    "features": [
+        "Complete admin dashboard on mobile",
+        "Customer management",
+        "Device lock/unlock control",
+        "Real-time device monitoring",
+        "Location tracking",
+        "Payment processing",
+        "Fleet management",
+        "Audit logs",
+        "Admin user management",
+        "Premium mobile-first UI",
+        "Offline support"
+    ],
+    "changelog": [
+        "Premium mobile-first UI redesign",
+        "Premium confirmation dialogs for critical actions",
+        "Auto-scroll to top on page navigation",
+        "Enhanced QR code scanability",
+        "Improved admin management dialogs",
+        "Fleet sync functionality",
+        "Comprehensive audit logging",
+        "Device limit management",
+        "All web dashboard features in mobile app"
+    ],
+    "installation": {
+        "method": "ADB or Direct Download",
+        "requirements": "Android 7.0+",
+        "permissions": "Normal app permissions (no Device Owner needed)"
+    }
+}
