@@ -31,7 +31,7 @@ async function createSuperAdmin() {
             name: 'Super Admin',
             email: 'admin@emilock.com',
             phone: '+91 9999999999',
-            passcode: '1234', // 4-digit passcode
+            passcode: '123456', // Updated to 6-digit for premium feel
             role: 'SUPER_ADMIN',
             deviceLimit: 0, // Unlimited for super admin
             isActive: true
@@ -42,7 +42,7 @@ async function createSuperAdmin() {
         console.log('\n✅ Super Admin created successfully!');
         console.log('\n📧 Login Credentials:');
         console.log('   Email:', superAdmin.email);
-        console.log('   Passcode: 1234');
+        console.log('   Passcode: 123456');
         console.log('\n⚠️  IMPORTANT: Change the passcode immediately after first login!');
         console.log('\nYou can now login at: http://localhost:5000/admin/login\n');
 

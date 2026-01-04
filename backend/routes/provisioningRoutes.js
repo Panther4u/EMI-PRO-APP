@@ -21,28 +21,27 @@ router.get('/payload/:customerId', (req, res) => {
         const apkFileName = 'securefinance-user.apk';
         const downloadUrl = `${baseUrl}/downloads/${apkFileName}`;
 
-        // Verified for User Release APK (Latest build)
-        const VERIFIED_CHECKSUM = 'yeWPX99VD07dtdpGrWl/tOLdr2dBMEVGfNZf+RUeqII=';
-
-        // Prefer dynamic if file exists, but fallback to verified if fails
-        let checksum = VERIFIED_CHECKSUM;
-
         const apkPath = path.join(__dirname, '../public/downloads', apkFileName);
+        let checksum = '';
 
         try {
             if (fs.existsSync(apkPath)) {
-                // checksum = getApkChecksum(apkPath); 
-                // Force Verified Checksum to resolve "Server mismatch" issues
-                checksum = VERIFIED_CHECKSUM;
+                // Use the utility to get the URL-safe checksum
+                checksum = getApkChecksum(apkPath);
+                console.log(`✅ Dynamic URL-Safe Checksum: ${checksum}`);
+            } else {
+                // Fallback to a known verified URL-safe checksum if file is missing (should not happen)
+                checksum = 'yeWPX99VD07dtdpGrWl_tOLdr2dBMEVGfNZf-RUeqII';
+                console.warn(`⚠️ APK missing on disk, using fallback checksum`);
             }
         } catch (e) {
-            console.error("Checksum calc failed, using hardcoded", e);
+            console.error("Checksum calc failed", e);
+            checksum = 'yeWPX99VD07dtdpGrWl_tOLdr2dBMEVGfNZf-RUeqII';
         }
 
         console.log(`📦 APK Download URL: ${downloadUrl}`);
-        console.log(`🔐 APK Checksum: ${checksum}`);
 
-        // Construct Android Enterprise Provisioning Payload (Industry Standard)
+        // Construct Android Enterprise Provisioning Payload (Strict URL-Safe Base64)
         const payload = {
             "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
                 "com.securefinance.emilock.user/com.securefinance.emilock.DeviceAdminReceiver",

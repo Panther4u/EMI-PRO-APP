@@ -23,7 +23,7 @@ async function resetAdminAccounts() {
             name: 'Super Admin',
             email: 'admin@emilock.com',
             phone: '+91 9999999999',
-            passcode: '1234',
+            passcode: '123456',
             role: 'SUPER_ADMIN',
             deviceLimit: 0, // Unlimited
             isActive: true
@@ -36,7 +36,7 @@ async function resetAdminAccounts() {
             name: 'Default Dealer',
             email: 'dealer@emilock.com',
             phone: '+91 8888888888',
-            passcode: '9999',
+            passcode: '999999',
             role: 'ADMIN',
             deviceLimit: 100,
             isActive: true,
@@ -50,13 +50,13 @@ async function resetAdminAccounts() {
         console.log('');
         console.log('🔐 SUPER ADMIN');
         console.log('   Email:    admin@emilock.com');
-        console.log('   Passcode: 1234');
+        console.log('   Passcode: 123456');
         console.log('   Role:     SUPER_ADMIN');
         console.log('   Limit:    Unlimited devices');
         console.log('');
         console.log('👤 ADMIN (Dealer)');
         console.log('   Email:    dealer@emilock.com');
-        console.log('   Passcode: 9999');
+        console.log('   Passcode: 999999');
         console.log('   Role:     ADMIN');
         console.log('   Limit:    100 devices');
         console.log('');

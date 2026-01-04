@@ -55,6 +55,18 @@ const AdminLogin = () => {
                 localStorage.setItem('adminToken', data.token);
                 localStorage.setItem('adminUser', JSON.stringify(data.user));
 
+                // Set persistent auth for AuthContext
+                localStorage.setItem('isAdminAuthenticated', 'true');
+                localStorage.setItem('currentAdmin', JSON.stringify({
+                    id: data.user._id,
+                    username: data.user.name,
+                    pin: passcode,
+                    isActivated: true,
+                    isLocked: false,
+                    customerCount: 0,
+                    createdAt: data.user.createdAt || new Date().toISOString()
+                }));
+
                 toast({
                     title: 'Success',
                     description: `Welcome ${data.user.name}!`,
@@ -62,9 +74,7 @@ const AdminLogin = () => {
 
                 // Redirect based on role
                 setTimeout(() => {
-                    // Both Super Admin and regular Admin go to same dashboard
-                    // Super Admin will see additional controls in Settings
-                    navigate('/');
+                    window.location.href = '/';
                 }, 500);
             } else {
                 toast({

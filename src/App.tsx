@@ -11,7 +11,7 @@ import {
     ChevronLeft
 } from 'lucide-react';
 
-// Pages - Lazy loaded or direct import
+// Pages
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
 import Dashboard from './pages/Dashboard';
@@ -20,8 +20,9 @@ import AddCustomer from './pages/AddCustomer';
 import CustomerDetails from './pages/CustomerDetails';
 import Settings from './pages/Settings';
 import Admins from './pages/Admins';
+import LocalUnlock from './components/LocalUnlock';
 
-// Contexts (Assuming these exist or I will create simple versions/wrappers if needed)
+// Contexts
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DeviceProvider } from './context/DeviceContext';
 import { TooltipProvider } from './components/ui/tooltip';
@@ -33,10 +34,7 @@ const ScrollToTop = () => {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        // Scroll window to top
         window.scrollTo(0, 0);
-
-        // Also find any internal scrollable containers (like our dashboard/admins pages)
         const scrollableDiv = document.getElementById('scrollableDiv');
         if (scrollableDiv) {
             scrollableDiv.scrollTo(0, 0);
@@ -52,7 +50,7 @@ const BottomNav = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    if (location.pathname === '/login') return null;
+    if (location.pathname === '/login' || location.pathname === '/admin/login') return null;
 
     const tabs = [
         { path: '/', icon: LayoutGrid, label: 'Home' },
@@ -85,8 +83,7 @@ const BottomNav = () => {
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    // Simple check - in a real app useAuth().isAuthenticated
-    const { isAuthenticated } = useAuth(); // Assuming useAuth exists
+    const { isAuthenticated } = useAuth();
     return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
@@ -101,7 +98,35 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-// --- Main App Component ---
+const AuthWrapper = () => {
+    const { isAuthenticated, isAppLocked } = useAuth();
+
+    if (isAuthenticated && isAppLocked) {
+        return <LocalUnlock />;
+    }
+
+    return (
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <ScrollToTop />
+            <AppLayout>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+
+                    <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                    <Route path="/customers/:id" element={<ProtectedRoute><CustomerDetails /></ProtectedRoute>} />
+                    <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="/admins" element={<ProtectedRoute><Admins /></ProtectedRoute>} />
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </AppLayout>
+            <Toaster position="top-center" />
+        </BrowserRouter>
+    );
+};
 
 export default function App() {
     return (
@@ -109,29 +134,7 @@ export default function App() {
             <AuthProvider>
                 <DeviceProvider>
                     <TooltipProvider>
-                        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                            <ScrollToTop />
-                            <AppLayout>
-                                <Routes>
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/admin/login" element={<AdminLogin />} />
-
-                                    <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                                    <Route path="/mobile" element={<Navigate to="/" replace />} /> {/* Redirect legacy mobile route */}
-
-                                    <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-                                    <Route path="/customers/:id" element={<ProtectedRoute><CustomerDetails /></ProtectedRoute>} />
-
-                                    <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
-
-                                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                                    <Route path="/admins" element={<ProtectedRoute><Admins /></ProtectedRoute>} />
-
-                                    <Route path="*" element={<Navigate to="/" replace />} />
-                                </Routes>
-                            </AppLayout>
-                            <Toaster position="top-center" />
-                        </BrowserRouter>
+                        <AuthWrapper />
                     </TooltipProvider>
                 </DeviceProvider>
             </AuthProvider>

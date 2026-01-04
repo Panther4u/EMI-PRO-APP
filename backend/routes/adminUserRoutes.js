@@ -27,10 +27,10 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        if (!/^\d{4}$/.test(passcode)) {
+        if (!/^\d{4,6}$/.test(passcode)) {
             return res.status(400).json({
                 success: false,
-                message: 'Passcode must be exactly 4 digits'
+                message: 'Passcode must be between 4 and 6 digits'
             });
         }
 
@@ -122,10 +122,10 @@ router.post('/users', auth, checkRole('SUPER_ADMIN'), async (req, res) => {
             });
         }
 
-        if (!/^\d{4}$/.test(passcode)) {
+        if (!/^\d{4,6}$/.test(passcode)) {
             return res.status(400).json({
                 success: false,
-                message: 'Passcode must be exactly 4 digits'
+                message: 'Passcode must be between 4 and 6 digits'
             });
         }
 

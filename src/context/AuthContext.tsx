@@ -21,11 +21,13 @@ interface AdminAccount {
 
 interface AuthContextType {
     isAuthenticated: boolean;
+    isAppLocked: boolean;
     currentAdmin: AdminAccount | null;
     admins: AdminAccount[];
     isAdminLocked: boolean; // Global lock still useful as a master switch
     logs: AuditLog[];
     login: (pin: string) => boolean;
+    unlockApp: (pin: string) => boolean;
     loginWithPasskey: (passkey: string) => AdminAccount | null;
     activateAdmin: (passkey: string, newPin: string) => boolean;
     logout: () => void;
@@ -35,7 +37,7 @@ interface AuthContextType {
     toggleAdminLock: (locked: boolean) => void;
     incrementCustomerCount: (adminId: string) => void;
     canCreateCustomer: (adminId: string) => boolean;
-    addLog: (action: string, detail: string, specificRole?: 'admin' | 'guest') => void;
+    addLog: (action: string, detail: string, specificRole?: 'admin' | 'super-admin' | 'guest') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,13 +63,20 @@ const generatePasskey = (): string => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    // 💾 Persist auth across app restarts (Essential for "Remember Admin ID")
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-        return sessionStorage.getItem('isAdminAuthenticated') === 'true';
+        return localStorage.getItem('isAdminAuthenticated') === 'true';
     });
 
     const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(() => {
-        const saved = sessionStorage.getItem('currentAdmin');
+        const saved = localStorage.getItem('currentAdmin');
         return saved ? JSON.parse(saved) : null;
+    });
+
+    // 🔐 App Lock State (For SecurePro native feel)
+    const [isAppLocked, setIsAppLocked] = useState<boolean>(() => {
+        // App is locked by default on boot if already authenticated
+        return localStorage.getItem('isAdminAuthenticated') === 'true';
     });
 
     const [admins, setAdmins] = useState<AdminAccount[]>(() => {
@@ -88,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('adminAccounts', JSON.stringify(admins));
     }, [admins]);
 
-    const addLog = (action: string, detail: string, specificRole?: 'admin' | 'guest') => {
+    const addLog = (action: string, detail: string, specificRole?: 'admin' | 'super-admin' | 'guest') => {
         const currentRole = specificRole || 'admin';
         const newLog: AuditLog = {
             id: Math.random().toString(36).substr(2, 9),
@@ -114,8 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             setIsAuthenticated(true);
             setCurrentAdmin(foundAdmin);
-            sessionStorage.setItem('isAdminAuthenticated', 'true');
-            sessionStorage.setItem('currentAdmin', JSON.stringify(foundAdmin));
+            setIsAppLocked(false); // Unlock app immediately on first login
+            localStorage.setItem('isAdminAuthenticated', 'true');
+            localStorage.setItem('currentAdmin', JSON.stringify(foundAdmin));
             addLog('Login', `${foundAdmin.username} accessed terminal`, 'admin');
             return true;
         }
@@ -124,12 +134,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
     };
 
+    // 🔓 Function to unlock the app locally (Passcode/Biometrics)
+    const unlockApp = (pin: string) => {
+        if (currentAdmin && currentAdmin.pin === pin) {
+            setIsAppLocked(false);
+            addLog('App Unlocked', `Device unlocked by ${currentAdmin.username}`);
+            return true;
+        }
+        return false;
+    };
+
     const logout = () => {
         addLog('Logout', 'User logged out');
         setIsAuthenticated(false);
         setCurrentAdmin(null);
-        sessionStorage.removeItem('isAdminAuthenticated');
-        sessionStorage.removeItem('currentAdmin');
+        setIsAppLocked(false);
+        localStorage.removeItem('isAdminAuthenticated');
+        localStorage.removeItem('currentAdmin');
     };
 
     const addAdmin = (username: string): string => {
@@ -206,9 +227,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (
         <AuthContext.Provider value={{
             isAuthenticated,
+            isAppLocked,
             currentAdmin,
             admins,
             login,
+            unlockApp,
             loginWithPasskey,
             activateAdmin,
             logout,
@@ -234,3 +257,4 @@ export const useAuth = () => {
     }
     return context;
 };
+

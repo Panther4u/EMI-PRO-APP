@@ -20,8 +20,8 @@ export default function Login() {
             return;
         }
 
-        if (!/^\d{4}$/.test(passcode)) {
-            toast.error('Passcode must be exactly 4 digits');
+        if (!/^\d{4,6}$/.test(passcode)) {
+            toast.error('Passcode must be between 4 and 6 digits');
             return;
         }
 
@@ -42,9 +42,9 @@ export default function Login() {
                 localStorage.setItem('adminToken', data.token);
                 localStorage.setItem('adminUser', JSON.stringify(data.user));
 
-                // Set sessionStorage for AuthContext compatibility
-                sessionStorage.setItem('isAdminAuthenticated', 'true');
-                sessionStorage.setItem('currentAdmin', JSON.stringify({
+                // Set persistent auth for AuthContext
+                localStorage.setItem('isAdminAuthenticated', 'true');
+                localStorage.setItem('currentAdmin', JSON.stringify({
                     id: data.user._id,
                     username: data.user.name,
                     pin: passcode,
@@ -56,10 +56,8 @@ export default function Login() {
 
                 toast.success(`Welcome ${data.user.name}!`);
 
-                // Redirect based on role
+                // Force a clean reload to ensure Context reads the new localStorage
                 setTimeout(() => {
-                    // Both Super Admin and regular Admin go to same dashboard
-                    // Super Admin will see additional controls in Settings
                     window.location.href = '/';
                 }, 500);
             } else {
@@ -118,7 +116,7 @@ export default function Login() {
                                         const value = e.target.value.replace(/\D/g, '');
                                         setPasscode(value);
                                     }}
-                                    maxLength={4}
+                                    maxLength={6}
                                     className="pl-11 h-12 bg-white border-slate-200 rounded-2xl focus:ring-primary/20 transition-all font-semibold text-center text-2xl tracking-widest"
                                     placeholder="••••"
                                     required

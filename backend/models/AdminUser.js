@@ -33,9 +33,9 @@ const AdminUserSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function (v) {
-                return /^\d{4}$/.test(v) || v.length >= 60; // Allow hashed passcode or 4 digits
+                return /^\d{4,6}$/.test(v) || v.length >= 60; // Allow hashed passcode or 4-6 digits
             },
-            message: 'Passcode must be exactly 4 digits'
+            message: 'Passcode must be between 4 and 6 digits'
         }
     },
 
